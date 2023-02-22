@@ -1,0 +1,91 @@
+{
+  "build": { "dockerfile": "Dockerfile" },
+  "runArgs": ["--gpus", "all", "-P", "--shm-size=30gb"],
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
+        "ai-docstring.docstringFormat": "sphinx",
+        "ai-docstring.logLevel": "Debug",
+        "editor.formatOnSave": true,
+        "editor.inlineSuggest.enabled": true,
+        "editor.language.brackets": [],
+        "editor.minimap.enabled": false,
+        "editor.minimap.maxColumn": 88,
+        "editor.wordWrapColumn": 88,
+        "files.autoSave": "onFocusChange",
+        "git.autofetch": true,
+        "git.confirmSync": false,
+        "git.enableSmartCommit": true,
+        "github.copilot.enable": { "*": true },
+        "gitlens.codeLens.enabled": false,
+        "gitlens.currentLine.enabled": false,
+        "gitlens.hovers.currentLine.over": "line",
+        "gitlens.statusBar.enabled": false,
+        "json.schemas": [],
+        "jupyter.themeMatplotlibPlots": true,
+        "material-icon-theme.activeIconPack": "none",
+        "material-icon-theme.files.associations": {},
+        "material-icon-theme.folders.theme": "classic",
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.autoSearchPaths": true,
+        "python.analysis.indexing": true,
+        "python.formatting.blackArgs": ["-l 88"],
+        "python.formatting.provider": "black",
+        "python.languageServer": "Default",
+        "redhat.telemetry.enabled": true,
+        "settingsSync.ignoredExtensions": [],
+        "settingsSync.ignoredSettings": [],
+        "vsintellicode.features.python.deepLearning": "enabled",
+        "vsintellicode.python.completionsEnabled": true,
+        "vsintellicode.modify.editor.suggestSelection": "enabled",
+        "window.zoomLevel": 1,
+        "workbench.colorCustomizations": {},
+        "workbench.colorTheme": "One Dark",
+        "workbench.iconTheme": "vscode-great-icons",
+        "workbench.preferredDarkColorTheme": "One Dark Pro"
+      },
+
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "GitHub.copilot-labs",
+        "sourcery.sourcery",
+        "GitHub.copilot",
+        "analytic-signal.preview-mp4",
+        "donjayamanne.python-extension-pack",
+        "KevinRose.vsc-python-indent",
+        "njpwerner.autodocstring",
+        "donjayamanne.python-environment-manager",
+        "tushortz.python-extended-snippets",
+        "almenon.arepl",
+        "mgesbert.python-path",
+        "graykode.ai-docstring",
+        "bierner.emojisense",
+        "asciidoctor.asciidoctor-vscode",
+        "shakram02.bash-beautify",
+        "rogalmic.bash-debug",
+        "ms-vscode.cpptools",
+        "GitHub.codespaces",
+        "bierner.github-markdown-preview",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "ms-python.isort",
+        "ms-vsliveshare.vsliveshare",
+        "ms-vsliveshare.vsliveshare-pack",
+        "ms-vsliveshare.vsliveshare-audio",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-checkbox",
+        "bierner.markdown-emoji",
+        "christian-kohler.path-intellisense",
+        "2gua.rainbow-brackets",
+        "redhat.vscode-yaml"
+      ]
+    }
+  }
+}
