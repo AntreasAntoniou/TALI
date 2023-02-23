@@ -6,9 +6,8 @@ import torch.nn.functional as F
 import wandb
 from accelerate import Accelerator
 from hydra_zen import instantiate
-from torch.utils.data import DataLoader
-
 from mlproject.callbacks import Interval
+from torch.utils.data import DataLoader
 
 from .decorators import collect_metrics
 from .utils import get_logger

@@ -3,10 +3,9 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 import torch.nn as nn
+from mlproject.decorators import configurable
 from torchvision import transforms
 from torchvision.transforms import ToTensor
-
-from mlproject.decorators import configurable
 
 
 @dataclass

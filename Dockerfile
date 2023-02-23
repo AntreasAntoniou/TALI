@@ -2,14 +2,13 @@ FROM gcr.io/deeplearning-platform-release/pytorch-gpu:latest
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update  \
-    && apt-get install -y --no-install-recommends \
-        libgl1 \
-        libglib2.0-0
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0
 
 RUN conda init bash
 RUN conda create -n main python=3.10 -y
-RUN echo "conda activate main" >> ~/.bashrc
+RUN echo "conda activate main" >>~/.bashrc
 
 SHELL ["conda", "run", "-n", "main", "/bin/bash", "-c"]
 
@@ -19,7 +18,7 @@ RUN apt upgrade -y
 RUN apt install aptitude tree -y
 RUN apt install fish -y
 RUN echo y | pip install tabulate nvitop hydra_zen wandb --upgrade
-RUN conda install mamba -y 
+RUN conda install mamba -y
 RUN mamba install -c conda-forge starship jupyterlab black git-lfs -y
 
 RUN git lfs install
