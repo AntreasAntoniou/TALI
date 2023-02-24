@@ -1,3 +1,4 @@
+from copy import deepcopy
 import math
 import os
 from collections import defaultdict
@@ -125,6 +126,7 @@ class VideoTransformer(nn.Module):
         batch_first: bool = True,
         norm_first: bool = True,
         activation: nn.Module = nn.GELU,
+        output_linear_layer_dim: int = 512,
     ):
         super().__init__()
         self.pos_encoder = PositionalEncoding()
@@ -142,13 +144,15 @@ class VideoTransformer(nn.Module):
             encoder_layer=transformer_layer,
             norm=nn.LayerNorm(d_model),
         )
+        self.output_norm = nn.LayerNorm(d_model)
 
     def init_weights(self):
         pass
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x + self.pos_encoder(x)
-        x = self.transformer(x)
+        x = self.transformer(x)[:, -1, :]  # take the last frame
+        x = self.output_norm(x)
         return x
 
 
@@ -169,6 +173,9 @@ def get_similarities(
         tensor_modality_a: Tensor, shape [batch_size, seq_len, embedding_dim]
         tensor_modality_b: Tensor, shape [batch_size, seq_len, embedding_dim]
     """
+    print(
+        f"{modality_a_name}: {tensor_modality_a.shape}, {modality_b_name}: {tensor_modality_b.shape}"
+    )
     similarities = {
         f"{modality_a_name}_{modality_b_name}_similarities": torch.einsum(
             "ijk,ilk->ijl", tensor_modality_a, tensor_modality_b
@@ -210,20 +217,30 @@ class TALIModel(nn.Module):
         self.audio_sampling_rate = audio_sampling_rate
 
         self.build_model()
+        self.build_logit_scales()
         self.build_transforms()
 
     def build_model(self):
         self.model = nn.ModuleDict()
 
         self.clip_model = CLIPModel.from_pretrained(self.image_text_model_name)
+        self.linear_projection_dim = self.clip_model.projection_dim
 
         self.model["image"] = self.clip_model.vision_model
+        self.image_linear_layer = self.clip_model.visual_projection
 
         self.model["text"] = self.clip_model.text_model
+        self.text_linear_layer = self.clip_model.text_projection
 
         self.model["audio"] = WhisperModel.from_pretrained(
             self.audio_model_name
         ).encoder
+
+        self.audio_linear_layer = nn.Linear(
+            in_features=self.model["audio"].d_model,
+            out_features=self.linear_projection_dim,
+            bias=False,
+        )
 
         self.model["video"] = VideoTransformer(
             d_model=self.model["image"].config.hidden_size,
@@ -234,6 +251,15 @@ class TALIModel(nn.Module):
             batch_first=True,
             norm_first=False,
             activation=F.gelu,
+            output_linear_layer_dim=self.model["image"].config.projection_dim,
+        )
+
+        self.video_linear_layer = nn.Linear(
+            self.model["video"].d_model, self.linear_projection_dim, bias=False
+        )
+
+        self.logit_init_value = float(
+            self.clip_model.config.logit_scale_init_value
         )
 
         if (
@@ -241,8 +267,10 @@ class TALIModel(nn.Module):
             and not self.multi_modality_config.video.support
         ):
             delattr(self.model, "image")
+            delattr(self, "image_linear_layer")
         if not self.multi_modality_config.text.support:
             delattr(self.model, "text")
+            delattr(self, "text_linear_layer")
         if not self.multi_modality_config.audio.support:
             delattr(self.model, "audio")
         if not self.multi_modality_config.video.support:
@@ -284,6 +312,24 @@ class TALIModel(nn.Module):
             ),
         }
 
+    def build_logit_scales(self):
+        self.logit_scales = nn.ParameterDict()
+
+        self.logit_scales["image_text"] = deepcopy(self.clip_model.logit_scale)
+        self.logit_scales["text_image"] = deepcopy(self.clip_model.logit_scale)
+
+        for modality_a in self.model.keys():
+            for modality_b in self.model.keys():
+                if modality_a != modality_b:
+                    name = f"{modality_a}_{modality_b}"
+                    if name not in self.logit_scales.keys():
+                        self.logit_scales[
+                            f"{modality_a}_{modality_b}"
+                        ] = nn.Parameter(
+                            torch.ones(1, requires_grad=True)
+                            * self.logit_init_value
+                        )
+
     def print_model_summary(self):
         # Print model layer summary
         logger.info(self)
@@ -312,15 +358,23 @@ class TALIModel(nn.Module):
             for modality_b_name, modality_b in output_dict.items():
                 if modality_a_name == modality_b_name:
                     continue
-                similarity_dict.update(
-                    get_similarities(
-                        modality_a_name,
-                        modality_b_name,
-                        modality_a,
-                        modality_b,
-                        return_loss=return_loss,
-                    )
-                )
+                for sub_modality_a_name, sub_modality_a in modality_a.items():
+                    for (
+                        sub_modality_b_name,
+                        sub_modality_b,
+                    ) in modality_b.items():
+                        similarity_dict.update(
+                            get_similarities(
+                                sub_modality_a_name,
+                                sub_modality_b_name,
+                                sub_modality_a,
+                                sub_modality_b,
+                                logit_scale=self.logit_scales[
+                                    f"{modality_a_name}_{modality_b_name}"
+                                ],
+                                return_loss=return_loss,
+                            )
+                        )
 
         return output_dict | similarity_dict
 
@@ -329,18 +383,20 @@ class TALIModel(nn.Module):
         if "image" in self.transforms:
             x = self.transforms["image"](x.unbind(0))
 
-        return self.model["image"](pixel_values=x.to(get_device()))
+        return self.model["image"](
+            pixel_values=x.to(get_device())
+        ).pooler_output
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
         if "text" in self.transforms:
             x = self.transforms["text"](x)
-        return self.model["text"](x.to(get_device()))
+        return self.model["text"](x.to(get_device())).pooler_output
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
         if "audio" in self.transforms:
             x = self.transforms["audio"](x)
         x = x.to(get_device())
-        return self.model["audio"](x)
+        return self.model["audio"](x).last_hidden_state[:, -1, :]
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
         input_shape = (
@@ -350,10 +406,10 @@ class TALIModel(nn.Module):
         if "video" in self.transforms:
             x = self.transforms["video"](x)
         out = x.to(get_device())
-        out = self.forward_image(out.view(-1, *out.shape[-3:])).pooler_output
+        out = self.forward_image(out.view(-1, *out.shape[-3:]))
         out = out.view(input_shape[0], input_shape[1], -1).to(get_device())
         out = self.model["video"](out)
-        return out
+        return out[:, -1, :]
 
 
 if __name__ == "__main__":
