@@ -204,6 +204,7 @@ def dict_to_summary(batch: Dict):
 
     for item in batch:
         for key, value in item.items():
+            print(value)
             if hasattr(value, "shape"):
                 summary_dict[key].append((str(value.shape), str(value.dtype)))
             elif hasattr(value, "__len__"):
@@ -460,6 +461,10 @@ def videoclip_to_video_audio_tensors(
                 [
                     ShortSideScale(size=image_size),
                     CenterCropVideo(crop_size=(image_size, image_size)),
+                    UniformTemporalSubsample(
+                        num_samples=int(floor(video_duration_in_seconds * 5)),
+                        temporal_dim=1,
+                    ),
                 ]
             ),
         )
@@ -1314,7 +1319,8 @@ class TALIDataset(torch.utils.data.Dataset):
             keys = list(data_dict.keys())
             output_dict = {}
             for sub_modality_name in keys:
-                modality_type = get_base_modality(sub_modality_name)
+                modality_type = get_base_modality(sub_modality_name).value
+                sub_modality_name = sub_modality_name.value
                 if modality_type not in output_dict:
                     output_dict[modality_type] = {}
 

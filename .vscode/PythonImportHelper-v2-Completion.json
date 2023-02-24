@@ -2317,7 +2317,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            if hasattr(value, \"shape\"):\n                summary_dict[key].append((str(value.shape), str(value.dtype)))",
+        "peekOfCode": "def dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            print(value)\n            if hasattr(value, \"shape\"):",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2443,7 +2443,7 @@
         "kind": 5,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "default_image_transforms_config = builds(default_image_transforms)\ndef dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            if hasattr(value, \"shape\"):",
+        "peekOfCode": "default_image_transforms_config = builds(default_image_transforms)\ndef dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            print(value)",
         "detail": "tali_wit.data",
         "documentation": {}
     },

@@ -3,6 +3,7 @@ import math
 import os
 from collections import defaultdict
 from dataclasses import dataclass
+import numpy as np
 import torch.nn.functional
 from typing import Any, Dict
 
@@ -188,15 +189,16 @@ def get_similarities(
     tensor_modality_a = tensor_modality_a.unsqueeze(0)
     tensor_modality_b = tensor_modality_b.unsqueeze(0)
     similarities = {
-        f"{modality_a_name}_{modality_b_name}_similarities": torch.einsum(
+        f"{modality_a_name}_to_{modality_b_name}_similarities": torch.einsum(
             "ijk,ilk->ijl", tensor_modality_a, tensor_modality_b
         )[0]
-        * logit_scale,
-        f"{modality_b_name}_{modality_a_name}_similarities": torch.einsum(
-            "ijk,ilk->ijl", tensor_modality_b, tensor_modality_a
-        )[0]
-        * logit_scale,
+        * logit_scale
     }
+
+    similarities[
+        f"{modality_b_name}_to_{modality_a_name}_similarities"
+    ] = similarities[f"{modality_a_name}_to_{modality_b_name}_similarities"].T
+
     if return_loss:
         contrastive_losses_dict = {
             f"{key.replace('_similarities', '_loss')}": contrastive_loss(value)
@@ -332,17 +334,19 @@ class TALIModel(nn.Module):
     def build_logit_scales(self):
         self.logit_scales = nn.ParameterDict()
 
-        self.logit_scales["image_text"] = deepcopy(self.clip_model.logit_scale)
-        self.logit_scales["text_image"] = deepcopy(self.clip_model.logit_scale)
+        self.logit_scales["image_to_text"] = deepcopy(
+            self.clip_model.logit_scale
+        )
+        self.logit_scales["text_to_image"] = deepcopy(
+            self.clip_model.logit_scale
+        )
 
         for modality_a in self.model.keys():
             for modality_b in self.model.keys():
                 if modality_a != modality_b:
-                    name = f"{modality_a}_{modality_b}"
+                    name = f"{modality_a}_to_{modality_b}"
                     if name not in self.logit_scales.keys():
-                        self.logit_scales[
-                            f"{modality_a}_{modality_b}"
-                        ] = nn.Parameter(
+                        self.logit_scales[name] = nn.Parameter(
                             torch.ones(1, requires_grad=True)
                             * self.logit_init_value
                         )
@@ -359,7 +363,7 @@ class TALIModel(nn.Module):
         return_features_only: bool = False,
         return_loss: bool = True,
     ) -> torch.Tensor:
-        output_dict = defaultdict(dict)
+        output_dict = {modality: {} for modality in self.model.keys()}
         for modality in self.model.keys():
             if modality in x:
                 for sub_modality in x[modality].keys():
@@ -371,6 +375,7 @@ class TALIModel(nn.Module):
             return output_dict
 
         similarity_dict = {}
+        processed_pairs = set()
         for modality_a_name, modality_a in output_dict.items():
             for modality_b_name, modality_b in output_dict.items():
                 if modality_a_name == modality_b_name:
@@ -380,23 +385,33 @@ class TALIModel(nn.Module):
                         sub_modality_b_name,
                         sub_modality_b,
                     ) in modality_b.items():
+                        pair_name = f"{modality_a_name}_to_{modality_b_name}"
+                        reverse_pair_name = (
+                            f"{modality_b_name}_to_{modality_a_name}"
+                        )
+                        if (
+                            pair_name in processed_pairs
+                            or reverse_pair_name in processed_pairs
+                        ):
+                            continue
                         similarity_dict |= get_similarities(
                             sub_modality_a_name,
                             sub_modality_b_name,
                             sub_modality_a["projection_output"],
                             sub_modality_b["projection_output"],
                             logit_scale=self.logit_scales[
-                                f"{modality_a_name}_{modality_b_name}"
+                                f"{modality_a_name}_to_{modality_b_name}"
                             ],
                             return_loss=return_loss,
                         )
+                        processed_pairs.add(pair_name)
 
         return output_dict | similarity_dict
 
     def forward_image(self, x: torch.Tensor) -> torch.Tensor:
         if "image" in self.transforms:
-            x = self.transforms["image"](x.unbind(0))
-
+            x = self.transforms["image"](x.cpu().unbind(0))
+        x = x.to(self.image_linear_layer.weight.device)
         features = self.model["image"](pixel_values=x).pooler_output
         projection_output = self.image_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
@@ -404,14 +419,15 @@ class TALIModel(nn.Module):
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
         if "text" in self.transforms:
             x = self.transforms["text"](x)
+        x = x.to(self.text_linear_layer.weight.device)
         features = self.model["text"](x).pooler_output
         projection_output = self.text_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
         if "audio" in self.transforms:
-            x = self.transforms["audio"](x)
-
+            x = self.transforms["audio"](x.cpu())
+        x = x.to(self.audio_linear_layer.weight.device)
         features = self.model["audio"](x).last_hidden_state[:, -1, :]
         projection_output = self.audio_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
@@ -422,8 +438,8 @@ class TALIModel(nn.Module):
         )  # (batch_size, num_frames, channels, height, width)
 
         if "video" in self.transforms:
-            x = self.transforms["video"](x)
-        out = x
+            x = self.transforms["video"](x.cpu())
+        out = x.to(self.video_linear_layer.weight.device)
         out = self.forward_image(out.view(-1, *out.shape[-3:]))[
             "projection_output"
         ]
@@ -442,17 +458,27 @@ if __name__ == "__main__":
 
     install()
     os.environ["HYDRA_FULL_ERROR"] = "1"
+    # For 24GB GPU at 16-bit
+    # 128 batch size for wit_image to text
+    # 6 batch size for wit_image to youtube_audio
+    # 24 batch size for wit_image to youtube_video
+    # batch size for text to youtube_audio
+    # batch size for text to youtube_video
+    # batch size for audio to youtube_video
+    # batch size for audio to text
+    # set up a config that allows to select modality pairs + batch size and then build unique dataloaders for each pair
+    # add accuracy and top-k accuracy metrics
 
     dataset = TALIDataset(
         set_name="train",
         root_filepath="/data/datasets/tali-wit-2-1-buckets/",
         modality_list=[
-            ModalityTypes.wit_image.value,
+            # ModalityTypes.wit_image.value,
             ModalityTypes.wit_caption.value,
-            ModalityTypes.wit_title.value,
-            ModalityTypes.wit_main_body.value,
-            # ModalityTypes.youtube_video.value,
-            ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.wit_title.value,
+            # ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
             # ModalityTypes.youtube_audio.value,
             # ModalityTypes.youtube_description.value,
         ],
@@ -468,7 +494,7 @@ if __name__ == "__main__":
 
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=64,
+        batch_size=24,
         num_workers=2,
         shuffle=True,
         pin_memory=False,
@@ -482,8 +508,8 @@ if __name__ == "__main__":
         audio_model_name="openai/whisper-small",
         multi_modality_config=MultiModalityConfig(
             image=ModalityConfig(support=True, pretrained=True),
-            text=ModalityConfig(support=True, pretrained=True),
-            # audio=ModalityConfig(support=True, pretrained=True),
+            # text=ModalityConfig(support=True, pretrained=True),
+            audio=ModalityConfig(support=True, pretrained=True),
             # video=ModalityConfig(support=True, pretrained=False),
         ),
         num_video_frames=8,
@@ -497,29 +523,58 @@ if __name__ == "__main__":
     model, optimizer, dataloader = accelerator.prepare(
         model, optimizer, dataloader
     )
+
     # have the model update the model by taking one sub modality from each modality, in pairs, to maximize the batch size
+    # Use transpose for similarities to speed up contrastive loss computation, and add accuracy and top-k accuracy
+    def extract_all_possible_pairs(batch_dict):
+        from itertools import combinations
+
+        modality_dict = {}
+        for key, value in batch_dict.items():
+            if isinstance(value, dict):
+                modality_dict[key] = list(value.keys())
+
+        pairs_keys = combinations(list(modality_dict.keys()), 2)
+
+        # get all possible pairs of two lists
+        pairs = []
+        for key1, key2 in pairs_keys:
+            for sub_key1, sub_key2 in zip(
+                modality_dict[key1], modality_dict[key2]
+            ):
+                pairs.append((key1, sub_key1, key2, sub_key2))
+
+        return pairs
 
     with tqdm.tqdm(total=len(dataloader)) as pbar:
         for batch in dataloader:
-            for modality, modality_value in batch.items():
-                for sub_modality, sub_modality_value in modality_value.items():
-                    print(
-                        f"{modality}.{sub_modality}: {sub_modality_value.shape, sub_modality_value.device, sub_modality_value.dtype}"
+            for (
+                modality_a,
+                sub_modality_a,
+                modality_b,
+                sub_modality_b,
+            ) in extract_all_possible_pairs(batch):
+                sample = {
+                    modality_a: {
+                        sub_modality_a: batch[modality_a][sub_modality_a]
+                    },
+                    modality_b: {
+                        sub_modality_b: batch[modality_b][sub_modality_b]
+                    },
+                }
+                output_dict = model.forward(sample, return_loss=True)
+                loss = torch.mean(
+                    torch.stack(
+                        [
+                            value
+                            for key, value in output_dict.items()
+                            if "_loss" in key
+                        ]
                     )
-
-            output_dict = model.forward(batch, return_loss=True)
-            loss = torch.mean(
-                torch.stack(
-                    [
-                        value
-                        for key, value in output_dict.items()
-                        if "_loss" in key
-                    ]
                 )
-            )
-            pbar.set_description(f"loss: {loss.item():.4f}")
-            accelerator.backward(loss)
-            optimizer.step()
+                pbar.set_description(f"loss: {loss.item():.4f}")
+                accelerator.backward(loss)
+                optimizer.step()
 
             pbar.update(1)
 
