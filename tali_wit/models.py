@@ -361,7 +361,7 @@ class TALIModel(nn.Module):
     ) -> torch.Tensor:
         output_dict = defaultdict(dict)
         for modality in self.model.keys():
-            if modality in x.keys():
+            if modality in x:
                 for sub_modality in x[modality].keys():
                     output_dict[modality][sub_modality] = getattr(
                         self, f"forward_{modality}"
@@ -380,17 +380,15 @@ class TALIModel(nn.Module):
                         sub_modality_b_name,
                         sub_modality_b,
                     ) in modality_b.items():
-                        similarity_dict.update(
-                            get_similarities(
-                                sub_modality_a_name,
-                                sub_modality_b_name,
-                                sub_modality_a["projection_output"],
-                                sub_modality_b["projection_output"],
-                                logit_scale=self.logit_scales[
-                                    f"{modality_a_name}_{modality_b_name}"
-                                ],
-                                return_loss=return_loss,
-                            )
+                        similarity_dict |= get_similarities(
+                            sub_modality_a_name,
+                            sub_modality_b_name,
+                            sub_modality_a["projection_output"],
+                            sub_modality_b["projection_output"],
+                            logit_scale=self.logit_scales[
+                                f"{modality_a_name}_{modality_b_name}"
+                            ],
+                            return_loss=return_loss,
                         )
 
         return output_dict | similarity_dict
