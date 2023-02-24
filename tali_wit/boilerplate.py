@@ -10,12 +10,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from accelerate import Accelerator, DistributedDataParallelKwargs
-from mlproject.callbacks import Callback, CallbackHandler, Interval
-from mlproject.evaluators import ClassificationEvaluator, Evaluator
-from mlproject.trainers import ClassificationTrainer, Trainer
-from mlproject.utils import get_logger
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from tali_wit.callbacks import Callback, CallbackHandler, Interval
+from tali_wit.evaluators import ClassificationEvaluator, Evaluator
+from tali_wit.trainers import ClassificationTrainer, Trainer
+from tali_wit.utils import get_logger
 
 logger = get_logger(__name__)
 

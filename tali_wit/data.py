@@ -1,16 +1,17 @@
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import copy
-from enum import Enum
 import json
 import os
 import pathlib
 import random
 import sys
-from collections import defaultdict
-from dataclasses import dataclass
-from math import floor
 import time
+from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from dataclasses import dataclass
+from enum import Enum
+from math import floor
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+import datasets
 
 import numpy as np
 import pandas as pd
@@ -29,17 +30,18 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformTemporalSubsample,
 )
+from rich import print
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.dataloader import default_collate
 from torchtyping import TensorType
 from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
 from torchvision.transforms._transforms_video import CenterCropVideo
+from traitlets import default
 from transformers import CLIPModel, CLIPProcessor
-from rich import print
+import datasets
 
-from tali_wit.utils import load_json, save_json
 from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger
+from tali_wit.utils import get_logger, load_json, save_json
 
 logger = get_logger(__name__)
 
@@ -445,7 +447,10 @@ def videoclip_to_video_audio_tensors(
     )
     video_tensors = None
     audio_tensors = None
-    output_dict = {}
+    output_dict = {
+        "full_video_shape": video_data["video"].shape,
+        "full_audio_shape": video_data["audio"].shape,
+    }
 
     if return_video:
         # Compose video data transforms
@@ -567,16 +572,26 @@ def get_wit_sample(
         output_dict["wikipedia_caption_image"].data = default_image_transforms(
             image_size=image_size
         )(output_dict["wikipedia_caption_image"].data)
-    
+
     if "wikipedia_caption_text" in output_dict:
-        output_dict["wikipedia_caption_text"].data = "<wcap> " + output_dict["wikipedia_caption_text"].data + " </wcap>"
-    
+        output_dict["wikipedia_caption_text"].data = (
+            "<wcap> " + output_dict["wikipedia_caption_text"].data + " </wcap>"
+        )
+
     if "wikipedia_main_body_text" in output_dict:
-        output_dict["wikipedia_main_body_text"].data = "<wbody> " + output_dict["wikipedia_main_body_text"].data + " </wbody>"
-    
+        output_dict["wikipedia_main_body_text"].data = (
+            "<wbody> "
+            + output_dict["wikipedia_main_body_text"].data
+            + " </wbody>"
+        )
+
     if "wikipedia_title_text" in output_dict:
-        output_dict["wikipedia_title_text"].data = "<wtitle> " + output_dict["wikipedia_title_text"].data + " </wtitle>"
-        
+        output_dict["wikipedia_title_text"].data = (
+            "<wtitle> "
+            + output_dict["wikipedia_title_text"].data
+            + " </wtitle>"
+        )
+
     return output_dict
 
 
@@ -722,7 +737,9 @@ def get_tali_sample(
             output_dict[
                 ModalityTypes.youtube_title.value.sub_modality
             ] = ModalityDataSample(
-                data="<ytitle> " + wit_to_tali_entry_table.title[video_idx] + " </ytitle>",
+                data="<ytitle> "
+                + wit_to_tali_entry_table.title[video_idx]
+                + " </ytitle>",
                 modality_type=ModalityTypes.youtube_title.value,
             )
 
@@ -731,7 +748,8 @@ def get_tali_sample(
                 ModalityTypes.youtube_description.value.sub_modality
             ] = ModalityDataSample(
                 data="<ydesc>"
-                + wit_to_tali_entry_table.description[video_idx] + "</ydesc>",
+                + wit_to_tali_entry_table.description[video_idx]
+                + "</ydesc>",
                 modality_type=ModalityTypes.youtube_description.value,
             )
 
@@ -1084,6 +1102,7 @@ class TALIDataset(torch.utils.data.Dataset):
                 f"Set name {set_name} not supported, choose one of train, val, test"
             )
 
+        self.broken_video_ids = set()
         # create two get item top level methods,
         # one for wit index and one for video id,
         # these will also need different ways to sample the dataset_dict
@@ -1092,6 +1111,8 @@ class TALIDataset(torch.utils.data.Dataset):
         return self.total_items
 
     def __getitem__(self, idx):
+        if idx in self.broken_video_ids:
+            return self.__getitem__(idx + 1)
         try:
             if self.requested_youtube_data:
                 actual_idx = idx // self.top_k_tali
@@ -1118,15 +1139,19 @@ class TALIDataset(torch.utils.data.Dataset):
                 wit_idx = idx
 
         except Exception as e:
-            logger.exception(e)
+            # logger.exception(e)
+            self.broken_video_ids.add(idx)
             return self.__getitem__(idx + 1)
         try:
             data_dict = {}
+            shape_dict = {}
             for key, value in output_dict.items():
-                # print(key, value)
-                modality_type = value.modality_type.modality
-                sub_modality_type = value.modality_type.sub_modality
-                data_dict[sub_modality_type] = value.data
+                if not isinstance(value, torch.Size):
+                    modality_type = value.modality_type.modality
+                    sub_modality_type = value.modality_type.sub_modality
+                    data_dict[sub_modality_type] = value.data
+                else:
+                    shape_dict[key] = value
 
             rng = np.random.RandomState(self.rng_seed + idx)
 
@@ -1172,13 +1197,12 @@ class TALIDataset(torch.utils.data.Dataset):
                         starting_video_frame : starting_video_frame
                         + self.num_video_frames
                     ]
-
                 starting_audio_frame = int(
                     floor(
                         data_dict["youtube_content_audio"].shape[0]
                         * (
                             starting_video_frame
-                            / data_dict["youtube_content_video"].shape[0]
+                            / shape_dict["full_video_shape"][1]
                         )
                     )
                 )
@@ -1206,8 +1230,8 @@ class TALIDataset(torch.utils.data.Dataset):
                     ][
                         starting_audio_frame : starting_audio_frame
                         + self.num_audio_frames
-                        + 1
                     ]
+
             elif "youtube_content_video" in data_dict:
                 if (
                     data_dict["youtube_content_video"].shape[0]
@@ -1271,7 +1295,6 @@ class TALIDataset(torch.utils.data.Dataset):
                     upper_bound = (
                         data_dict["youtube_content_audio"].shape[0]
                         - self.num_audio_frames
-                        + 1
                     )
 
                     if upper_bound < 0:
@@ -1289,28 +1312,33 @@ class TALIDataset(torch.utils.data.Dataset):
                         + self.num_audio_frames
                     ]
             keys = list(data_dict.keys())
+            output_dict = {}
             for sub_modality_name in keys:
                 modality_type = get_base_modality(sub_modality_name)
+                if modality_type not in output_dict:
+                    output_dict[modality_type] = {}
 
                 if modality_type in self.transforms:
-                    data_dict[sub_modality_type] = self.transforms[
-                        modality_type
-                    ](data_dict[sub_modality_type])
+                    output_dict[modality_type][
+                        sub_modality_name
+                    ] = self.transforms[modality_type](
+                        data_dict[sub_modality_name]
+                    )
+                else:
+                    output_dict[modality_type][sub_modality_name] = data_dict[
+                        sub_modality_name
+                    ]
 
-            data_dict["wit_idx"] = wit_idx
+            output_dict["wit_idx"] = wit_idx
 
-            for key, value in data_dict.items():
-                if value is None:
-                    data_dict[key] = "None"
         except Exception as e:
-            logger.exception(e)
+            # logger.exception(e)
             return self.__getitem__(idx + 1)
 
-        return data_dict
+        return output_dict
 
 
 if __name__ == "__main__":
-    import datasets
     import tqdm
     from rich import print
     from rich.traceback import install
@@ -1340,6 +1368,7 @@ if __name__ == "__main__":
         num_audio_frames=1 * 16000,
         clip_duration_in_seconds=1.5,
     )
+
     dataloader = DataLoader(
         dataset=dataset,
         batch_size=64,
@@ -1348,16 +1377,8 @@ if __name__ == "__main__":
         pin_memory=False,
         collate_fn=dataclass_collate,
     )
-    
+
     with tqdm.tqdm(total=len(dataset)) as pbar:
         for item in dataset:
-            # sleep for 1 second
-            # time.sleep(1)
+            print(item)
             pbar.update(1)
-            # pbar.set_description(
-            #     f"{json.dumps(dict_to_summary(item), indent=4)}"
-            # )
-            # text = item["wikipedia_caption_text"]
-            # pbar.set_description(f"{text}")
-
-    

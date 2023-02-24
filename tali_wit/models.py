@@ -1,11 +1,28 @@
-import copy
+import math
+import os
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict
 
+import torch
 import torch.nn as nn
-from mlproject.decorators import configurable
+from rich import print
+from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from torchvision.transforms import ToTensor
+from transformers import (
+    CLIPModel,
+    CLIPProcessor,
+    WhisperModel,
+    WhisperProcessor,
+    WhisperFeatureExtractor,
+)
+
+from tali_wit.data import ModalityTypes, TALIDataset, dataclass_collate
+from tali_wit.decorators import configurable
+from tali_wit.utils import get_logger
+
+logger = get_logger(__name__, set_default_rich_handler=True)
 
 
 @dataclass
@@ -14,55 +31,406 @@ class ModelAndTransform:
     transform: Any
 
 
+@dataclass
+class ModalityConfig:
+    support: bool = False
+    pretrained: bool = False
+
+
+@dataclass
+class MultiModalityConfig:
+    image: ModalityConfig = ModalityConfig(support=True, pretrained=True)
+    text: ModalityConfig = ModalityConfig(support=True, pretrained=True)
+    audio: ModalityConfig = ModalityConfig(support=True, pretrained=True)
+    video: ModalityConfig = ModalityConfig(support=True, pretrained=True)
+
+
+def num_parameters(
+    model, only_trainable: bool = False, exclude_embeddings: bool = False
+) -> int:
+    """
+    Get number of (optionally, trainable or non-embeddings) parameters in the module.
+
+    Args:
+        only_trainable (`bool`, *optional*, defaults to `False`):
+            Whether or not to return only the number of trainable parameters
+
+        exclude_embeddings (`bool`, *optional*, defaults to `False`):
+            Whether or not to return only the number of non-embeddings parameters
+
+    Returns:
+        `int`: The number of parameters.
+    """
+
+    if exclude_embeddings:
+        embedding_param_names = [
+            f"{name}.weight"
+            for name, module_type in model.named_modules()
+            if isinstance(module_type, nn.Embedding)
+        ]
+        non_embedding_parameters = [
+            parameter
+            for name, parameter in model.named_parameters()
+            if name not in embedding_param_names
+        ]
+        return sum(
+            p.numel()
+            for p in non_embedding_parameters
+            if p.requires_grad or not only_trainable
+        )
+    else:
+        return sum(
+            p.numel()
+            for p in model.parameters()
+            if p.requires_grad or not only_trainable
+        )
+
+
+class PositionalEncoding(nn.Module):
+    def __init__(
+        self,
+    ):
+        super().__init__()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: Tensor, shape [batch_size, seq_len, embedding_dim]
+        """
+        max_len = x.shape[1]
+        d_model = x.shape[2]
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model)
+        )
+        pe = torch.zeros(1, max_len, d_model)
+        pe[0, :, 0::2] = torch.sin(position * div_term)
+        pe[0, :, 1::2] = torch.cos(position * div_term)
+        x = x + pe[: x.size(0)]
+        return x
+
+
 @configurable
-def build_model(
-    model_name: str = "google/vit-base-patch16-224-in21k",
-    pretrained: bool = True,
-    num_classes: int = 100,
-):
-    from transformers import ViTFeatureExtractor, ViTForImageClassification
+class VideoTransformer(nn.Module):
+    def __init__(
+        self,
+        d_model: int,
+        nhead: int,
+        dim_feedforward: int,
+        dropout: int,
+        num_layers: int,
+        batch_first: bool = True,
+        norm_first: bool = True,
+        activation: nn.Module = nn.GELU,
+    ):
+        super().__init__()
+        self.pos_encoder = PositionalEncoding()
+        transformer_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout,
+            activation=activation,
+            batch_first=batch_first,
+            norm_first=norm_first,
+        )
+        self.transformer = nn.TransformerEncoder(
+            num_layers=num_layers,
+            encoder_layer=transformer_layer,
+            norm=nn.LayerNorm,
+        )
 
-    feature_extractor = ViTFeatureExtractor.from_pretrained(model_name)
-    model: nn.Module = ViTForImageClassification.from_pretrained(
-        model_name, num_labels=num_classes
-    )
+    def init_weights(self):
+        pass
 
-    if not pretrained:
-        model.init_weights()
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x + self.pos_encoder(x)
+        x = self.transformer(x)
+        return x
 
-    transform = lambda image: feature_extractor(
-        images=image, return_tensors="pt"
-    )
 
-    class Convert1ChannelTo3Channel(nn.Module):
-        def __init__(self):
-            super().__init__()
+@configurable
+class TALIModel(nn.Module):
+    def __init__(
+        self,
+        image_text_model_name: str = "openai/clip-vit-large-patch14",
+        audio_model_name: str = "openai/whisper-small",
+        multi_modality_config: MultiModalityConfig = MultiModalityConfig(),
+        num_video_frames: int = 8,
+        num_audio_frames: int = 8,
+        audio_sampling_rate: int = 16000,
+    ):
+        super().__init__()
 
-        def forward(self, x):
-            temp = None
-            if hasattr(x, "pixel_values"):
-                temp = copy.copy(x)
-                x = x["pixel_values"]
-            x = ToTensor()(x)
-            if len(x.shape) == 3 and x.shape[0] == 1:
-                x = x.repeat([3, 1, 1])
-            elif len(x.shape) == 4 and x.shape[1] == 1:
-                x = x.repeat([1, 3, 1, 1])
+        self.image_text_model_name = image_text_model_name
+        self.audio_model_name = audio_model_name
+        self.multi_modality_config = multi_modality_config
+        self.num_video_frames = num_video_frames
+        self.num_audio_frames = num_audio_frames
+        self.audio_sampling_rate = audio_sampling_rate
 
-            if temp is not None:
-                temp["pixel_values"] = x
-                x = temp
+        self.build_model()
+        self.build_transforms()
 
-            return x
+    def build_model(self):
+        self.model = nn.ModuleDict()
 
-    pre_transform = Convert1ChannelTo3Channel()
+        self.clip_model = CLIPModel.from_pretrained(self.image_text_model_name)
 
-    def transform_wrapper(input_dict: Dict):
-        input_dict["image"][0] = pre_transform(input_dict["image"][0])
+        self.model["image"] = self.clip_model.vision_model
 
-        return {
-            "pixel_values": transform(input_dict["image"])["pixel_values"],
-            "labels": input_dict["labels"],
+        self.model["text"] = self.clip_model.text_model
+
+        self.model["audio"] = WhisperModel.from_pretrained(
+            self.audio_model_name
+        ).encoder
+
+        self.model["video"] = VideoTransformer(
+            d_model=self.model["image"].config.hidden_size,
+            nhead=8,
+            dim_feedforward=self.model["image"].config.hidden_size * 4,
+            dropout=0.0,
+            num_layers=8,
+            batch_first=True,
+            norm_first=False,
+            activation=nn.GELU,
+        )
+
+        if (
+            not self.multi_modality_config.image.support
+            and not self.multi_modality_config.video.support
+        ):
+            delattr(self.model, "image")
+        if not self.multi_modality_config.text.support:
+            delattr(self.model, "text")
+        if not self.multi_modality_config.audio.support:
+            delattr(self.model, "audio")
+        if not self.multi_modality_config.video.support:
+            delattr(self.model, "video")
+
+        if not self.multi_modality_config.image.pretrained:
+            self.model["image"].init_weights()
+        if not self.multi_modality_config.text.pretrained:
+            self.model["text"].init_weights()
+        if not self.multi_modality_config.audio.pretrained:
+            self.model["audio"].init_weights()
+        if not self.multi_modality_config.video.pretrained:
+            self.model["video"].init_weights()
+
+    def build_transforms(self):
+        self.image_text_processor = CLIPProcessor.from_pretrained(
+            self.image_text_model_name
+        )
+        self.audio_processor = WhisperProcessor.from_pretrained(
+            self.audio_model_name
+        )
+
+        self.transforms = {
+            "image": lambda x: self.image_text_processor(
+                images=x, return_tensors="pt"
+            ).pixel_values,
+            "text": lambda x: self.image_text_processor(
+                text=x, return_tensors="pt", padding=True, truncation=True
+            ).input_ids,
+            "audio": lambda x: torch.cat(
+                [
+                    self.audio_processor(
+                        item,
+                        sampling_rate=self.audio_sampling_rate,
+                        return_tensors="pt",
+                    ).input_features
+                    for item in x.unbind(0)
+                ]
+            ),
         }
 
-    return ModelAndTransform(model=model, transform=transform_wrapper)
+    def print_model_summary(self):
+        # Print model layer summary
+        logger.info(self)
+        # Print total number of parameters
+        logger.info(f"Total number of parameters: {num_parameters(self)}")
+
+    def forward(self, x: Dict[str, torch.Tensor]) -> torch.Tensor:
+        output_dict = defaultdict(dict)
+        for modality in self.model.keys():
+            if modality in x.keys():
+                for sub_modality in x[modality].keys():
+                    output_dict[modality][sub_modality] = getattr(
+                        self, f"forward_{modality}"
+                    )(x[modality][sub_modality])
+
+        return output_dict
+
+    def forward_image(self, x: torch.Tensor) -> torch.Tensor:
+        input_shape = x.shape
+        if "image" in self.transforms:
+            x = self.transforms["image"](x.unbind(0))
+
+        return self.model["image"](pixel_values=x)
+
+    def forward_text(self, x: torch.Tensor) -> torch.Tensor:
+        if "text" in self.transforms:
+            x = self.transforms["text"](x)
+        return self.model["text"](x)
+
+    def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
+        if "audio" in self.transforms:
+            x = self.transforms["audio"](x)
+        x = x.to(self.model["audio"].device)
+        return self.model["audio"](x)
+
+    def forward_video(self, x: torch.Tensor) -> torch.Tensor:
+        input_shape = (
+            x.shape
+        )  # (batch_size, num_frames, channels, height, width)
+
+        if "video" in self.transforms:
+            x = self.transforms["video"](x)
+        out = x
+        out = self.model["image"](out.view(-1, *out.shape[-3:])).pooler_output
+        out = out.view(input_shape[0], input_shape[1], -1)
+        out = self.model["video"](out)
+        return out
+
+
+if __name__ == "__main__":
+    # test all possible options
+
+    import tqdm
+    from rich import print
+    from rich.traceback import install
+
+    install()
+    os.environ["HYDRA_FULL_ERROR"] = "1"
+
+    dataset = TALIDataset(
+        set_name="train",
+        root_filepath="/data/datasets/tali-wit-2-1-buckets/",
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    dataloader = DataLoader(
+        dataset=dataset,
+        batch_size=8,
+        num_workers=2,
+        shuffle=True,
+        pin_memory=True,
+        collate_fn=dataclass_collate,
+    )
+
+    dummy_batch = next(iter(dataloader))
+
+    # build a TALI model with all modalities available
+    model = TALIModel(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-small",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=True, pretrained=True),
+            audio=ModalityConfig(support=True, pretrained=True),
+            video=ModalityConfig(support=True, pretrained=False),
+        ),
+        num_video_frames=8,
+        num_audio_frames=8,
+        audio_sampling_rate=16000,
+    )
+    model = model.to("cuda")
+
+    output_dict = model.forward(dummy_batch)
+
+    # # test no image
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=False,
+    #     modality_config=ModalityConfig(
+    #         image=False, text=True, audio=True, video=True
+    #     ),
+    # )
+    # model.print_model_summary()
+
+    # # test no text
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=False,
+    #     modality_config=ModalityConfig(
+    #         image=True, text=False, audio=True, video=True
+    #     ),
+    # )
+    # model.print_model_summary()
+
+    # # test no audio
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=False,
+    #     modality_config=ModalityConfig(
+    #         image=True, text=True, audio=False, video=True
+    #     ),
+    # )
+    # model.print_model_summary()
+
+    # # test no video
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=False,
+    #     modality_config=ModalityConfig(
+    #         image=True, text=True, audio=True, video=False
+    #     ),
+    # )
+    # model.print_model_summary()
+
+    # # test no image, no text
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=False,
+    #     modality_config=ModalityConfig(
+    #         image=False, text=False, audio=True, video=True
+    #     ),
+    # )
+    # model.print_model_summary()
+
+    # # test no image, no audio
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=False,
+    #     modality_config=ModalityConfig(
+    #         image=False, text=True, audio=False, video=True
+    #     ),
+    # )
+    # model.print_model_summary()
+
+    # # test no image, no video
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=False,
+    #     modality_config=ModalityConfig(
+    #         image=False, text=True, audio=True, video=False
+    #     ),
+    # )
+
+    # # test pretrained, all modalities
+
+    # model = TALIModel(
+    #     model_name="openai/clip-vit-large-patch14",
+    #     pretrained=True,
+    #     modality_config=ModalityConfig(
+    #         image=True, text=True, audio=True, video=True
+    #     ),
+    # )
+    # model.print_model_summary()

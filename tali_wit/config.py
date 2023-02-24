@@ -9,14 +9,21 @@ import torch
 import wandb
 from accelerate import Accelerator
 from hydra.core.config_store import ConfigStore
-from hydra_zen import MISSING, ZenField, builds, hydrated_dataclass, make_config
-from mlproject.boilerplate import Learner
-from mlproject.callbacks import UploadCheckpointsToHuggingFace
+from hydra_zen import (
+    MISSING,
+    ZenField,
+    builds,
+    hydrated_dataclass,
+    make_config,
+)
 from omegaconf import OmegaConf
 from timm.scheduler import CosineLRScheduler
 from torch.utils.data import DataLoader
 
-from .data.data import build_dataset
+from tali_wit.boilerplate import Learner
+from tali_wit.callbacks import UploadCheckpointsToHuggingFace
+
+from .data import build_dataset
 from .models import build_model
 
 CHECKPOINT_DIR = "${hf_repo_dir}"

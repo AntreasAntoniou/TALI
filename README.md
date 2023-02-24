@@ -7,7 +7,7 @@
 
 This repo implements a **minimal** machine learning template, that is fully featured for most of the things a machine learning project might need. The most important parts that set this repo apart from the rest are:
 
-1. It is **stateless**. Any given experiment ran using this template, will, automatically and periodically stores the model weights and configuration to [HuggingFace Hub](https://huggingface.co/docs/hub/models-the-hub) and [wandb](https://wandb.ai/site) respectively. As a result, if your machine dies or job exits, and you resume on another machine, the code will automatically locate and download the previous history and continue from where it left off. This makes this repo very useful when using spot instances, or using schedulers like slurm and kubernetes. 
+1. It is **stateless**. Any given experiment ran using this template, will, automatically and periodically stores the model weights and configuration to [HuggingFace Hub](https://huggingface.co/docs/hub/models-the-hub) and [wandb](https://wandb.ai/site) respectively. As a result, if your machine dies or job exits, and you resume on another machine, the code will automatically locate and download the previous history and continue from where it left off. This makes this repo very useful when using spot instances, or using schedulers like slurm and kubernetes.
 2. It provides support for all the latest and greatest GPU and TPU optimization and scaling algorithms through [HuggingFace Accelerate](https://huggingface.co/docs/accelerate/index).
 3. It provides mature configuration support via [Hydra-Zen](https://github.com/mit-ll-responsible-ai/hydra-zen) and automates configuration generation via [decorators](https://github.com/BayesWatch/minimal-ml-template/blob/af387e59472ea67552b4bb8972b39fe95952dd8a/mlproject/decorators.py#L10) implemented in this repo.
 4. It has a minimal **callback** based boilerplate that allows a user to easily inject any functionality at predefined places in the system without spagettifying the code.
@@ -17,6 +17,7 @@ This repo implements a **minimal** machine learning template, that is fully feat
 ## The Software Stack
 
 This machine learning project template is built using the following software stack:
+
 1. Deep Learning Framework: [PyTorch](https://pytorch.org/get-started/locally/)
 2. Dataset storage and retrieval: [Huggingface Datasets](https://huggingface.co/docs/datasets/index)
 3. Model storage and retrieval [Huggingface Hub](https://huggingface.co/docs/hub/models-the-hub), and [HuggingFace Models](https://huggingface.co/models)
@@ -35,12 +36,17 @@ There are two supported options available for installation.
 2. Using docker
 
 ## Install via conda
+
 To install via conda:
+
 1. Clone the template
+
 ```bash
 git clone https://github.com/AntreasAntoniou/minimal-ml-template/
-``` 
+```
+
 2. Run:
+
 ```bash
 bash -c "source install-via-conda.sh"
 ```
@@ -48,6 +54,7 @@ bash -c "source install-via-conda.sh"
 If you do not have conda installed it will be installed for you. If you do, it'll simply install the necessary dependencies in an environment named minimal-ml-template
 
 ## Install via docker
+
 You can use a docker image to get a full installation of all relevant dependencies and a copy of the template to get started.
 
 **Note: We recommend using VSCode with the docker extension so that you can attach your IDE to the python environment within the docker container and develop directly, as explained in https://code.visualstudio.com/docs/devcontainers/containers**.
@@ -56,13 +63,15 @@ To install via docker:
 
 1. Install docker on your system, and start the docker daemon.
 2. `docker pull docker pull ghcr.io/antreasantoniou/minimal-ml-template:latest`
-3. `docker run --gpus all --shm-size=<RAM-AVAILABLE> -it ghcr.io/antreasantoniou/minimal-ml-template:latest`. Replacing <RAM-AVAILABLE> with the amount of memory you want the docker container to utilize. 
+3. `docker run --gpus all --shm-size=<RAM-AVAILABLE> -it ghcr.io/antreasantoniou/minimal-ml-template:latest`. Replacing <RAM-AVAILABLE> with the amount of memory you want the docker container to utilize.
 4. (Optional) If you wish to be able to modify the codebase and keep a copy of it available in the local filesystem, then first clone the repository to a local directory of your choosing and then simply use `docker run --gpus all -v path/to/local/repo/clone:/repo/ --shm-size=<RAM-AVAILABLE> -it ghcr.io/antreasantoniou/minimal-ml-template:latest` and `cd /repo/` to enter the linked directory, and then simply run `pip install -e .` to install the repo in a development mode so any changes you make will be reflected in the mlproject package.
 
 ## Setting up the relevant environment variables
-Before running any experiment, you must set the environment variables necessary for huggingface and wandb to work properly, as well as the environment variables for the necessary directories in which to store datasets, models and experiment tracking. 
+
+Before running any experiment, you must set the environment variables necessary for huggingface and wandb to work properly, as well as the environment variables for the necessary directories in which to store datasets, models and experiment tracking.
 
 A template for the necessary variables is available in [run.env](run.env). To modify:
+
 1. Open with your favourite file editor
 2. Fill in the wandb key as explained in https://wandb.ai/authorize
 3. Fill the hugging face username and access token as explained in https://huggingface.co/settings/tokens
@@ -70,15 +79,19 @@ A template for the necessary variables is available in [run.env](run.env). To mo
 5. Run `source run.env` to load the environment variables
 
 ## Running experiments locally
+
 **Note**: Before running any experiments, you must set the environment variables as explained in the previous section.
 
 Running experiments on a local machine can be done by issuing the following command to the command line:
+
 ```bash
 accerate launch mlproject/run.py exp_name=my-awesome-experiment-0
 ```
-The above can also be achieved by replacing `accelerate launch` with `python` but using accelerate launch means all the awesome compute optimizations that the Accelerate framework provides can be engaged. 
+
+The above can also be achieved by replacing `accelerate launch` with `python` but using accelerate launch means all the awesome compute optimizations that the Accelerate framework provides can be engaged.
 
 To get a full list of the arguments that the minimal-ml-template framework can receive use:
+
 ```bash
 accelerate launch mlproject/run.py --help
 ```
@@ -107,12 +120,12 @@ Override anything in the config (foo.bar=value)
 
 exp_name: ???
 model:
-  _target_: mlproject.models.build_model
+  _target_: tali_wit.models.build_model
   model_name: google/vit-base-patch16-224-in21k
   pretrained: true
   num_classes: 101
 dataset:
-  _target_: mlproject.data.build_dataset
+  _target_: tali_wit.data.build_dataset
   dataset_name: food101
   data_dir: ${data_dir}
   sets_to_include: null
@@ -165,7 +178,7 @@ scheduler:
   k_decay: 1.0
   initialize: true
 learner:
-  _target_: mlproject.boilerplate.Learner
+  _target_: tali_wit.boilerplate.Learner
   experiment_name: ${exp_name}
   experiment_dir: ${hf_repo_dir}
   model: null
@@ -187,7 +200,7 @@ learner:
   print_model_parameters: false
 callbacks:
   hf_uploader:
-    _target_: mlproject.callbacks.UploadCheckpointsToHuggingFace
+    _target_: tali_wit.callbacks.UploadCheckpointsToHuggingFace
     repo_name: ${exp_name}
     repo_owner: ${hf_username}
 wandb_args:
@@ -240,12 +253,15 @@ code_dir: ${hydra:runtime.cwd}
 Powered by Hydra (https://hydra.cc)
 Use --hydra-help to view Hydra specific help
 ```
+
 </details>
 
-To configure the compute optimizations use 
+To configure the compute optimizations use
+
 ```bash
 accelerate config
 ```
+
 And answer the prompted questions.
 
 Furthermore, instead of configuring the accelerate framework you can pass arguments directly, as explained when one issues:
@@ -253,6 +269,7 @@ Furthermore, instead of configuring the accelerate framework you can pass argume
 ```bash
 accelerate launch --help
 ```
+
 <details>
 <summary>View default response</summary>
 
@@ -463,6 +480,7 @@ AWS Arguments:
   --aws_secret_access_key AWS_SECRET_ACCESS_KEY
                         The AWS_SECRET_ACCESS_KEY used to launch the Amazon SageMaker training job.
 ```
+
 </details>
 
 So, for example, to use bf16 mixed precision, one can do:
@@ -472,41 +490,51 @@ accelerate launch --mixed_precision=bf16 mlproject/run.py exp_name=test-bf16
 ```
 
 ## Modify the experiment configuration from the command line
+
 Hydra-zen allows easy and quick configuration of your experiment via command line.
 
 Three key cases are:
 
-1. Set argument: 
-```bash 
+1. Set argument:
+
+```bash
 accelerate launch mlproject/run.py exp_name=my-awesome-experiment train_batch_size=50
 ```
+
 2. Add a new argument not previously specified in the config:
-```bash 
+
+```bash
 accelerate launch mlproject/run.py +my_new_argument=my_new_value
 ```
+
 3. Remove an existing argument, previously specified in the config:
-```bash 
+
+```bash
 accelerate launch mlproject/run.py ~train_batch_size
-``` 
+```
 
 For more such syntax see the [hydra documentation](https://hydra.cc/docs/advanced/override_grammar/basic/).
 
 ## Tracking experiments with wandb
-The template supports wandb by default. So assuming you fill in the environment variable template with your wandb key and source the file as explained in the section **Setting up the relevant environment variables** wandb should be running. 
+
+The template supports wandb by default. So assuming you fill in the environment variable template with your wandb key and source the file as explained in the section **Setting up the relevant environment variables** wandb should be running.
 
 ## Setting up the usage of huggingface model and dataset hubs so you can store your model weights and datasets
+
 The template supports huggingface datasets and models by default. So assuming you fill in the environment variable template with your wandb key and source the file as explained in the section **Setting up the relevant environment variables**, you should be fine.
 
 ## Making any class and/or function configurable via Hydra-Zen
+
 This template uses hydra-zen to grab any function or class and convert them into a configurable dataclass object that can then be accessed via the command line interface to modify an experiment configuration.
 
-Furthermore, I have implemented a python decorator that can add a configuration generator function to a given class or function. More specifically, the [`configurable`](mlproject/decorators.py#L9) decorator. 
+Furthermore, I have implemented a python decorator that can add a configuration generator function to a given class or function. More specifically, the [`configurable`](mlproject/decorators.py#L9) decorator.
 
 ### Making a class or function configurable
+
 To summarize, there are two different ways to make a class or function configurable:
 
 1. Using the `configurable` decorator:
-   
+
 ```python
 @configurable
 def build_something(batch_size: int, num_layers: int):
@@ -522,6 +550,7 @@ print(build_something_config(batch_size=32, num_layers=2))
 ```
 
 And the output will look like:
+
 ```bash
 Builds_build_something(_target_='__main__.build_something', batch_size=32, num_layers=2)
 ```
@@ -532,7 +561,7 @@ This essentially shows us the target function for which the configuration parame
 
 ```python
 from hydra_zen import builds, instantiate
-    
+
 def build_something(batch_size: int, num_layers: int):
     return batch_size, num_layers
 
@@ -542,7 +571,7 @@ dummy_config = builds(build_something, populate_full_signature=True)
 
 ### Instantiating a function or class through its configuration object
 
- So one could then instantiate the function or class that the configuration has been built for, using:
+So one could then instantiate the function or class that the configuration has been built for, using:
 
 ```python
 from hydra_zen import builds, instantiate
@@ -551,33 +580,36 @@ dummy_function_instantiation = instantiate(dummy_config)
 
 print(dummy_function_instantiation)
 ```
+
 which returns:
 
 ```bash
 (32, 2)
 ```
+
 Which is ofcourse the output of the function instantiation.
 
 ## Adding a new callback
-The template has built in, a callback system which allows one to inject a small piece of code, referred to as a `callback` function at any stage of the training and evaluation process of their choosing. The reason for this is that it keeps the main boilerplate code clean and tidy, while allowing the flexibility of adding whatever functions one needs at any point in the training. 
 
-All the possible entry points can be found in the [callbacks module](mlproject/callbacks.py#L28), as well as the available/exposed data items and experiment variables that the functions can use. 
+The template has built in, a callback system which allows one to inject a small piece of code, referred to as a `callback` function at any stage of the training and evaluation process of their choosing. The reason for this is that it keeps the main boilerplate code clean and tidy, while allowing the flexibility of adding whatever functions one needs at any point in the training.
+
+All the possible entry points can be found in the [callbacks module](mlproject/callbacks.py#L28), as well as the available/exposed data items and experiment variables that the functions can use.
 
 So, when one wants to build a new function, they need to inherit from the `Callback` class and then implement one or more of the signature methods. For an example look at the [`UploadCheckpointsToHuggingFace`](mlproject/callbacks.py#L407) callback.
 
 ## Adding a new model
+
 To add a new model simply modify the existing build_model function found in [models.py](mlproject/models.py#L18), or simply find the model you need from the HuggingFace model repository and add the relevant classes and model name to the build model function.
 
 ## Adding a new dataset
-To add a new dataset simply modify the existing build_dataset function found in [data.py](mlproject/data.py#L9), or simply find the model you need from the HuggingFace dataset library and add the relevant classes and dataset name to the build dataset function.
 
+To add a new dataset simply modify the existing build_dataset function found in [data.py](mlproject/data.py#L9), or simply find the model you need from the HuggingFace dataset library and add the relevant classes and dataset name to the build dataset function.
 
 ## Running a kubernetes hyperparameter search
 
-TODO: Show a small tutorial on how to run a kubernetes hyperparameter search using the framework. 
+TODO: Show a small tutorial on how to run a kubernetes hyperparameter search using the framework.
 
-
-References: 
+References:
 
 @incollection{NEURIPS2019_9015,
 title = {PyTorch: An Imperative Style, High-Performance Deep Learning Library},
@@ -590,13 +622,8 @@ url = {http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-high-perf
 }
 
 @article{soklaski2022tools,
-  title={Tools and Practices for Responsible AI Engineering},
-  author={Soklaski, Ryan and Goodwin, Justin and Brown, Olivia and Yee, Michael and Matterer, Jason},
-  journal={arXiv preprint arXiv:2201.05647},
-  year={2022}
+title={Tools and Practices for Responsible AI Engineering},
+author={Soklaski, Ryan and Goodwin, Justin and Brown, Olivia and Yee, Michael and Matterer, Jason},
+journal={arXiv preprint arXiv:2201.05647},
+year={2022}
 }
-
-
-
-
-

@@ -2,10 +2,11 @@ import os
 import shutil
 
 import wandb
-from mlproject.models import ModelAndTransform
-from mlproject.utils import save_json
 from rich import print
 from rich.traceback import install
+
+from tali_wit.models import ModelAndTransform
+from tali_wit.utils import save_json
 
 os.environ[
     "HYDRA_FULL_ERROR"
@@ -25,18 +26,24 @@ from typing import Callable, List, Optional, Union
 
 import hydra
 import torch
-from huggingface_hub import (Repository, create_repo, hf_hub_download, login,
-                             snapshot_download)
+from huggingface_hub import (
+    Repository,
+    create_repo,
+    hf_hub_download,
+    login,
+    snapshot_download,
+)
 from hydra_zen import instantiate
-from mlproject.boilerplate import Learner
-from mlproject.callbacks import Callback
-from mlproject.config import BaseConfig, collect_config_store
-from mlproject.evaluators import ClassificationEvaluator
-from mlproject.trainers import ClassificationTrainer
-from mlproject.utils import get_logger, pretty_config, set_seed
 from omegaconf import OmegaConf
 from torch import nn
 from torch.utils.data import Dataset
+
+from tali_wit.boilerplate import Learner
+from tali_wit.callbacks import Callback
+from tali_wit.config import BaseConfig, collect_config_store
+from tali_wit.evaluators import ClassificationEvaluator
+from tali_wit.trainers import ClassificationTrainer
+from tali_wit.utils import get_logger, pretty_config, set_seed
 
 config_store = collect_config_store()
 

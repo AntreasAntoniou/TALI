@@ -18,9 +18,9 @@ def get_logger(
     logger = logging.getLogger(name)
 
     if set_default_rich_handler:
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)
         ch = RichHandler()
-        ch.setLevel(logging.INFO)
+        ch.setLevel(logging.DEBUG)
 
         # create formatter
         formatter = logging.Formatter("%(message)s")
