@@ -17,7 +17,6 @@ RUN apt upgrade -y
 
 RUN apt install aptitude tree -y
 RUN apt install fish -y
-RUN echo y | pip install tabulate nvitop hydra_zen wandb --upgrade
 RUN conda install mamba -y
 RUN mamba install -c conda-forge starship jupyterlab black git-lfs -y
 
@@ -32,6 +31,7 @@ RUN apt install kubectl -y
 RUN apt install google-cloud-sdk-gke-gcloud-auth-plugin -y
 ENV USE_GKE_GCLOUD_AUTH_PLUGIN True
 
+RUN echo y | pip install tabulate nvitop hydra_zen wandb pytorchvideo torchtyping --upgrade
 RUN echo y | pip install git+https://github.com/BayesWatch/bwatchcompute@main
 
 RUN rm -rf /app/

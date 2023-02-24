@@ -2,10 +2,12 @@ import math
 import os
 from collections import defaultdict
 from dataclasses import dataclass
+import torch.nn.functional
 from typing import Any, Dict
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from rich import print
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
@@ -17,6 +19,7 @@ from transformers import (
     WhisperProcessor,
     WhisperFeatureExtractor,
 )
+from transformers.models.clip.modeling_clip import CLIPOutput, contrastive_loss
 
 from tali_wit.data import ModalityTypes, TALIDataset, dataclass_collate
 from tali_wit.decorators import configurable
@@ -99,13 +102,13 @@ class PositionalEncoding(nn.Module):
         """
         max_len = x.shape[1]
         d_model = x.shape[2]
-        position = torch.arange(max_len).unsqueeze(1)
+        position = torch.arange(max_len).unsqueeze(1).to(x.device)
         div_term = torch.exp(
             torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model)
-        )
-        pe = torch.zeros(1, max_len, d_model)
-        pe[0, :, 0::2] = torch.sin(position * div_term)
-        pe[0, :, 1::2] = torch.cos(position * div_term)
+        ).to(x.device)
+        pe = torch.zeros(1, max_len, d_model).to(x.device)
+        pe[0, :, 0::2] = torch.sin(position * div_term).to(x.device)
+        pe[0, :, 1::2] = torch.cos(position * div_term).to(x.device)
         x = x + pe[: x.size(0)]
         return x
 
@@ -117,7 +120,7 @@ class VideoTransformer(nn.Module):
         d_model: int,
         nhead: int,
         dim_feedforward: int,
-        dropout: int,
+        dropout: float,
         num_layers: int,
         batch_first: bool = True,
         norm_first: bool = True,
@@ -137,7 +140,7 @@ class VideoTransformer(nn.Module):
         self.transformer = nn.TransformerEncoder(
             num_layers=num_layers,
             encoder_layer=transformer_layer,
-            norm=nn.LayerNorm,
+            norm=nn.LayerNorm(d_model),
         )
 
     def init_weights(self):
@@ -147,6 +150,43 @@ class VideoTransformer(nn.Module):
         x = x + self.pos_encoder(x)
         x = self.transformer(x)
         return x
+
+
+def get_device():
+    return torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
+
+
+def get_similarities(
+    modality_a_name: str,
+    modality_b_name: str,
+    tensor_modality_a: torch.Tensor,
+    tensor_modality_b: torch.Tensor,
+    logit_scale: torch.Tensor,
+    return_loss: bool = False,
+) -> torch.Tensor:
+    """
+    Args:
+        tensor_modality_a: Tensor, shape [batch_size, seq_len, embedding_dim]
+        tensor_modality_b: Tensor, shape [batch_size, seq_len, embedding_dim]
+    """
+    similarities = {
+        f"{modality_a_name}_{modality_b_name}_similarities": torch.einsum(
+            "ijk,ilk->ijl", tensor_modality_a, tensor_modality_b
+        ).sum(2)
+        * logit_scale,
+        f"{modality_b_name}_{modality_a_name}_similarities": torch.einsum(
+            "ijk,ilk->ijl", tensor_modality_b, tensor_modality_a
+        ).sum(2)
+        * logit_scale,
+    }
+    if return_loss:
+        contrastive_losses_dict = {
+            f"{key.replace('_similarities', 'loss')}": contrastive_loss(value)
+            for key, value in similarities.items()
+        }
+        return similarities | contrastive_losses_dict
+
+    return similarities
 
 
 @configurable
@@ -193,7 +233,7 @@ class TALIModel(nn.Module):
             num_layers=8,
             batch_first=True,
             norm_first=False,
-            activation=nn.GELU,
+            activation=F.gelu,
         )
 
         if (
@@ -250,7 +290,12 @@ class TALIModel(nn.Module):
         # Print total number of parameters
         logger.info(f"Total number of parameters: {num_parameters(self)}")
 
-    def forward(self, x: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def forward(
+        self,
+        x: Dict[str, torch.Tensor],
+        return_features_only: bool = False,
+        return_loss: bool = True,
+    ) -> torch.Tensor:
         output_dict = defaultdict(dict)
         for modality in self.model.keys():
             if modality in x.keys():
@@ -259,24 +304,42 @@ class TALIModel(nn.Module):
                         self, f"forward_{modality}"
                     )(x[modality][sub_modality])
 
-        return output_dict
+        if return_features_only:
+            return output_dict
+
+        similarity_dict = {}
+        for modality_a_name, modality_a in output_dict.items():
+            for modality_b_name, modality_b in output_dict.items():
+                if modality_a_name == modality_b_name:
+                    continue
+                similarity_dict.update(
+                    get_similarities(
+                        modality_a_name,
+                        modality_b_name,
+                        modality_a,
+                        modality_b,
+                        return_loss=return_loss,
+                    )
+                )
+
+        return output_dict | similarity_dict
 
     def forward_image(self, x: torch.Tensor) -> torch.Tensor:
         input_shape = x.shape
         if "image" in self.transforms:
             x = self.transforms["image"](x.unbind(0))
 
-        return self.model["image"](pixel_values=x)
+        return self.model["image"](pixel_values=x.to(get_device()))
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
         if "text" in self.transforms:
             x = self.transforms["text"](x)
-        return self.model["text"](x)
+        return self.model["text"](x.to(get_device()))
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
         if "audio" in self.transforms:
             x = self.transforms["audio"](x)
-        x = x.to(self.model["audio"].device)
+        x = x.to(get_device())
         return self.model["audio"](x)
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
@@ -286,9 +349,9 @@ class TALIModel(nn.Module):
 
         if "video" in self.transforms:
             x = self.transforms["video"](x)
-        out = x
-        out = self.model["image"](out.view(-1, *out.shape[-3:])).pooler_output
-        out = out.view(input_shape[0], input_shape[1], -1)
+        out = x.to(get_device())
+        out = self.forward_image(out.view(-1, *out.shape[-3:])).pooler_output
+        out = out.view(input_shape[0], input_shape[1], -1).to(get_device())
         out = self.model["video"](out)
         return out
 
@@ -328,7 +391,7 @@ if __name__ == "__main__":
 
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=8,
+        batch_size=2,
         num_workers=2,
         shuffle=True,
         pin_memory=True,
@@ -351,9 +414,9 @@ if __name__ == "__main__":
         num_audio_frames=8,
         audio_sampling_rate=16000,
     )
-    model = model.to("cuda")
 
-    output_dict = model.forward(dummy_batch)
+    model = model.to(get_device())
+    output_dict = model.forward(dummy_batch, return_loss=True)
 
     # # test no image
     # model = TALIModel(
