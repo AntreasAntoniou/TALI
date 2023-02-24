@@ -397,23 +397,21 @@ class TALIModel(nn.Module):
         if "image" in self.transforms:
             x = self.transforms["image"](x.unbind(0))
 
-        features = self.model["image"](
-            pixel_values=x.to(get_device())
-        ).pooler_output
+        features = self.model["image"](pixel_values=x).pooler_output
         projection_output = self.image_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
         if "text" in self.transforms:
             x = self.transforms["text"](x)
-        features = self.model["text"](x.to(get_device())).pooler_output
+        features = self.model["text"](x).pooler_output
         projection_output = self.text_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
         if "audio" in self.transforms:
             x = self.transforms["audio"](x)
-        x = x.to(get_device())
+
         features = self.model["audio"](x).last_hidden_state[:, -1, :]
         projection_output = self.audio_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
@@ -425,11 +423,11 @@ class TALIModel(nn.Module):
 
         if "video" in self.transforms:
             x = self.transforms["video"](x)
-        out = x.to(get_device())
+        out = x
         out = self.forward_image(out.view(-1, *out.shape[-3:]))[
             "projection_output"
         ]
-        out = out.view(input_shape[0], input_shape[1], -1).to(get_device())
+        out = out.view(input_shape[0], input_shape[1], -1)
         features = self.model["video"](out)
         projection_output = self.video_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
@@ -503,6 +501,12 @@ if __name__ == "__main__":
 
     with tqdm.tqdm(total=len(dataloader)) as pbar:
         for batch in dataloader:
+            for modality, modality_value in batch.items():
+                for sub_modality, sub_modality_value in modality_value.items():
+                    print(
+                        f"{modality}.{sub_modality}: {sub_modality_value.shape, sub_modality_value.device, sub_modality_value.dtype}"
+                    )
+
             output_dict = model.forward(batch, return_loss=True)
             loss = torch.mean(
                 torch.stack(
