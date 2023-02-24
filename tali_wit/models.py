@@ -22,6 +22,7 @@ from transformers import (
 )
 from transformers.models.clip.modeling_clip import CLIPOutput, contrastive_loss
 
+from accelerate import Accelerator
 from tali_wit.data import ModalityTypes, TALIDataset, dataclass_collate
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger
@@ -129,6 +130,16 @@ class VideoTransformer(nn.Module):
         output_linear_layer_dim: int = 512,
     ):
         super().__init__()
+        self.d_model = d_model
+        self.nhead = nhead
+        self.dim_feedforward = dim_feedforward
+        self.dropout = dropout
+        self.num_layers = num_layers
+        self.batch_first = batch_first
+        self.norm_first = norm_first
+        self.activation = activation
+        self.output_linear_layer_dim = output_linear_layer_dim
+
         self.pos_encoder = PositionalEncoding()
         transformer_layer = nn.TransformerEncoderLayer(
             d_model=d_model,
@@ -173,22 +184,22 @@ def get_similarities(
         tensor_modality_a: Tensor, shape [batch_size, seq_len, embedding_dim]
         tensor_modality_b: Tensor, shape [batch_size, seq_len, embedding_dim]
     """
-    print(
-        f"{modality_a_name}: {tensor_modality_a.shape}, {modality_b_name}: {tensor_modality_b.shape}"
-    )
+
+    tensor_modality_a = tensor_modality_a.unsqueeze(0)
+    tensor_modality_b = tensor_modality_b.unsqueeze(0)
     similarities = {
         f"{modality_a_name}_{modality_b_name}_similarities": torch.einsum(
             "ijk,ilk->ijl", tensor_modality_a, tensor_modality_b
-        ).sum(2)
+        )[0]
         * logit_scale,
         f"{modality_b_name}_{modality_a_name}_similarities": torch.einsum(
             "ijk,ilk->ijl", tensor_modality_b, tensor_modality_a
-        ).sum(2)
+        )[0]
         * logit_scale,
     }
     if return_loss:
         contrastive_losses_dict = {
-            f"{key.replace('_similarities', 'loss')}": contrastive_loss(value)
+            f"{key.replace('_similarities', '_loss')}": contrastive_loss(value)
             for key, value in similarities.items()
         }
         return similarities | contrastive_losses_dict
@@ -234,18 +245,22 @@ class TALIModel(nn.Module):
 
         self.model["audio"] = WhisperModel.from_pretrained(
             self.audio_model_name
+        )
+        self.audio_output_shape = self.model["audio"].config.d_model
+        self.model["audio"] = WhisperModel.from_pretrained(
+            self.audio_model_name
         ).encoder
 
         self.audio_linear_layer = nn.Linear(
-            in_features=self.model["audio"].d_model,
+            in_features=self.audio_output_shape,
             out_features=self.linear_projection_dim,
             bias=False,
         )
 
         self.model["video"] = VideoTransformer(
-            d_model=self.model["image"].config.hidden_size,
+            d_model=self.model["image"].config.projection_dim,
             nhead=8,
-            dim_feedforward=self.model["image"].config.hidden_size * 4,
+            dim_feedforward=self.model["image"].config.projection_dim * 4,
             dropout=0.0,
             num_layers=8,
             batch_first=True,
@@ -273,8 +288,10 @@ class TALIModel(nn.Module):
             delattr(self, "text_linear_layer")
         if not self.multi_modality_config.audio.support:
             delattr(self.model, "audio")
+            delattr(self, "audio_linear_layer")
         if not self.multi_modality_config.video.support:
             delattr(self.model, "video")
+            delattr(self, "video_linear_layer")
 
         if not self.multi_modality_config.image.pretrained:
             self.model["image"].init_weights()
@@ -367,8 +384,8 @@ class TALIModel(nn.Module):
                             get_similarities(
                                 sub_modality_a_name,
                                 sub_modality_b_name,
-                                sub_modality_a,
-                                sub_modality_b,
+                                sub_modality_a["projection_output"],
+                                sub_modality_b["projection_output"],
                                 logit_scale=self.logit_scales[
                                     f"{modality_a_name}_{modality_b_name}"
                                 ],
@@ -379,24 +396,29 @@ class TALIModel(nn.Module):
         return output_dict | similarity_dict
 
     def forward_image(self, x: torch.Tensor) -> torch.Tensor:
-        input_shape = x.shape
         if "image" in self.transforms:
             x = self.transforms["image"](x.unbind(0))
 
-        return self.model["image"](
+        features = self.model["image"](
             pixel_values=x.to(get_device())
         ).pooler_output
+        projection_output = self.image_linear_layer(features)
+        return {"features": features, "projection_output": projection_output}
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
         if "text" in self.transforms:
             x = self.transforms["text"](x)
-        return self.model["text"](x.to(get_device())).pooler_output
+        features = self.model["text"](x.to(get_device())).pooler_output
+        projection_output = self.text_linear_layer(features)
+        return {"features": features, "projection_output": projection_output}
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
         if "audio" in self.transforms:
             x = self.transforms["audio"](x)
         x = x.to(get_device())
-        return self.model["audio"](x).last_hidden_state[:, -1, :]
+        features = self.model["audio"](x).last_hidden_state[:, -1, :]
+        projection_output = self.audio_linear_layer(features)
+        return {"features": features, "projection_output": projection_output}
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
         input_shape = (
@@ -406,10 +428,13 @@ class TALIModel(nn.Module):
         if "video" in self.transforms:
             x = self.transforms["video"](x)
         out = x.to(get_device())
-        out = self.forward_image(out.view(-1, *out.shape[-3:]))
+        out = self.forward_image(out.view(-1, *out.shape[-3:]))[
+            "projection_output"
+        ]
         out = out.view(input_shape[0], input_shape[1], -1).to(get_device())
-        out = self.model["video"](out)
-        return out[:, -1, :]
+        features = self.model["video"](out)
+        projection_output = self.video_linear_layer(features)
+        return {"features": features, "projection_output": projection_output}
 
 
 if __name__ == "__main__":
@@ -430,10 +455,10 @@ if __name__ == "__main__":
             ModalityTypes.wit_caption.value,
             ModalityTypes.wit_title.value,
             ModalityTypes.wit_main_body.value,
-            ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_video.value,
             ModalityTypes.youtube_subtitles.value,
-            ModalityTypes.youtube_audio.value,
-            ModalityTypes.youtube_description.value,
+            # ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
         ],
         language_id="en",
         rng_seed=42,
@@ -447,13 +472,12 @@ if __name__ == "__main__":
 
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=2,
+        batch_size=64,
         num_workers=2,
         shuffle=True,
-        pin_memory=True,
+        pin_memory=False,
         collate_fn=dataclass_collate,
     )
-
     dummy_batch = next(iter(dataloader))
 
     # build a TALI model with all modalities available
@@ -463,16 +487,41 @@ if __name__ == "__main__":
         multi_modality_config=MultiModalityConfig(
             image=ModalityConfig(support=True, pretrained=True),
             text=ModalityConfig(support=True, pretrained=True),
-            audio=ModalityConfig(support=True, pretrained=True),
-            video=ModalityConfig(support=True, pretrained=False),
+            # audio=ModalityConfig(support=True, pretrained=True),
+            # video=ModalityConfig(support=True, pretrained=False),
         ),
         num_video_frames=8,
         num_audio_frames=8,
         audio_sampling_rate=16000,
     )
 
-    model = model.to(get_device())
-    output_dict = model.forward(dummy_batch, return_loss=True)
+    accelerator = Accelerator(mixed_precision="bf16")
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+
+    model, optimizer, dataloader = accelerator.prepare(
+        model, optimizer, dataloader
+    )
+    # have the model update the model by taking one sub modality from each modality, in pairs, to maximize the batch size
+
+    with tqdm.tqdm(total=len(dataloader)) as pbar:
+        for batch in dataloader:
+            output_dict = model.forward(batch, return_loss=True)
+            loss = torch.mean(
+                torch.stack(
+                    [
+                        value
+                        for key, value in output_dict.items()
+                        if "_loss" in key
+                    ]
+                )
+            )
+            pbar.set_description(f"loss: {loss.item():.4f}")
+            accelerator.backward(loss)
+            optimizer.step()
+
+            pbar.update(1)
+
+    print(output_dict)
 
     # # test no image
     # model = TALIModel(

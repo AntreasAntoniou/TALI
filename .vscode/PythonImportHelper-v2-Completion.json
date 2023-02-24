@@ -17,6 +17,14 @@
         "documentation": {}
     },
     {
+        "label": "deepcopy",
+        "importPath": "copy",
+        "description": "copy",
+        "isExtraImport": true,
+        "detail": "copy",
+        "documentation": {}
+    },
+    {
         "label": "datetime",
         "kind": 6,
         "isExtraImport": true,
@@ -593,6 +601,14 @@
     },
     {
         "label": "DistributedDataParallelKwargs",
+        "importPath": "accelerate",
+        "description": "accelerate",
+        "isExtraImport": true,
+        "detail": "accelerate",
+        "documentation": {}
+    },
+    {
+        "label": "Accelerator",
         "importPath": "accelerate",
         "description": "accelerate",
         "isExtraImport": true,
