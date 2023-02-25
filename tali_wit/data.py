@@ -204,7 +204,7 @@ def dict_to_summary(batch: Dict):
 
     for item in batch:
         for key, value in item.items():
-            print(value)
+            # print(value)
             if hasattr(value, "shape"):
                 summary_dict[key].append((str(value.shape), str(value.dtype)))
             elif hasattr(value, "__len__"):
@@ -471,6 +471,7 @@ def videoclip_to_video_audio_tensors(
 
         video_data = video_transform(video_data)
         video_tensors = video_data["video"].permute(1, 0, 2, 3) / 255.0
+        output_dict["full_video_shape"] = video_data["video"].shape
 
         output_dict[
             ModalityTypes.youtube_video.value.sub_modality
@@ -678,17 +679,6 @@ def get_tali_sample(
             rng=rng,
         )
 
-        if ModalityTypes.youtube_image in modality_list:
-            selected_frame = rng.choice(
-                output_dict[ModalityTypes.youtube_video.value.sub_modality].data
-            )
-            output_dict[
-                ModalityTypes.youtube_image.value.sub_modality
-            ] = ModalityDataSample(
-                data=selected_frame,
-                modality_type=ModalityTypes.youtube_video.value,
-            )
-
     #######################################################################################################################
     ## Get youtube subtitles
     if ModalityTypes.youtube_subtitles.value in modality_list:
@@ -757,7 +747,7 @@ def get_tali_sample(
                 + "</ydesc>",
                 modality_type=ModalityTypes.youtube_description.value,
             )
-
+    # print(list(output_dict.keys()))
     return wit_index, output_dict
 
 
@@ -841,6 +831,7 @@ def get_sample_from_video_id(
     ### Fetch video data ###
     if (
         ModalityTypes.youtube_audio.value in modality_list
+        or ModalityTypes.youtube_image.value in modality_list
         or ModalityTypes.youtube_video.value in modality_list
         or ModalityTypes.youtube_subtitles.value in modality_list
         or ModalityTypes.youtube_description.value in modality_list
@@ -1143,11 +1134,6 @@ class TALIDataset(torch.utils.data.Dataset):
                 )
                 wit_idx = idx
 
-        except Exception as e:
-            # logger.exception(e)
-            self.broken_video_ids.add(idx)
-            return self.__getitem__(idx + 1)
-        try:
             data_dict = {}
             shape_dict = {}
             for key, value in output_dict.items():
@@ -1159,6 +1145,17 @@ class TALIDataset(torch.utils.data.Dataset):
                     shape_dict[key] = value
 
             rng = np.random.RandomState(self.rng_seed + idx)
+            if ModalityTypes.youtube_image.value in self.modality_list:
+                sample_frame_idx = rng.randint(
+                    low=0, high=data_dict["youtube_content_video"].shape[0]
+                )
+                data_dict[
+                    ModalityTypes.youtube_image.value.sub_modality
+                ] = data_dict["youtube_content_video"][sample_frame_idx]
+                if not ModalityTypes.youtube_video.value in self.modality_list:
+                    del data_dict[
+                        ModalityTypes.youtube_video.value.sub_modality
+                    ]
 
             if (
                 "youtube_content_video" in data_dict
@@ -1230,6 +1227,11 @@ class TALIDataset(torch.utils.data.Dataset):
                         ]
                     )
                 else:
+                    # print(
+                    #     data_dict["youtube_content_audio"].shape,
+                    #     starting_audio_frame,
+                    #     starting_audio_frame + self.num_audio_frames,
+                    # )
                     data_dict["youtube_content_audio"] = data_dict[
                         "youtube_content_audio"
                     ][
@@ -1338,7 +1340,7 @@ class TALIDataset(torch.utils.data.Dataset):
             output_dict["wit_idx"] = wit_idx
 
         except Exception as e:
-            # logger.exception(e)
+            logger.exception(e)
             return self.__getitem__(idx + 1)
 
         return output_dict

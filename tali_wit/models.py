@@ -51,6 +51,21 @@ class MultiModalityConfig:
     video: ModalityConfig = ModalityConfig(support=True, pretrained=True)
 
 
+def contrastive_accuracy(logits):
+    targets = torch.arange(logits.shape[0]).to(logits.device)
+    accuracy = (logits.argmax(dim=-1) == targets).float().mean()
+    return accuracy
+
+
+def contrastive_accuracy_top_k(logits, k: int = 5):
+    targets = torch.arange(logits.shape[0]).to(logits.device)
+    accuracy = [
+        any(logit.argsort(dim=-1, descending=True)[:k] == target)
+        for logit, target in zip(logits, targets)
+    ]
+    return torch.mean(torch.tensor(accuracy).float())
+
+
 def num_parameters(
     model, only_trainable: bool = False, exclude_embeddings: bool = False
 ) -> int:
@@ -204,7 +219,27 @@ def get_similarities(
             f"{key.replace('_similarities', '_loss')}": contrastive_loss(value)
             for key, value in similarities.items()
         }
-        return similarities | contrastive_losses_dict
+
+        contrastive_accuracy_dict = {
+            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(
+                value
+            )
+            for key, value in similarities.items()
+        }
+
+        contrastive_accuracy_top_5_dict = {
+            f"{key.replace('_similarities', '_accuracy_top_5')}": contrastive_accuracy_top_k(
+                value, k=5
+            )
+            for key, value in similarities.items()
+        }
+
+        return (
+            similarities
+            | contrastive_losses_dict
+            | contrastive_accuracy_dict
+            | contrastive_accuracy_top_5_dict
+        )
 
     return similarities
 
@@ -449,6 +484,25 @@ class TALIModel(nn.Module):
         return {"features": features, "projection_output": projection_output}
 
 
+def extract_all_possible_pairs(batch_dict):
+    from itertools import combinations
+
+    modality_dict = {}
+    for key, value in batch_dict.items():
+        if isinstance(value, dict):
+            modality_dict[key] = list(value.keys())
+
+    pairs_keys = combinations(list(modality_dict.keys()), 2)
+
+    # get all possible pairs of two lists
+    pairs = []
+    for key1, key2 in pairs_keys:
+        for sub_key1, sub_key2 in zip(modality_dict[key1], modality_dict[key2]):
+            pairs.append((key1, sub_key1, key2, sub_key2))
+
+    return pairs
+
+
 if __name__ == "__main__":
     # test all possible options
 
@@ -458,14 +512,18 @@ if __name__ == "__main__":
 
     install()
     os.environ["HYDRA_FULL_ERROR"] = "1"
+
+    # dummy_input = torch.randn((10000, 10000))
+    # print(contrastive_accuracy(dummy_input))
+    # print(contrastive_accuracy_top_k(dummy_input, k=5))
+
     # For 24GB GPU at 16-bit
     # 128 batch size for wit_image to text
-    # 6 batch size for wit_image to youtube_audio
+    # 18 batch size for wit_image to youtube_audio
     # 24 batch size for wit_image to youtube_video
-    # batch size for text to youtube_audio
-    # batch size for text to youtube_video
-    # batch size for audio to youtube_video
-    # batch size for audio to text
+    # 20 batch size for text to youtube_audio
+    # 16 batch size for text to youtube_video
+    # 12 batch size for audio to youtube_video
     # set up a config that allows to select modality pairs + batch size and then build unique dataloaders for each pair
     # add accuracy and top-k accuracy metrics
 
@@ -474,11 +532,12 @@ if __name__ == "__main__":
         root_filepath="/data/datasets/tali-wit-2-1-buckets/",
         modality_list=[
             # ModalityTypes.wit_image.value,
-            ModalityTypes.wit_caption.value,
+            # ModalityTypes.wit_caption.value,
             # ModalityTypes.wit_title.value,
             # ModalityTypes.wit_main_body.value,
-            ModalityTypes.youtube_video.value,
-            # ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_image.value,
+            # ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
             # ModalityTypes.youtube_audio.value,
             # ModalityTypes.youtube_description.value,
         ],
@@ -494,8 +553,8 @@ if __name__ == "__main__":
 
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=24,
-        num_workers=2,
+        batch_size=32,
+        num_workers=1,
         shuffle=True,
         pin_memory=False,
         collate_fn=dataclass_collate,
@@ -505,11 +564,11 @@ if __name__ == "__main__":
     # build a TALI model with all modalities available
     model = TALIModel(
         image_text_model_name="openai/clip-vit-base-patch16",
-        audio_model_name="openai/whisper-small",
+        audio_model_name="openai/whisper-base",
         multi_modality_config=MultiModalityConfig(
             image=ModalityConfig(support=True, pretrained=True),
-            # text=ModalityConfig(support=True, pretrained=True),
-            audio=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=True, pretrained=True),
+            # audio=ModalityConfig(support=True, pretrained=True),
             # video=ModalityConfig(support=True, pretrained=False),
         ),
         num_video_frames=8,
@@ -526,25 +585,6 @@ if __name__ == "__main__":
 
     # have the model update the model by taking one sub modality from each modality, in pairs, to maximize the batch size
     # Use transpose for similarities to speed up contrastive loss computation, and add accuracy and top-k accuracy
-    def extract_all_possible_pairs(batch_dict):
-        from itertools import combinations
-
-        modality_dict = {}
-        for key, value in batch_dict.items():
-            if isinstance(value, dict):
-                modality_dict[key] = list(value.keys())
-
-        pairs_keys = combinations(list(modality_dict.keys()), 2)
-
-        # get all possible pairs of two lists
-        pairs = []
-        for key1, key2 in pairs_keys:
-            for sub_key1, sub_key2 in zip(
-                modality_dict[key1], modality_dict[key2]
-            ):
-                pairs.append((key1, sub_key1, key2, sub_key2))
-
-        return pairs
 
     with tqdm.tqdm(total=len(dataloader)) as pbar:
         for batch in dataloader:

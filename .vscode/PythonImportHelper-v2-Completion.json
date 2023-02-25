@@ -2317,7 +2317,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            print(value)\n            if hasattr(value, \"shape\"):",
+        "peekOfCode": "def dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            # print(value)\n            if hasattr(value, \"shape\"):",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2443,7 +2443,7 @@
         "kind": 5,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "default_image_transforms_config = builds(default_image_transforms)\ndef dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            print(value)",
+        "peekOfCode": "default_image_transforms_config = builds(default_image_transforms)\ndef dict_to_summary(batch: Dict):\n    summary_dict = defaultdict(list)\n    if not isinstance(batch, dict) and not isinstance(batch, list):\n        batch = [batch.__dict__]\n    if isinstance(batch, dict):\n        batch = [batch]\n    for item in batch:\n        for key, value in item.items():\n            # print(value)",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2569,7 +2569,7 @@
         "kind": 6,
         "importPath": "tali_wit.models",
         "description": "tali_wit.models",
-        "peekOfCode": "class ModalityConfig:\n    support: bool = False\n    pretrained: bool = False\n@dataclass\nclass MultiModalityConfig:\n    image: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    text: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    audio: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    video: ModalityConfig = ModalityConfig(support=True, pretrained=True)\ndef num_parameters(",
+        "peekOfCode": "class ModalityConfig:\n    support: bool = False\n    pretrained: bool = False\n@dataclass\nclass MultiModalityConfig:\n    image: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    text: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    audio: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    video: ModalityConfig = ModalityConfig(support=True, pretrained=True)\ndef contrastive_accuracy(logits):",
         "detail": "tali_wit.models",
         "documentation": {}
     },
@@ -2578,7 +2578,7 @@
         "kind": 6,
         "importPath": "tali_wit.models",
         "description": "tali_wit.models",
-        "peekOfCode": "class MultiModalityConfig:\n    image: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    text: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    audio: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    video: ModalityConfig = ModalityConfig(support=True, pretrained=True)\ndef num_parameters(\n    model, only_trainable: bool = False, exclude_embeddings: bool = False\n) -> int:\n    \"\"\"\n    Get number of (optionally, trainable or non-embeddings) parameters in the module.",
+        "peekOfCode": "class MultiModalityConfig:\n    image: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    text: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    audio: ModalityConfig = ModalityConfig(support=True, pretrained=True)\n    video: ModalityConfig = ModalityConfig(support=True, pretrained=True)\ndef contrastive_accuracy(logits):\n    targets = torch.arange(logits.shape[0]).to(logits.device)\n    accuracy = (logits.argmax(dim=-1) == targets).float().mean()\n    return accuracy\ndef contrastive_accuracy_top_k(logits, k: int = 5):",
         "detail": "tali_wit.models",
         "documentation": {}
     },
@@ -2610,6 +2610,24 @@
         "documentation": {}
     },
     {
+        "label": "contrastive_accuracy",
+        "kind": 2,
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "peekOfCode": "def contrastive_accuracy(logits):\n    targets = torch.arange(logits.shape[0]).to(logits.device)\n    accuracy = (logits.argmax(dim=-1) == targets).float().mean()\n    return accuracy\ndef contrastive_accuracy_top_k(logits, k: int = 5):\n    targets = torch.arange(logits.shape[0]).to(logits.device)\n    accuracy = [\n        any(logit.argsort(dim=-1, descending=True)[:k] == target)\n        for logit, target in zip(logits, targets)\n    ]",
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
+        "label": "contrastive_accuracy_top_k",
+        "kind": 2,
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "peekOfCode": "def contrastive_accuracy_top_k(logits, k: int = 5):\n    targets = torch.arange(logits.shape[0]).to(logits.device)\n    accuracy = [\n        any(logit.argsort(dim=-1, descending=True)[:k] == target)\n        for logit, target in zip(logits, targets)\n    ]\n    return torch.mean(torch.tensor(accuracy).float())\ndef num_parameters(\n    model, only_trainable: bool = False, exclude_embeddings: bool = False\n) -> int:",
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
         "label": "num_parameters",
         "kind": 2,
         "importPath": "tali_wit.models",
@@ -2633,6 +2651,15 @@
         "importPath": "tali_wit.models",
         "description": "tali_wit.models",
         "peekOfCode": "def get_similarities(\n    modality_a_name: str,\n    modality_b_name: str,\n    tensor_modality_a: torch.Tensor,\n    tensor_modality_b: torch.Tensor,\n    logit_scale: torch.Tensor,\n    return_loss: bool = False,\n) -> torch.Tensor:\n    \"\"\"\n    Args:",
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
+        "label": "extract_all_possible_pairs",
+        "kind": 2,
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "peekOfCode": "def extract_all_possible_pairs(batch_dict):\n    from itertools import combinations\n    modality_dict = {}\n    for key, value in batch_dict.items():\n        if isinstance(value, dict):\n            modality_dict[key] = list(value.keys())\n    pairs_keys = combinations(list(modality_dict.keys()), 2)\n    # get all possible pairs of two lists\n    pairs = []\n    for key1, key2 in pairs_keys:",
         "detail": "tali_wit.models",
         "documentation": {}
     },
