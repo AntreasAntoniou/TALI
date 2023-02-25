@@ -501,6 +501,14 @@ def collect_config_store():
 
     config_store.store(
         group="dataset",
+        name="tali_image_video_dataset",
+        node={
+            "18": tali_dataset_image_video_config,
+        },
+    )
+
+    config_store.store(
+        group="dataset",
         name="tali_image_text_audio_dataset",
         node={
             "128": tali_dataset_image_text_config,
