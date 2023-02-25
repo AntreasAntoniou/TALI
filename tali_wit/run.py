@@ -18,6 +18,8 @@ os.environ[
     "TORCH_DISTRIBUTED_DEBUG"
 ] = "DETAIL"  # extremely useful when debugging DDP setups
 
+# os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 install()  # beautiful and clean tracebacks for debugging
 
 
@@ -306,24 +308,42 @@ def run(cfg: BaseConfig) -> None:
     val_dataset: Dataset = instantiate(cfg.dataset, set_name="val")
     test_dataset: Dataset = instantiate(cfg.dataset, set_name="test")
 
-    train_dataloader = instantiate(
-        cfg.dataloader,
-        dataset=train_dataset,
-        batch_size=cfg.train_batch_size,
-        shuffle=True,
-    )
-    val_dataloader = instantiate(
-        cfg.dataloader,
-        dataset=val_dataset,
-        batch_size=cfg.eval_batch_size,
-        shuffle=False,
-    )
-    test_dataloader = instantiate(
-        cfg.dataloader,
-        dataset=test_dataset,
-        batch_size=cfg.eval_batch_size,
-        shuffle=False,
-    )
+    train_dataloaders = []
+    val_dataloaders = []
+    test_dataloaders = []
+
+    for batch_size, dataset in cfg.dataset.items():
+        train_dataset: Dataset = instantiate(dataset, set_name="train")
+        train_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=train_dataset,
+            batch_size=int(batch_size),
+            shuffle=True,
+        )
+
+        train_dataloaders.append(train_dataloader)
+
+    for batch_size, dataset in cfg.dataset.items():
+        val_dataset: Dataset = instantiate(dataset, set_name="val")
+        val_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=val_dataset,
+            batch_size=int(batch_size),
+            shuffle=False,
+        )
+
+        val_dataloaders.append(val_dataloader)
+
+    for batch_size, dataset in cfg.dataset.items():
+        test_dataset: Dataset = instantiate(dataset, set_name="test")
+        test_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=test_dataset,
+            batch_size=int(batch_size),
+            shuffle=False,
+        )
+
+        test_dataloaders.append(test_dataloader)
 
     params = (
         model.classifier.parameters()
@@ -353,8 +373,8 @@ def run(cfg: BaseConfig) -> None:
             )
         ],
         evaluators=[ClassificationEvaluator(experiment_tracker=wandb)],
-        train_dataloader=train_dataloader,
-        val_dataloaders=[val_dataloader],
+        train_dataloaders=train_dataloaders,
+        val_dataloaders=val_dataloaders,
         callbacks=instantiate_callbacks(cfg.callbacks),
         resume=ckpt_path,
     )
@@ -363,7 +383,7 @@ def run(cfg: BaseConfig) -> None:
         learner.train()
 
     if cfg.test:
-        learner.test(test_dataloaders=[test_dataloader])
+        learner.test(test_dataloaders=test_dataloaders)
 
 
 if __name__ == "__main__":

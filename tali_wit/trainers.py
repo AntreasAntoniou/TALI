@@ -77,7 +77,6 @@ class ClassificationTrainer(Trainer):
         overall_accuracy = []
         overall_accuracy_top_5 = []
         overall_output_dict = {}
-
         for (
             modality_a,
             sub_modality_a,

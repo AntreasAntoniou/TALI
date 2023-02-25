@@ -186,7 +186,7 @@ class CallbackHandler(Callback):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
@@ -194,7 +194,7 @@ class CallbackHandler(Callback):
             callback.on_init_start(
                 experiment,
                 model,
-                train_dataloader,
+                train_dataloaders,
                 val_dataloaders,
                 test_dataloaders,
             )
@@ -203,7 +203,7 @@ class CallbackHandler(Callback):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
@@ -211,7 +211,7 @@ class CallbackHandler(Callback):
             callback.on_init_end(
                 experiment,
                 model,
-                train_dataloader,
+                train_dataloaders,
                 val_dataloaders,
                 test_dataloaders,
             )

@@ -40,6 +40,7 @@ REPO_PATH = "${repo_path}"
 EXP_NAME = "${exp_name}"
 SEED = "${seed}"
 RESUME = "${resume}"
+LOGGER_LEVEL = "${logger_level}"
 
 
 wandb_args_config = builds(wandb.init, populate_full_signature=True)
@@ -132,11 +133,12 @@ class BaseConfig:
     print_config: bool = False
     train_batch_size: int = 96
     eval_batch_size: int = 96
-    num_workers: int = 8
+    num_workers: int = 1
     train: bool = True
     test: bool = False
     download_latest: bool = True
     download_checkpoint_with_name: Optional[str] = None
+    logger_level: str = "INFO"
 
     root_experiment_dir: str = (
         os.environ["EXPERIMENTS_DIR"]
@@ -165,7 +167,7 @@ class BaseConfig:
 def collect_config_store():
     config_store = ConfigStore.instance()
     ###################################################################################
-    tali_vit_model_config = model_config(
+    tali_vit_image_text_model_config = model_config(
         image_text_model_name="openai/clip-vit-base-patch16",
         audio_model_name="openai/whisper-base",
         multi_modality_config=MultiModalityConfig(
@@ -179,17 +181,251 @@ def collect_config_store():
         audio_sampling_rate=16000,
     )
 
-    tali_dataset_config = dataset_config(
+    tali_vit_image_audio_model_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=False, pretrained=False),
+            audio=ModalityConfig(support=True, pretrained=True),
+            video=ModalityConfig(support=False, pretrained=False),
+        ),
+        num_video_frames=8,
+        num_audio_frames=8,
+        audio_sampling_rate=16000,
+    )
+
+    tali_vit_image_text_audio_model_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=True, pretrained=True),
+            audio=ModalityConfig(support=True, pretrained=True),
+            video=ModalityConfig(support=False, pretrained=False),
+        ),
+        num_video_frames=8,
+        num_audio_frames=8,
+        audio_sampling_rate=16000,
+    )
+
+    tali_vit_image_text_video_model_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=True, pretrained=True),
+            audio=ModalityConfig(support=False, pretrained=False),
+            video=ModalityConfig(support=True, pretrained=True),
+        ),
+        num_video_frames=8,
+        num_audio_frames=8,
+        audio_sampling_rate=16000,
+    )
+
+    tali_vit_image_video_model_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=False, pretrained=False),
+            audio=ModalityConfig(support=False, pretrained=False),
+            video=ModalityConfig(support=True, pretrained=True),
+        ),
+        num_video_frames=8,
+        num_audio_frames=8,
+        audio_sampling_rate=16000,
+    )
+
+    tali_vit_model_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=True, pretrained=True),
+            audio=ModalityConfig(support=True, pretrained=True),
+            video=ModalityConfig(support=True, pretrained=True),
+        ),
+        num_video_frames=8,
+        num_audio_frames=8,
+        audio_sampling_rate=16000,
+    )
+
+    wit_dataset_image_text_config = dataset_config(
         set_name="train",
         root_filepath=DATASET_DIR,
         modality_list=[
             ModalityTypes.wit_image.value,
             ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            # ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    tali_dataset_image_text_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            # ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.youtube_audio.value,
+            ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    tali_dataset_image_video_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            # ModalityTypes.wit_caption.value,
+            # ModalityTypes.wit_title.value,
+            # ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    tali_dataset_wit_image_audio_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            # ModalityTypes.wit_caption.value,
             # ModalityTypes.wit_title.value,
             # ModalityTypes.wit_main_body.value,
             # ModalityTypes.youtube_video.value,
             # ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    tali_dataset_youtube_image_audio_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            # ModalityTypes.wit_image.value,
+            # ModalityTypes.wit_caption.value,
+            # ModalityTypes.wit_title.value,
+            # ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_image.value,
+            # ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    tali_dataset_text_audio_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            # ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            # ModalityTypes.youtube_image.value,
+            # ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    tali_dataset_text_video_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            # ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            # ModalityTypes.youtube_image.value,
+            ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
             # ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
+    tali_dataset_audio_video_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            # ModalityTypes.wit_image.value,
+            # ModalityTypes.wit_caption.value,
+            # ModalityTypes.wit_title.value,
+            # ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
             # ModalityTypes.youtube_description.value,
         ],
         language_id="en",
@@ -206,14 +442,96 @@ def collect_config_store():
 
     config_store.store(
         group="model",
-        name="tali_base_patch16_224",
+        name="tali_omni_base_patch16_224",
         node=tali_vit_model_config,
     )
 
     config_store.store(
+        group="model",
+        name="tali_image_text_base_patch16_224",
+        node=tali_vit_image_text_model_config,
+    )
+
+    config_store.store(
+        group="model",
+        name="tali_image_audio_base_patch16_224",
+        node=tali_vit_image_audio_model_config,
+    )
+
+    config_store.store(
+        group="model",
+        name="tali_image_video_base_patch16_224",
+        node=tali_vit_image_video_model_config,
+    )
+
+    config_store.store(
+        group="model",
+        name="tali_image_text_audio_base_patch16_224",
+        node=tali_vit_image_text_audio_model_config,
+    )
+
+    config_store.store(
+        group="model",
+        name="tali_image_text_video_base_patch16_224",
+        node=tali_vit_image_text_video_model_config,
+    )
+
+    ###################################################################################
+
+    config_store.store(
         group="dataset",
-        name="tali_dataset",
-        node=tali_dataset_config,
+        name="wit_image_text_dataset",
+        node={"128": wit_dataset_image_text_config},
+    )
+
+    config_store.store(
+        group="dataset",
+        name="tali_image_text_dataset",
+        node={"128": tali_dataset_image_text_config},
+    )
+
+    config_store.store(
+        group="dataset",
+        name="tali_image_audio_dataset",
+        node={
+            "18": tali_dataset_youtube_image_audio_config,
+            "18": tali_dataset_wit_image_audio_config,
+        },
+    )
+
+    config_store.store(
+        group="dataset",
+        name="tali_image_text_audio_dataset",
+        node={
+            "128": tali_dataset_image_text_config,
+            "12": tali_dataset_audio_video_config,
+            "16": tali_dataset_text_audio_config,
+        },
+    )
+
+    config_store.store(
+        group="dataset",
+        name="tali_image_text_audio_video_dataset",
+        node={
+            "128": tali_dataset_image_text_config,
+            "12": tali_dataset_audio_video_config,
+            "16": tali_dataset_text_audio_config,
+            "16": tali_dataset_text_video_config,
+        },
+    )
+
+    config_store.store(
+        group="dataset",
+        name="tali_everything_dataset",
+        node={
+            "128": tali_dataset_image_text_config,
+            "12": tali_dataset_audio_video_config,
+            "20": tali_dataset_text_audio_config,
+            "16": tali_dataset_text_video_config,
+            "18": tali_dataset_youtube_image_audio_config,
+            "18": tali_dataset_wit_image_audio_config,
+            "24": tali_dataset_image_video_config,
+        },
     )
 
     config_store.store(
@@ -228,7 +546,7 @@ def collect_config_store():
     )
 
     config_store.store(
-        group="optimizer", name="adamw", node=adamw_optimizer_config
+        group="optimizer", name="adamw", node=adamw_optimizer_config(lr=1e-5)
     )
 
     config_store.store(
@@ -260,7 +578,7 @@ def collect_config_store():
                 version=1,
                 formatters=dict(
                     simple=dict(
-                        level="INFO",
+                        level=LOGGER_LEVEL,
                         format="%(message)s",
                         datefmt="[%X]",
                     )
@@ -271,14 +589,14 @@ def collect_config_store():
                         "formatter": "simple",
                     }
                 ),
-                root={"handlers": ["rich"], "level": "INFO"},
+                root={"handlers": ["rich"], "level": LOGGER_LEVEL},
                 disable_existing_loggers=False,
             ),
             hydra_logging=dict(
                 version=1,
                 formatters=dict(
                     simple=dict(
-                        level="INFO",
+                        level=LOGGER_LEVEL,
                         format="%(message)s",
                         datefmt="[%X]",
                     )
@@ -289,7 +607,7 @@ def collect_config_store():
                         "formatter": "simple",
                     }
                 },
-                root={"handlers": ["rich"], "level": "INFO"},
+                root={"handlers": ["rich"], "level": LOGGER_LEVEL},
                 disable_existing_loggers=False,
             ),
             run={
@@ -319,8 +637,8 @@ def collect_config_store():
             dict(learner="default"),
             dict(optimizer="adamw"),
             dict(scheduler="cosine-annealing"),
-            dict(model="tali_base_patch16_224"),
-            dict(dataset="tali_dataset"),
+            dict(model="tali_image_text_base_patch16_224"),
+            dict(dataset="wit_image_text_dataset"),
             dict(dataloader="default"),
             dict(hydra="default"),
             dict(wandb_args="default"),

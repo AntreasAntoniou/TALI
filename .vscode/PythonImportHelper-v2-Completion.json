@@ -1784,7 +1784,7 @@
         "kind": 6,
         "importPath": "tali_wit.callbacks",
         "description": "tali_wit.callbacks",
-        "peekOfCode": "class CallbackHandler(Callback):\n    def __init__(self, callbacks: List[Callback]) -> None:\n        super().__init__()\n        self.callbacks = callbacks\n    def on_init_start(\n        self,\n        experiment: Any,\n        model: nn.Module,\n        train_dataloader: DataLoader = None,\n        val_dataloaders: Union[List[DataLoader], DataLoader] = None,",
+        "peekOfCode": "class CallbackHandler(Callback):\n    def __init__(self, callbacks: List[Callback]) -> None:\n        super().__init__()\n        self.callbacks = callbacks\n    def on_init_start(\n        self,\n        experiment: Any,\n        model: nn.Module,\n        train_dataloaders: DataLoader = None,\n        val_dataloaders: Union[List[DataLoader], DataLoader] = None,",
         "detail": "tali_wit.callbacks",
         "documentation": {}
     },
@@ -1829,7 +1829,7 @@
         "kind": 2,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "def collect_config_store():\n    config_store = ConfigStore.instance()\n    ###################################################################################\n    tali_vit_model_config = model_config(\n        image_text_model_name=\"openai/clip-vit-base-patch16\",\n        audio_model_name=\"openai/whisper-base\",\n        multi_modality_config=MultiModalityConfig(\n            image=ModalityConfig(support=True, pretrained=True),\n            text=ModalityConfig(support=True, pretrained=True),\n            audio=ModalityConfig(support=False, pretrained=False),",
+        "peekOfCode": "def collect_config_store():\n    config_store = ConfigStore.instance()\n    ###################################################################################\n    tali_vit_image_text_model_config = model_config(\n        image_text_model_name=\"openai/clip-vit-base-patch16\",\n        audio_model_name=\"openai/whisper-base\",\n        multi_modality_config=MultiModalityConfig(\n            image=ModalityConfig(support=True, pretrained=True),\n            text=ModalityConfig(support=True, pretrained=True),\n            audio=ModalityConfig(support=False, pretrained=False),",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1883,7 +1883,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "EXPERIMENT_NAME = \"${exp_name}\"\nEXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)",
+        "peekOfCode": "EXPERIMENT_NAME = \"${exp_name}\"\nEXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1892,7 +1892,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "EXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(",
+        "peekOfCode": "EXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1901,7 +1901,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "TRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),",
+        "peekOfCode": "TRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1910,7 +1910,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "CURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must",
+        "peekOfCode": "CURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1919,7 +1919,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "TRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,",
+        "peekOfCode": "TRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1928,7 +1928,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "REPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,",
+        "peekOfCode": "REPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1937,7 +1937,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "EXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)",
+        "peekOfCode": "EXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1946,7 +1946,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "SEED = \"${seed}\"\nRESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(",
+        "peekOfCode": "SEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1955,7 +1955,16 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "RESUME = \"${resume}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True",
+        "peekOfCode": "RESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(",
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "LOGGER_LEVEL",
+        "kind": 5,
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "peekOfCode": "LOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2711,7 +2720,7 @@
         "kind": 5,
         "importPath": "tali_wit.run",
         "description": "tali_wit.run",
-        "peekOfCode": "] = \"1\"  # Makes sure that stack traces produced by hydra instantiation functions produce\n# traceback errors related to the modules they built, rather than generic instantiate related errors that\n# are generally useless for debugging\nos.environ[\n    \"TORCH_DISTRIBUTED_DEBUG\"\n] = \"DETAIL\"  # extremely useful when debugging DDP setups\ninstall()  # beautiful and clean tracebacks for debugging\nimport pathlib\nfrom typing import Callable, List, Optional, Union\nimport hydra",
+        "peekOfCode": "] = \"1\"  # Makes sure that stack traces produced by hydra instantiation functions produce\n# traceback errors related to the modules they built, rather than generic instantiate related errors that\n# are generally useless for debugging\nos.environ[\n    \"TORCH_DISTRIBUTED_DEBUG\"\n] = \"DETAIL\"  # extremely useful when debugging DDP setups\n# os.environ[\"TOKENIZERS_PARALLELISM\"] = \"false\"\ninstall()  # beautiful and clean tracebacks for debugging\nimport pathlib\nfrom typing import Callable, List, Optional, Union",
         "detail": "tali_wit.run",
         "documentation": {}
     },
@@ -2720,7 +2729,7 @@
         "kind": 5,
         "importPath": "tali_wit.run",
         "description": "tali_wit.run",
-        "peekOfCode": "] = \"DETAIL\"  # extremely useful when debugging DDP setups\ninstall()  # beautiful and clean tracebacks for debugging\nimport pathlib\nfrom typing import Callable, List, Optional, Union\nimport hydra\nimport torch\nfrom huggingface_hub import (\n    Repository,\n    create_repo,\n    hf_hub_download,",
+        "peekOfCode": "] = \"DETAIL\"  # extremely useful when debugging DDP setups\n# os.environ[\"TOKENIZERS_PARALLELISM\"] = \"false\"\ninstall()  # beautiful and clean tracebacks for debugging\nimport pathlib\nfrom typing import Callable, List, Optional, Union\nimport hydra\nimport torch\nfrom huggingface_hub import (\n    Repository,\n    create_repo,",
         "detail": "tali_wit.run",
         "documentation": {}
     },

@@ -1079,7 +1079,7 @@ class TALIDataset(torch.utils.data.Dataset):
                 f"Set name {set_name} not supported, choose one of train, val, test"
             )
 
-        self.broken_video_ids = set()
+        self.broken_idx = set()
         # create two get item top level methods,
         # one for wit index and one for video id,
         # these will also need different ways to sample the dataset_dict
@@ -1090,11 +1090,11 @@ class TALIDataset(torch.utils.data.Dataset):
         return self.total_items
 
     def __getitem__(self, idx):
-        if idx in self.broken_video_ids:
+        if idx in self.broken_idx:
             return self.__getitem__(idx + 1)
         try:
             if self.requested_youtube_data:
-                actual_idx = idx // self.top_k_tali // self.total_items
+                actual_idx = int(idx % self.total_items) // self.top_k_tali
                 video_idx = self.dataset_list[actual_idx]
                 wit_idx, output_dict = get_sample_from_video_id(
                     dataset=self.wit_dataset,
@@ -1324,7 +1324,10 @@ class TALIDataset(torch.utils.data.Dataset):
             output_dict["wit_idx"] = wit_idx
 
         except Exception as e:
-            # logger.exception(e)
+            # logger.exception(
+            #     f"{e} {self.requested_youtube_data}, {self.modality_list}"
+            # )
+            self.broken_idx.add(idx)
             return self.__getitem__(idx + 1)
 
         return output_dict
