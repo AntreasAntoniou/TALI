@@ -531,13 +531,13 @@ if __name__ == "__main__":
         set_name="train",
         root_filepath="/data/datasets/tali-wit-2-1-buckets/",
         modality_list=[
-            # ModalityTypes.wit_image.value,
-            # ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
             # ModalityTypes.wit_title.value,
             # ModalityTypes.wit_main_body.value,
-            ModalityTypes.youtube_image.value,
+            # ModalityTypes.youtube_image.value,
             # ModalityTypes.youtube_video.value,
-            ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.youtube_subtitles.value,
             # ModalityTypes.youtube_audio.value,
             # ModalityTypes.youtube_description.value,
         ],
@@ -553,7 +553,7 @@ if __name__ == "__main__":
 
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=32,
+        batch_size=128,
         num_workers=1,
         shuffle=True,
         pin_memory=False,
@@ -612,7 +612,27 @@ if __name__ == "__main__":
                         ]
                     )
                 )
-                pbar.set_description(f"loss: {loss.item():.4f}")
+                accuracy = torch.mean(
+                    torch.stack(
+                        [
+                            value.cpu()
+                            for key, value in output_dict.items()
+                            if "_accuracy" in key
+                        ]
+                    )
+                )
+                accuracy_top_5 = torch.mean(
+                    torch.stack(
+                        [
+                            value.cpu()
+                            for key, value in output_dict.items()
+                            if "_accuracy_top_5" in key
+                        ]
+                    )
+                )
+                pbar.set_description(
+                    f"loss: {loss.item():.4f}, accuracy: {accuracy.item():.4f}, accuracy_top_5: {accuracy_top_5.item():.4f}"
+                )
                 accelerator.backward(loss)
                 optimizer.step()
 

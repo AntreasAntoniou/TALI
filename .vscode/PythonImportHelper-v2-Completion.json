@@ -2191,7 +2191,7 @@
         "kind": 6,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "class ModalityDataSample:\n    data: Any\n    modality_type: Any\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: int,\n    rng: np.random.Generator,",
+        "peekOfCode": "class ModalityDataSample:\n    data: Any\n    modality_type: Any\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2344,7 +2344,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: int,\n    rng: np.random.Generator,\n):\n    video: EncodedVideo = EncodedVideo.from_path(video_path)\n    video_duration_in_seconds = float(video.duration)",
+        "peekOfCode": "def videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,\n):\n    video: EncodedVideo = EncodedVideo.from_path(video_path)\n    video_duration_in_seconds = float(video.duration)",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2380,7 +2380,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def get_tali_sample(\n    video_id: int,\n    modality_list: List[ModalityTypes],\n    rng_seed: int = 42,\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n    top_k: int = 10,\n    image_size: int = 224,\n    clip_duration_in_seconds: int = 30,\n):\n    output_dict = {}",
+        "peekOfCode": "def get_tali_sample(\n    video_id: int,\n    modality_list: List[ModalityTypes],\n    rng_seed: int = 42,\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n    top_k: int = 10,\n    image_size: int = 224,\n    clip_duration_in_seconds: float = 30,\n):\n    output_dict = {}",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2389,7 +2389,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def get_sample_from_wit_index(\n    dataset: Any,\n    wit_index: int,\n    rng_seed: int,\n    modality_list: List[ModalityTypes],\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n    top_k_wit: int = 10,\n    language_id: str = \"en\",\n    image_size: int = 224,\n    clip_duration_in_seconds: int = 30,",
+        "peekOfCode": "def get_sample_from_wit_index(\n    dataset: Any,\n    wit_index: int,\n    rng_seed: int,\n    modality_list: List[ModalityTypes],\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n    top_k_wit: int = 10,\n    language_id: str = \"en\",\n    image_size: int = 224,\n    clip_duration_in_seconds: float = 30,",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2398,7 +2398,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def get_sample_from_video_id(\n    dataset: Any,\n    video_id: str,\n    rng_seed: int,\n    modality_list: List[ModalityTypes],\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n    top_k_tali: int = 10,\n    language_id: str = \"en\",\n    image_size: int = 224,\n    clip_duration_in_seconds: int = 30,",
+        "peekOfCode": "def get_sample_from_video_id(\n    dataset: Any,\n    video_id: str,\n    rng_seed: int,\n    modality_list: List[ModalityTypes],\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n    top_k_tali: int = 10,\n    language_id: str = \"en\",\n    image_size: int = 224,\n    clip_duration_in_seconds: float = 30,",
         "detail": "tali_wit.data",
         "documentation": {}
     },

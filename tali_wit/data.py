@@ -418,14 +418,14 @@ def videoclip_to_video_audio_tensors(
     return_video: bool,
     return_audio: bool,
     image_size: int,
-    clip_duration_in_seconds: int,
+    clip_duration_in_seconds: float,
     rng: np.random.Generator,
 ):
     video: EncodedVideo = EncodedVideo.from_path(video_path)
     video_duration_in_seconds = float(video.duration)
     try:
         clip_start_sec = rng.randint(
-            0, video_duration_in_seconds - clip_duration_in_seconds
+            0, int(floor(video_duration_in_seconds - clip_duration_in_seconds))
         )
     except ValueError:
         raise ValueError(
@@ -631,7 +631,7 @@ def get_tali_sample(
     root_filepath: pathlib.Path = pathlib.Path("/data/"),
     top_k: int = 10,
     image_size: int = 224,
-    clip_duration_in_seconds: int = 30,
+    clip_duration_in_seconds: float = 30,
 ):
     output_dict = {}
     rng = np.random.RandomState(rng_seed)
@@ -760,7 +760,7 @@ def get_sample_from_wit_index(
     top_k_wit: int = 10,
     language_id: str = "en",
     image_size: int = 224,
-    clip_duration_in_seconds: int = 30,
+    clip_duration_in_seconds: float = 30,
 ):
     if isinstance(root_filepath, str):
         root_filepath = pathlib.Path(root_filepath)
@@ -820,7 +820,7 @@ def get_sample_from_video_id(
     top_k_tali: int = 10,
     language_id: str = "en",
     image_size: int = 224,
-    clip_duration_in_seconds: int = 30,
+    clip_duration_in_seconds: float = 30,
 ):
     rng = np.random.RandomState(rng_seed)
     output_dict = {}
@@ -1012,7 +1012,7 @@ class TALIDataset(torch.utils.data.Dataset):
         transforms: Optional[Dict[str, Callable]] = None,
         num_video_frames: int = 30,
         num_audio_frames: int = 44100,
-        clip_duration_in_seconds: int = 3,
+        clip_duration_in_seconds: float = 3,
     ):
         if isinstance(root_filepath, str):
             root_filepath = pathlib.Path(root_filepath)
@@ -1340,7 +1340,7 @@ class TALIDataset(torch.utils.data.Dataset):
             output_dict["wit_idx"] = wit_idx
 
         except Exception as e:
-            logger.exception(e)
+            # logger.exception(e)
             return self.__getitem__(idx + 1)
 
         return output_dict
@@ -1374,7 +1374,7 @@ if __name__ == "__main__":
         transforms=None,
         num_video_frames=30,
         num_audio_frames=1 * 16000,
-        clip_duration_in_seconds=1.5,
+        clip_duration_in_seconds=2.0,
     )
 
     dataloader = DataLoader(
