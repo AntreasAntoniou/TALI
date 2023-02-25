@@ -23,8 +23,8 @@ from torch.utils.data import DataLoader
 from tali_wit.boilerplate import Learner
 from tali_wit.callbacks import UploadCheckpointsToHuggingFace
 
-from .data import build_dataset
-from .models import build_model
+from .data import ModalityTypes, TALIDataset
+from .models import ModalityConfig, MultiModalityConfig, TALIModel
 
 CHECKPOINT_DIR = "${hf_repo_dir}"
 NUM_WORKERS = "${num_workers}"
@@ -77,9 +77,9 @@ accelerator_config = builds(Accelerator, populate_full_signature=True)
 
 cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()
 
-model_config = build_model.build_config(populate_full_signature=True)
+model_config = TALIModel.build_config(populate_full_signature=True)
 
-dataset_config = build_dataset.build_config(populate_full_signature=True)
+dataset_config = TALIDataset.build_config(populate_full_signature=True)
 
 dataloader_config = builds(
     DataLoader, dataset=None, populate_full_signature=True
@@ -130,9 +130,9 @@ class BaseConfig:
     resume: bool = False
     resume_from_checkpoint: Optional[int] = None
     print_config: bool = False
-    train_batch_size: int = 125
-    eval_batch_size: int = 180
-    num_workers: int = multiprocessing.cpu_count() // 2
+    train_batch_size: int = 8
+    eval_batch_size: int = 8
+    num_workers: int = 1
     train: bool = True
     test: bool = False
     download_latest: bool = True
@@ -165,28 +165,55 @@ class BaseConfig:
 def collect_config_store():
     config_store = ConfigStore.instance()
     ###################################################################################
-    vit_model_config = model_config(
-        model_name="google/vit-base-patch16-224-in21k",
-        pretrained=True,
-        num_classes=101,
+    tali_vit_model_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=True),
+            text=ModalityConfig(support=True, pretrained=True),
+            # audio=ModalityConfig(support=True, pretrained=True),
+            # video=ModalityConfig(support=True, pretrained=False),
+        ),
+        num_video_frames=8,
+        num_audio_frames=8,
+        audio_sampling_rate=16000,
     )
 
-    food101_config = dataset_config(
-        dataset_name="food101", data_dir=DATASET_DIR
+    tali_dataset_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=2.0,
     )
 
     ###################################################################################
 
     config_store.store(
         group="model",
-        name="vit_base_patch16_224",
-        node=vit_model_config,
+        name="tali_base_patch16_224",
+        node=tali_vit_model_config,
     )
 
     config_store.store(
         group="dataset",
-        name="food101",
-        node=food101_config,
+        name="tali_dataset",
+        node=tali_dataset_config,
     )
 
     config_store.store(
@@ -195,7 +222,7 @@ def collect_config_store():
         node=dataloader_config(
             batch_size=TRAIN_BATCH_SIZE,
             num_workers=NUM_WORKERS,
-            pin_memory=True,
+            pin_memory=False,
             shuffle=True,
         ),
     )
@@ -292,8 +319,8 @@ def collect_config_store():
             dict(learner="default"),
             dict(optimizer="adamw"),
             dict(scheduler="cosine-annealing"),
-            dict(model="vit_base_patch16_224"),
-            dict(dataset="food101"),
+            dict(model="tali_base_patch16_224"),
+            dict(dataset="tali_dataset"),
             dict(dataloader="default"),
             dict(hydra="default"),
             dict(wandb_args="default"),

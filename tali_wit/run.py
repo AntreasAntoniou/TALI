@@ -5,7 +5,7 @@ import wandb
 from rich import print
 from rich.traceback import install
 
-from tali_wit.models import ModelAndTransform
+from tali_wit.models import ModelAndTransform, TALIModel
 from tali_wit.utils import save_json
 
 os.environ[
@@ -287,9 +287,7 @@ def upload_code_to_wandb(code_dir: Union[pathlib.Path, str]):
 @hydra.main(config_path=None, config_name="config", version_base=None)
 def run(cfg: BaseConfig) -> None:
     wandb_args = {
-        key: value
-        for key, value in cfg.wandb_args.items()
-        if key != "_target_"
+        key: value for key, value in cfg.wandb_args.items() if key != "_target_"
     }
     ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)
     config_dict = OmegaConf.to_container(cfg, resolve=True)
@@ -302,18 +300,11 @@ def run(cfg: BaseConfig) -> None:
 
     set_seed(seed=cfg.seed)
 
-    model_and_transform: ModelAndTransform = instantiate(cfg.model)
-    model: nn.Module = model_and_transform.model
-    transform: Callable = model_and_transform.transform
+    model: TALIModel = instantiate(cfg.model)
 
-    dataset: Dataset = instantiate(cfg.dataset)
-    train_dataset: Dataset = dataset["train"]
-    val_dataset: Dataset = dataset["validation"]
-    test_dataset: Dataset = dataset["validation"]
-
-    train_dataset.set_transform(transform)
-    val_dataset.set_transform(transform)
-    test_dataset.set_transform(transform)
+    train_dataset: Dataset = instantiate(cfg.dataset, set_name="train")
+    val_dataset: Dataset = instantiate(cfg.dataset, set_name="val")
+    test_dataset: Dataset = instantiate(cfg.dataset, set_name="test")
 
     train_dataloader = instantiate(
         cfg.dataloader,

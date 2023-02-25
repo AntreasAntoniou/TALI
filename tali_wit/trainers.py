@@ -9,6 +9,7 @@ from hydra_zen import instantiate
 from torch.utils.data import DataLoader
 
 from tali_wit.callbacks import Interval
+from tali_wit.models import extract_all_possible_pairs
 
 from .decorators import collect_metrics
 from .utils import get_logger
@@ -71,32 +72,73 @@ class ClassificationTrainer(Trainer):
         accelerator: Accelerator,
     ) -> TrainerOutput:
         model.train()
-        self.optimizer.zero_grad()
-        logits = model(batch["pixel_values"]).logits
-        accuracy = (logits.argmax(dim=-1) == batch["labels"]).float().mean()
-        opt_loss = F.cross_entropy(logits, batch["labels"])
-        loss = opt_loss.detach()
-        accelerator.backward(loss=opt_loss)
-        self.optimizer.step()
 
-        if self.scheduler is not None:
-            if self.scheduler_interval == "step":
-                self.scheduler.step(epoch=step_idx)
-            elif self.scheduler_interval == "epoch" and batch_idx == 0:
-                self.scheduler.step(epoch=epoch_idx)
-        metrics = {"accuracy": accuracy, "loss": loss}
+        overall_loss = []
+        overall_accuracy = []
+        overall_accuracy_top_5 = []
+        overall_output_dict = {}
+        for (
+            modality_a,
+            sub_modality_a,
+            modality_b,
+            sub_modality_b,
+        ) in extract_all_possible_pairs(batch):
+            sample = {
+                modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
+                modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
+            }
+            self.optimizer.zero_grad()
+            output_dict = model.forward(sample, return_loss=True)
+            loss = torch.mean(
+                torch.stack(
+                    [
+                        value
+                        for key, value in output_dict.items()
+                        if "_loss" in key
+                    ]
+                )
+            )
+            accuracy = torch.mean(
+                torch.stack(
+                    [
+                        value.cpu()
+                        for key, value in output_dict.items()
+                        if "_accuracy" in key
+                    ]
+                )
+            )
+            accuracy_top_5 = torch.mean(
+                torch.stack(
+                    [
+                        value.cpu()
+                        for key, value in output_dict.items()
+                        if "_accuracy_top_5" in key
+                    ]
+                )
+            )
+            accelerator.backward(loss)
+            overall_output_dict |= output_dict
+            overall_loss.append(loss)
+            overall_accuracy.append(accuracy)
+            overall_accuracy_top_5.append(accuracy_top_5)
+
+        metrics = {
+            "accuracy": torch.mean(overall_accuracy),
+            "accuracy_top_5": torch.mean(overall_accuracy_top_5),
+            "loss": torch.mean(overall_loss),
+        }
+        metrics |= overall_output_dict
+
         for key, value in metrics.items():
             self.epoch_metrics.setdefault(key, []).append(value.detach().cpu())
 
+        metrics["lr"] = self.optimizer.param_groups[0]["lr"]
+
         return TrainerOutput(
             phase_name="training",
-            opt_loss=opt_loss,
+            opt_loss=torch.mean(overall_loss),
             step_idx=step_idx,
-            metrics={
-                "accuracy": accuracy,
-                "loss": loss,
-                "lr": self.optimizer.param_groups[0]["lr"],
-            },
+            metrics=metrics,
         )
 
     @collect_metrics

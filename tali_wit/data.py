@@ -33,7 +33,6 @@ from pytorchvideo.transforms import (
 from rich import print
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.dataloader import default_collate
-from torchtyping import TensorType
 from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
 from torchvision.transforms._transforms_video import CenterCropVideo
 from traitlets import default
@@ -131,35 +130,6 @@ def get_ranked_filepaths_from_user(
         len(ranked_filepath_list) * top_k_percent_to_return / 100
     )
     return ranked_filepath_list[:top_k_percent_to_return]
-
-
-@dataclass
-class ImageTextRetrievalInput:
-    target_image: TensorType["batch_size", "channels", "height", "width"]
-    challenge_images: TensorType[
-        "batch_size", "num_challenge_images", "channels", "height", "width"
-    ]
-    challenge_paths: List[str]
-    target_text: List[str]
-    collection_images: Optional[
-        TensorType[
-            "batch_size",
-            "num_collection_images",
-            "channels",
-            "height",
-            "width",
-        ]
-    ] = None
-    collection_paths: Optional[List[str]] = None
-
-
-@dataclass
-class ImageTextRetrievalInputByUser:
-    image: TensorType["batch_size", "channels", "height", "width"]
-    text: List[str]
-    filepath: List[str]
-    user_name: List[str]
-    ids: List[int]
 
 
 class ToThreeChannels(nn.Module):
@@ -336,71 +306,67 @@ class SubModalityTypes(str, Enum):
 class AnyModalSample:
     modality: str
     sub_modality: str
-    shape: TensorType
+    shape: tuple
 
 
 class ModalityTypes(Enum):
     wit_image = AnyModalSample(
         modality=BaseModalityTypes.image,
         sub_modality=SubModalityTypes.wikipedia_caption_image,
-        shape=TensorType["batch_size", "channel", "height", "width"],
+        shape=("batch_size", "channel", "height", "width"),
     )
     youtube_image = AnyModalSample(
         modality=BaseModalityTypes.image,
         sub_modality=SubModalityTypes.youtube_random_video_sample_image,
-        shape=TensorType["batch_size", "channel", "height", "width"],
+        shape=("batch_size", "channel", "height", "width"),
     )
     youtube_thumbnail = AnyModalSample(
         modality=BaseModalityTypes.image,
         sub_modality=SubModalityTypes.youtube_thumbnail_image,
-        shape=TensorType["batch_size", "channel", "height", "width"],
+        shape=("batch_size", "channel", "height", "width"),
     )
 
     wit_caption = AnyModalSample(
         modality=BaseModalityTypes.text,
         sub_modality=SubModalityTypes.wikipedia_caption_text,
-        shape=TensorType["batch_size", "sequence_length"],
+        shape=("batch_size", "sequence_length"),
     )
     wit_title = AnyModalSample(
         modality=BaseModalityTypes.text,
         sub_modality=SubModalityTypes.wikipedia_title_text,
-        shape=TensorType["batch_size", "sequence_length"],
+        shape=("batch_size", "sequence_length"),
     )
     wit_main_body = AnyModalSample(
         modality=BaseModalityTypes.text,
         sub_modality=SubModalityTypes.wikipedia_main_body_text,
-        shape=TensorType["batch_size", "sequence_length"],
+        shape=("batch_size", "sequence_length"),
     )
     youtube_subtitles = AnyModalSample(
         modality=BaseModalityTypes.text,
         sub_modality=SubModalityTypes.youtube_subtitle_text,
-        shape=TensorType["batch_size", "sequence_length"],
+        shape=("batch_size", "sequence_length"),
     )
     youtube_description = AnyModalSample(
         modality=BaseModalityTypes.text,
         sub_modality=SubModalityTypes.youtube_description_text,
-        shape=TensorType["batch_size", "sequence_length"],
+        shape=("batch_size", "sequence_length"),
     )
     youtube_title = AnyModalSample(
         modality=BaseModalityTypes.text,
         sub_modality=SubModalityTypes.youtube_title_text,
-        shape=TensorType["batch_size", "sequence_length"],
+        shape=("batch_size", "sequence_length"),
     )
 
     youtube_audio = AnyModalSample(
         modality=BaseModalityTypes.audio,
         sub_modality=SubModalityTypes.youtube_content_audio,
-        shape=TensorType[
-            "batch_size", "sequence_length", "channel", "audio_stream"
-        ],
+        shape=("batch_size", "sequence_length", "channel", "audio_stream"),
     )
 
     youtube_video = AnyModalSample(
         modality=BaseModalityTypes.video,
         sub_modality=SubModalityTypes.youtube_content_video,
-        shape=TensorType[
-            "batch_size", "sequence_length", "channel", "height", "width"
-        ],
+        shape=("batch_size", "sequence_length", "channel", "height", "width"),
     )
 
     def __str__(self):
@@ -999,6 +965,7 @@ class DefaultVideoTransforms:
         return x
 
 
+@configurable
 class TALIDataset(torch.utils.data.Dataset):
     def __init__(
         self,
@@ -1028,6 +995,7 @@ class TALIDataset(torch.utils.data.Dataset):
         self.video_id_list = load_json(
             filepath=root_filepath / "video_id_to_wit_idx_dict_cleaned.json"
         )
+        self.set_name = set_name
 
         self.root_filepath = root_filepath
         self.modality_list = modality_list
@@ -1068,12 +1036,12 @@ class TALIDataset(torch.utils.data.Dataset):
         self.video_id_list = [key for key in self.video_id_list.keys()]
 
         train_video_id_list = self.video_id_list[
-            : int(len(self.video_id_list) * 0.8)
+            : int(len(self.video_id_list) * 0.9)
         ]
 
         val_video_id_list = self.video_id_list[
             len(train_video_id_list) : len(train_video_id_list)
-            + int(len(self.video_id_list) * 0.1)
+            + int(len(self.video_id_list) * 0.05)
         ]
 
         test_video_list = self.video_id_list[
@@ -1104,6 +1072,8 @@ class TALIDataset(torch.utils.data.Dataset):
         # these will also need different ways to sample the dataset_dict
 
     def __len__(self):
+        if self.set_name == "train":
+            return 99999999999999
         return self.total_items
 
     def __getitem__(self, idx):

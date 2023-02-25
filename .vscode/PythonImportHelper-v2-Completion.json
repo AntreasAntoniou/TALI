@@ -1329,14 +1329,6 @@
         "documentation": {}
     },
     {
-        "label": "TensorType",
-        "importPath": "torchtyping",
-        "description": "torchtyping",
-        "isExtraImport": true,
-        "detail": "torchtyping",
-        "documentation": {}
-    },
-    {
         "label": "Compose",
         "importPath": "torchvision.transforms",
         "description": "torchvision.transforms",
@@ -1514,6 +1506,38 @@
         "documentation": {}
     },
     {
+        "label": "extract_all_possible_pairs",
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "isExtraImport": true,
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
+        "label": "ModelAndTransform",
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "isExtraImport": true,
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
+        "label": "TALIModel",
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "isExtraImport": true,
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
+        "label": "extract_all_possible_pairs",
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "isExtraImport": true,
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
         "label": "transforms",
         "importPath": "torchvision",
         "description": "torchvision",
@@ -1584,14 +1608,6 @@
         "description": "rich.traceback",
         "isExtraImport": true,
         "detail": "rich.traceback",
-        "documentation": {}
-    },
-    {
-        "label": "ModelAndTransform",
-        "importPath": "tali_wit.models",
-        "description": "tali_wit.models",
-        "isExtraImport": true,
-        "detail": "tali_wit.models",
         "documentation": {}
     },
     {
@@ -1813,7 +1829,7 @@
         "kind": 2,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "def collect_config_store():\n    config_store = ConfigStore.instance()\n    ###################################################################################\n    vit_model_config = model_config(\n        model_name=\"google/vit-base-patch16-224-in21k\",\n        pretrained=True,\n        num_classes=101,\n    )\n    food101_config = dataset_config(\n        dataset_name=\"food101\", data_dir=DATASET_DIR",
+        "peekOfCode": "def collect_config_store():\n    config_store = ConfigStore.instance()\n    ###################################################################################\n    tali_vit_model_config = model_config(\n        image_text_model_name=\"openai/clip-vit-base-patch16\",\n        audio_model_name=\"openai/whisper-base\",\n        multi_modality_config=MultiModalityConfig(\n            image=ModalityConfig(support=True, pretrained=True),\n            text=ModalityConfig(support=True, pretrained=True),\n            # audio=ModalityConfig(support=True, pretrained=True),",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1993,7 +2009,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "cosine_learning_rate_scheduler_config = builds(\n    CosineLRScheduler,\n    populate_full_signature=True,\n    zen_partial=True,\n)\naccelerator_config = builds(Accelerator, populate_full_signature=True)\ncosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()\nmodel_config = build_model.build_config(populate_full_signature=True)\ndataset_config = build_dataset.build_config(populate_full_signature=True)\ndataloader_config = builds(",
+        "peekOfCode": "cosine_learning_rate_scheduler_config = builds(\n    CosineLRScheduler,\n    populate_full_signature=True,\n    zen_partial=True,\n)\naccelerator_config = builds(Accelerator, populate_full_signature=True)\ncosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()\nmodel_config = TALIModel.build_config(populate_full_signature=True)\ndataset_config = TALIDataset.build_config(populate_full_signature=True)\ndataloader_config = builds(",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2002,7 +2018,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "accelerator_config = builds(Accelerator, populate_full_signature=True)\ncosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()\nmodel_config = build_model.build_config(populate_full_signature=True)\ndataset_config = build_dataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,",
+        "peekOfCode": "accelerator_config = builds(Accelerator, populate_full_signature=True)\ncosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()\nmodel_config = TALIModel.build_config(populate_full_signature=True)\ndataset_config = TALIDataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2011,7 +2027,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()\nmodel_config = build_model.build_config(populate_full_signature=True)\ndataset_config = build_dataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,\n    experiment_name=EXPERIMENT_NAME,",
+        "peekOfCode": "cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()\nmodel_config = TALIModel.build_config(populate_full_signature=True)\ndataset_config = TALIDataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,\n    experiment_name=EXPERIMENT_NAME,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2020,7 +2036,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "model_config = build_model.build_config(populate_full_signature=True)\ndataset_config = build_dataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,\n    experiment_name=EXPERIMENT_NAME,\n    experiment_dir=CHECKPOINT_DIR,",
+        "peekOfCode": "model_config = TALIModel.build_config(populate_full_signature=True)\ndataset_config = TALIDataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,\n    experiment_name=EXPERIMENT_NAME,\n    experiment_dir=CHECKPOINT_DIR,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2029,7 +2045,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "dataset_config = build_dataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,\n    experiment_name=EXPERIMENT_NAME,\n    experiment_dir=CHECKPOINT_DIR,\n    resume=RESUME,",
+        "peekOfCode": "dataset_config = TALIDataset.build_config(populate_full_signature=True)\ndataloader_config = builds(\n    DataLoader, dataset=None, populate_full_signature=True\n)\nlearner_config = builds(Learner, populate_full_signature=True)\nlearner_config = learner_config(\n    model=None,\n    experiment_name=EXPERIMENT_NAME,\n    experiment_dir=CHECKPOINT_DIR,\n    resume=RESUME,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2097,24 +2113,6 @@
         "documentation": {}
     },
     {
-        "label": "ImageTextRetrievalInput",
-        "kind": 6,
-        "importPath": "tali_wit.data",
-        "description": "tali_wit.data",
-        "peekOfCode": "class ImageTextRetrievalInput:\n    target_image: TensorType[\"batch_size\", \"channels\", \"height\", \"width\"]\n    challenge_images: TensorType[\n        \"batch_size\", \"num_challenge_images\", \"channels\", \"height\", \"width\"\n    ]\n    challenge_paths: List[str]\n    target_text: List[str]\n    collection_images: Optional[\n        TensorType[\n            \"batch_size\",",
-        "detail": "tali_wit.data",
-        "documentation": {}
-    },
-    {
-        "label": "ImageTextRetrievalInputByUser",
-        "kind": 6,
-        "importPath": "tali_wit.data",
-        "description": "tali_wit.data",
-        "peekOfCode": "class ImageTextRetrievalInputByUser:\n    image: TensorType[\"batch_size\", \"channels\", \"height\", \"width\"]\n    text: List[str]\n    filepath: List[str]\n    user_name: List[str]\n    ids: List[int]\nclass ToThreeChannels(nn.Module):\n    def __init__(self):\n        super().__init__()\n    def forward(self, image):",
-        "detail": "tali_wit.data",
-        "documentation": {}
-    },
-    {
         "label": "ToThreeChannels",
         "kind": 6,
         "importPath": "tali_wit.data",
@@ -2173,7 +2171,7 @@
         "kind": 6,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "class AnyModalSample:\n    modality: str\n    sub_modality: str\n    shape: TensorType\nclass ModalityTypes(Enum):\n    wit_image = AnyModalSample(\n        modality=BaseModalityTypes.image,\n        sub_modality=SubModalityTypes.wikipedia_caption_image,\n        shape=TensorType[\"batch_size\", \"channel\", \"height\", \"width\"],\n    )",
+        "peekOfCode": "class AnyModalSample:\n    modality: str\n    sub_modality: str\n    shape: tuple\nclass ModalityTypes(Enum):\n    wit_image = AnyModalSample(\n        modality=BaseModalityTypes.image,\n        sub_modality=SubModalityTypes.wikipedia_caption_image,\n        shape=(\"batch_size\", \"channel\", \"height\", \"width\"),\n    )",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2182,7 +2180,7 @@
         "kind": 6,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "class ModalityTypes(Enum):\n    wit_image = AnyModalSample(\n        modality=BaseModalityTypes.image,\n        sub_modality=SubModalityTypes.wikipedia_caption_image,\n        shape=TensorType[\"batch_size\", \"channel\", \"height\", \"width\"],\n    )\n    youtube_image = AnyModalSample(\n        modality=BaseModalityTypes.image,\n        sub_modality=SubModalityTypes.youtube_random_video_sample_image,\n        shape=TensorType[\"batch_size\", \"channel\", \"height\", \"width\"],",
+        "peekOfCode": "class ModalityTypes(Enum):\n    wit_image = AnyModalSample(\n        modality=BaseModalityTypes.image,\n        sub_modality=SubModalityTypes.wikipedia_caption_image,\n        shape=(\"batch_size\", \"channel\", \"height\", \"width\"),\n    )\n    youtube_image = AnyModalSample(\n        modality=BaseModalityTypes.image,\n        sub_modality=SubModalityTypes.youtube_random_video_sample_image,\n        shape=(\"batch_size\", \"channel\", \"height\", \"width\"),",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2227,7 +2225,7 @@
         "kind": 6,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "class DefaultVideoTransforms:\n    def __init__(self) -> None:\n        self.processor: CLIPProcessor = CLIPProcessor.from_pretrained(\n            \"openai/clip-vit-large-patch14\"\n        )\n    def __call__(self, x) -> Any:\n        x = x.unbind(0)\n        x = self.processor(images=x, return_tensors=\"pt\")[\"pixel_values\"]\n        return x\nclass TALIDataset(torch.utils.data.Dataset):",
+        "peekOfCode": "class DefaultVideoTransforms:\n    def __init__(self) -> None:\n        self.processor: CLIPProcessor = CLIPProcessor.from_pretrained(\n            \"openai/clip-vit-large-patch14\"\n        )\n    def __call__(self, x) -> Any:\n        x = x.unbind(0)\n        x = self.processor(images=x, return_tensors=\"pt\")[\"pixel_values\"]\n        return x\n@configurable",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2299,7 +2297,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def get_ranked_filepaths_from_user(\n    username_filepath: pathlib.Path, top_k_percent_to_return: int\n):\n    ranked_user_items = rank_user_items_by_clip_score(username_filepath)\n    ranked_filepath_list = ranked_user_items[\"filepath\"].tolist()\n    top_k_percent_to_return = int(\n        len(ranked_filepath_list) * top_k_percent_to_return / 100\n    )\n    return ranked_filepath_list[:top_k_percent_to_return]\n@dataclass",
+        "peekOfCode": "def get_ranked_filepaths_from_user(\n    username_filepath: pathlib.Path, top_k_percent_to_return: int\n):\n    ranked_user_items = rank_user_items_by_clip_score(username_filepath)\n    ranked_filepath_list = ranked_user_items[\"filepath\"].tolist()\n    top_k_percent_to_return = int(\n        len(ranked_filepath_list) * top_k_percent_to_return / 100\n    )\n    return ranked_filepath_list[:top_k_percent_to_return]\nclass ToThreeChannels(nn.Module):",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2704,7 +2702,7 @@
         "kind": 2,
         "importPath": "tali_wit.run",
         "description": "tali_wit.run",
-        "peekOfCode": "def run(cfg: BaseConfig) -> None:\n    wandb_args = {\n        key: value\n        for key, value in cfg.wandb_args.items()\n        if key != \"_target_\"\n    }\n    ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)\n    config_dict = OmegaConf.to_container(cfg, resolve=True)\n    wandb_args[\"config\"] = config_dict\n    wandb_args[\"notes\"] = repo_url",
+        "peekOfCode": "def run(cfg: BaseConfig) -> None:\n    wandb_args = {\n        key: value for key, value in cfg.wandb_args.items() if key != \"_target_\"\n    }\n    ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)\n    config_dict = OmegaConf.to_container(cfg, resolve=True)\n    wandb_args[\"config\"] = config_dict\n    wandb_args[\"notes\"] = repo_url\n    wandb.init(**wandb_args)  # init wandb and log config\n    upload_code_to_wandb(cfg.code_dir)  # log code to wandb",
         "detail": "tali_wit.run",
         "documentation": {}
     },
