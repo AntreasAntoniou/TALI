@@ -330,13 +330,25 @@ class TALIModel(nn.Module):
             delattr(self.model, "video")
             delattr(self, "video_linear_layer")
 
-        if not self.multi_modality_config.image.pretrained:
+        if (
+            not self.multi_modality_config.image.pretrained
+            and self.multi_modality_config.image.support
+        ):
             self.model["image"].init_weights()
-        if not self.multi_modality_config.text.pretrained:
+        if (
+            not self.multi_modality_config.text.pretrained
+            and self.multi_modality_config.text.support
+        ):
             self.model["text"].init_weights()
-        if not self.multi_modality_config.audio.pretrained:
+        if (
+            not self.multi_modality_config.audio.pretrained
+            and self.multi_modality_config.audio.support
+        ):
             self.model["audio"].init_weights()
-        if not self.multi_modality_config.video.pretrained:
+        if (
+            not self.multi_modality_config.video.pretrained
+            and self.multi_modality_config.video.support
+        ):
             self.model["video"].init_weights()
 
     def build_transforms(self):
@@ -369,11 +381,11 @@ class TALIModel(nn.Module):
     def build_logit_scales(self):
         self.logit_scales = nn.ParameterDict()
 
-        self.logit_scales["image_to_text"] = deepcopy(
-            self.clip_model.logit_scale
+        self.logit_scales["image_to_text"] = nn.Parameter(
+            torch.ones(1, requires_grad=True) * self.clip_model.logit_scale
         )
-        self.logit_scales["text_to_image"] = deepcopy(
-            self.clip_model.logit_scale
+        self.logit_scales["text_to_image"] = nn.Parameter(
+            torch.ones(1, requires_grad=True) * self.clip_model.logit_scale
         )
 
         for modality_a in self.model.keys():

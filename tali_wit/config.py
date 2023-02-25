@@ -130,9 +130,9 @@ class BaseConfig:
     resume: bool = False
     resume_from_checkpoint: Optional[int] = None
     print_config: bool = False
-    train_batch_size: int = 8
-    eval_batch_size: int = 8
-    num_workers: int = 1
+    train_batch_size: int = 96
+    eval_batch_size: int = 96
+    num_workers: int = 8
     train: bool = True
     test: bool = False
     download_latest: bool = True
@@ -171,8 +171,8 @@ def collect_config_store():
         multi_modality_config=MultiModalityConfig(
             image=ModalityConfig(support=True, pretrained=True),
             text=ModalityConfig(support=True, pretrained=True),
-            # audio=ModalityConfig(support=True, pretrained=True),
-            # video=ModalityConfig(support=True, pretrained=False),
+            audio=ModalityConfig(support=False, pretrained=False),
+            video=ModalityConfig(support=False, pretrained=False),
         ),
         num_video_frames=8,
         num_audio_frames=8,
@@ -185,12 +185,12 @@ def collect_config_store():
         modality_list=[
             ModalityTypes.wit_image.value,
             ModalityTypes.wit_caption.value,
-            ModalityTypes.wit_title.value,
-            ModalityTypes.wit_main_body.value,
-            ModalityTypes.youtube_video.value,
-            ModalityTypes.youtube_subtitles.value,
-            ModalityTypes.youtube_audio.value,
-            ModalityTypes.youtube_description.value,
+            # ModalityTypes.wit_title.value,
+            # ModalityTypes.wit_main_body.value,
+            # ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
         ],
         language_id="en",
         rng_seed=42,
@@ -199,7 +199,7 @@ def collect_config_store():
         transforms=None,
         num_video_frames=5,
         num_audio_frames=1 * 16000,
-        clip_duration_in_seconds=2.0,
+        clip_duration_in_seconds=1.5,
     )
 
     ###################################################################################

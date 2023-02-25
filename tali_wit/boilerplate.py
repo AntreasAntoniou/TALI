@@ -450,8 +450,7 @@ class Learner(nn.Module):
 
                         if (
                             self.eval_mode == Interval.STEP
-                            and self.step_idx % self.evaluate_every_n_steps
-                            == 0
+                            and self.step_idx % self.evaluate_every_n_steps == 0
                         ):
                             self._validation_loop()
 

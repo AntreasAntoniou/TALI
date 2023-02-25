@@ -1829,7 +1829,7 @@
         "kind": 2,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "def collect_config_store():\n    config_store = ConfigStore.instance()\n    ###################################################################################\n    tali_vit_model_config = model_config(\n        image_text_model_name=\"openai/clip-vit-base-patch16\",\n        audio_model_name=\"openai/whisper-base\",\n        multi_modality_config=MultiModalityConfig(\n            image=ModalityConfig(support=True, pretrained=True),\n            text=ModalityConfig(support=True, pretrained=True),\n            # audio=ModalityConfig(support=True, pretrained=True),",
+        "peekOfCode": "def collect_config_store():\n    config_store = ConfigStore.instance()\n    ###################################################################################\n    tali_vit_model_config = model_config(\n        image_text_model_name=\"openai/clip-vit-base-patch16\",\n        audio_model_name=\"openai/whisper-base\",\n        multi_modality_config=MultiModalityConfig(\n            image=ModalityConfig(support=True, pretrained=True),\n            text=ModalityConfig(support=True, pretrained=True),\n            audio=ModalityConfig(support=False, pretrained=False),",
         "detail": "tali_wit.config",
         "documentation": {}
     },

@@ -537,7 +537,10 @@ def get_wit_sample(
     output_dict = output.__dict__
     output_dict_cache = output_dict.copy()
     for key, value in output_dict_cache.items():
-        if not any(key == modality.sub_modality for modality in modality_list):
+        if not any(
+            key == modality.sub_modality.replace("SubModalityTypes.", "")
+            for modality in modality_list
+        ):
             del output_dict[key]
 
     if "wikipedia_caption_image" in output_dict:
@@ -741,10 +744,16 @@ def get_sample_from_wit_index(
     )
     for key, value in wit_output.__dict__.items():
         # print([modality.sub_modality for modality in modality_list], key)
-        if any(key == modality.sub_modality for modality in modality_list):
+        if any(
+            key == modality.sub_modality.replace("SubModalityTypes.", "")
+            for modality in modality_list
+        ):
             output_dict[key] = value
 
-    if any("youtube" in modality.sub_modality for modality in modality_list):
+    if any(
+        "youtube" in modality.sub_modality.replace("SubModalityTypes.", "")
+        for modality in modality_list
+    ):
         wit_to_tali_entry_filepath = (
             root_filepath
             / "wit_to_video_paths.parquet/relevance/"
@@ -842,7 +851,10 @@ def get_sample_from_video_id(
         )
 
         for key, value in wit_output.items():
-            if any(key == modality.sub_modality for modality in modality_list):
+            if any(
+                key == modality.sub_modality.replace("SubModalityTypes.", "")
+                for modality in modality_list
+            ):
                 output_dict[key] = value
 
     return wit_index, output_dict
@@ -1024,7 +1036,8 @@ class TALIDataset(torch.utils.data.Dataset):
             self.transforms = transforms
 
         self.requested_youtube_data = any(
-            "youtube" in modality.sub_modality for modality in modality_list
+            "youtube" in modality.sub_modality.replace("SubModalityTypes.", "")
+            for modality in modality_list
         )
 
         self.getitem_fnc = (
@@ -1073,7 +1086,7 @@ class TALIDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         if self.set_name == "train":
-            return 99999999999999
+            return 99999999
         return self.total_items
 
     def __getitem__(self, idx):
@@ -1081,7 +1094,7 @@ class TALIDataset(torch.utils.data.Dataset):
             return self.__getitem__(idx + 1)
         try:
             if self.requested_youtube_data:
-                actual_idx = idx // self.top_k_tali
+                actual_idx = idx // self.top_k_tali // self.total_items
                 video_idx = self.dataset_list[actual_idx]
                 wit_idx, output_dict = get_sample_from_video_id(
                     dataset=self.wit_dataset,
@@ -1095,6 +1108,7 @@ class TALIDataset(torch.utils.data.Dataset):
                     clip_duration_in_seconds=self.clip_duration_in_seconds,
                 )
             else:
+                idx = idx % self.total_items
                 output_dict = get_wit_sample(
                     dataset=self.wit_dataset,
                     wit_index=idx,

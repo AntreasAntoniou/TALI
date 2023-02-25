@@ -77,6 +77,7 @@ class ClassificationTrainer(Trainer):
         overall_accuracy = []
         overall_accuracy_top_5 = []
         overall_output_dict = {}
+
         for (
             modality_a,
             sub_modality_a,
@@ -116,6 +117,10 @@ class ClassificationTrainer(Trainer):
                     ]
                 )
             )
+            keys = list(output_dict.keys())
+            for key in keys:
+                if "_loss" not in key and "_accuracy" not in key:
+                    del output_dict[key]
             accelerator.backward(loss)
             overall_output_dict |= output_dict
             overall_loss.append(loss)
@@ -123,20 +128,20 @@ class ClassificationTrainer(Trainer):
             overall_accuracy_top_5.append(accuracy_top_5)
 
         metrics = {
-            "accuracy": torch.mean(overall_accuracy),
-            "accuracy_top_5": torch.mean(overall_accuracy_top_5),
-            "loss": torch.mean(overall_loss),
+            "accuracy": torch.mean(torch.stack(overall_accuracy)),
+            "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
+            "loss": torch.mean(torch.stack(overall_loss)),
         }
         metrics |= overall_output_dict
 
         for key, value in metrics.items():
-            self.epoch_metrics.setdefault(key, []).append(value.detach().cpu())
+            self.epoch_metrics.setdefault(key, []).append(value)
 
         metrics["lr"] = self.optimizer.param_groups[0]["lr"]
 
         return TrainerOutput(
             phase_name="training",
-            opt_loss=torch.mean(overall_loss),
+            opt_loss=torch.mean(torch.stack(overall_loss)),
             step_idx=step_idx,
             metrics=metrics,
         )

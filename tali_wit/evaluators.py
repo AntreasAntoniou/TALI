@@ -59,62 +59,73 @@ class ClassificationEvaluator(Evaluator):
         accelerator: Accelerator,
     ):
         model.eval()
-        overall_loss = []
-        overall_accuracy = []
-        overall_accuracy_top_5 = []
-        overall_output_dict = {}
-        for (
-            modality_a,
-            sub_modality_a,
-            modality_b,
-            sub_modality_b,
-        ) in extract_all_possible_pairs(batch):
-            sample = {
-                modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
-                modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
+        with torch.no_grad():
+            overall_loss = []
+            overall_accuracy = []
+            overall_accuracy_top_5 = []
+            overall_output_dict = {}
+            for (
+                modality_a,
+                sub_modality_a,
+                modality_b,
+                sub_modality_b,
+            ) in extract_all_possible_pairs(batch):
+                sample = {
+                    modality_a: {
+                        sub_modality_a: batch[modality_a][sub_modality_a]
+                    },
+                    modality_b: {
+                        sub_modality_b: batch[modality_b][sub_modality_b]
+                    },
+                }
+                output_dict = model.forward(sample, return_loss=True)
+                loss = torch.mean(
+                    torch.stack(
+                        [
+                            value
+                            for key, value in output_dict.items()
+                            if "_loss" in key
+                        ]
+                    )
+                )
+                accuracy = torch.mean(
+                    torch.stack(
+                        [
+                            value.cpu()
+                            for key, value in output_dict.items()
+                            if "_accuracy" in key
+                        ]
+                    )
+                )
+                accuracy_top_5 = torch.mean(
+                    torch.stack(
+                        [
+                            value.cpu()
+                            for key, value in output_dict.items()
+                            if "_accuracy_top_5" in key
+                        ]
+                    )
+                )
+                keys = list(output_dict.keys())
+                for key in keys:
+                    if "_loss" not in key and "_accuracy" not in key:
+                        del output_dict[key]
+                overall_output_dict |= output_dict
+                overall_loss.append(loss)
+                overall_accuracy.append(accuracy)
+                overall_accuracy_top_5.append(accuracy_top_5)
+
+            metrics = {
+                "accuracy": torch.mean(torch.stack(overall_accuracy)),
+                "accuracy_top_5": torch.mean(
+                    torch.stack(overall_accuracy_top_5)
+                ),
+                "loss": torch.mean(torch.stack(overall_loss)),
             }
-            output_dict = model.forward(sample, return_loss=True)
-            loss = torch.mean(
-                torch.stack(
-                    [
-                        value
-                        for key, value in output_dict.items()
-                        if "_loss" in key
-                    ]
-                )
-            )
-            accuracy = torch.mean(
-                torch.stack(
-                    [
-                        value.cpu()
-                        for key, value in output_dict.items()
-                        if "_accuracy" in key
-                    ]
-                )
-            )
-            accuracy_top_5 = torch.mean(
-                torch.stack(
-                    [
-                        value.cpu()
-                        for key, value in output_dict.items()
-                        if "_accuracy_top_5" in key
-                    ]
-                )
-            )
-            overall_output_dict |= output_dict
-            overall_loss.append(loss)
-            overall_accuracy.append(accuracy)
-            overall_accuracy_top_5.append(accuracy_top_5)
+            metrics |= overall_output_dict
 
-        metrics = {
-            "accuracy": torch.mean(overall_accuracy),
-            "accuracy_top_5": torch.mean(overall_accuracy_top_5),
-            "loss": torch.mean(overall_loss),
-        }
-        metrics |= overall_output_dict
-
-        for key, value in metrics.items():
-            self.epoch_metrics.setdefault(key, []).append(value.detach().cpu())
+            for key, value in metrics.items():
+                self.epoch_metrics.setdefault(key, []).append(value)
 
         return EvaluatorOutput(
             step_idx=step_idx,
@@ -132,62 +143,73 @@ class ClassificationEvaluator(Evaluator):
         accelerator: Accelerator,
     ):
         model.eval()
-        overall_loss = []
-        overall_accuracy = []
-        overall_accuracy_top_5 = []
-        overall_output_dict = {}
-        for (
-            modality_a,
-            sub_modality_a,
-            modality_b,
-            sub_modality_b,
-        ) in extract_all_possible_pairs(batch):
-            sample = {
-                modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
-                modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
+        with torch.no_grad():
+            overall_loss = []
+            overall_accuracy = []
+            overall_accuracy_top_5 = []
+            overall_output_dict = {}
+            for (
+                modality_a,
+                sub_modality_a,
+                modality_b,
+                sub_modality_b,
+            ) in extract_all_possible_pairs(batch):
+                sample = {
+                    modality_a: {
+                        sub_modality_a: batch[modality_a][sub_modality_a]
+                    },
+                    modality_b: {
+                        sub_modality_b: batch[modality_b][sub_modality_b]
+                    },
+                }
+                output_dict = model.forward(sample, return_loss=True)
+                loss = torch.mean(
+                    torch.stack(
+                        [
+                            value
+                            for key, value in output_dict.items()
+                            if "_loss" in key
+                        ]
+                    )
+                )
+                accuracy = torch.mean(
+                    torch.stack(
+                        [
+                            value.cpu()
+                            for key, value in output_dict.items()
+                            if "_accuracy" in key
+                        ]
+                    )
+                )
+                accuracy_top_5 = torch.mean(
+                    torch.stack(
+                        [
+                            value.cpu()
+                            for key, value in output_dict.items()
+                            if "_accuracy_top_5" in key
+                        ]
+                    )
+                )
+                keys = list(output_dict.keys())
+                for key in keys:
+                    if "_loss" not in key and "_accuracy" not in key:
+                        del output_dict[key]
+                overall_output_dict |= output_dict
+                overall_loss.append(loss)
+                overall_accuracy.append(accuracy)
+                overall_accuracy_top_5.append(accuracy_top_5)
+
+            metrics = {
+                "accuracy": torch.mean(torch.stack(overall_accuracy)),
+                "accuracy_top_5": torch.mean(
+                    torch.stack(overall_accuracy_top_5)
+                ),
+                "loss": torch.mean(torch.stack(overall_loss)),
             }
-            output_dict = model.forward(sample, return_loss=True)
-            loss = torch.mean(
-                torch.stack(
-                    [
-                        value
-                        for key, value in output_dict.items()
-                        if "_loss" in key
-                    ]
-                )
-            )
-            accuracy = torch.mean(
-                torch.stack(
-                    [
-                        value.cpu()
-                        for key, value in output_dict.items()
-                        if "_accuracy" in key
-                    ]
-                )
-            )
-            accuracy_top_5 = torch.mean(
-                torch.stack(
-                    [
-                        value.cpu()
-                        for key, value in output_dict.items()
-                        if "_accuracy_top_5" in key
-                    ]
-                )
-            )
-            overall_output_dict |= output_dict
-            overall_loss.append(loss)
-            overall_accuracy.append(accuracy)
-            overall_accuracy_top_5.append(accuracy_top_5)
+            metrics |= overall_output_dict
 
-        metrics = {
-            "accuracy": torch.mean(overall_accuracy),
-            "accuracy_top_5": torch.mean(overall_accuracy_top_5),
-            "loss": torch.mean(overall_loss),
-        }
-        metrics |= overall_output_dict
-
-        for key, value in metrics.items():
-            self.epoch_metrics.setdefault(key, []).append(value.detach().cpu())
+            for key, value in metrics.items():
+                self.epoch_metrics.setdefault(key, []).append(value)
 
         return EvaluatorOutput(
             step_idx=step_idx,
@@ -230,7 +252,7 @@ class ClassificationEvaluator(Evaluator):
     ):
         epoch_metrics = {}
         for key, value in self.epoch_metrics.items():
-            epoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
+            wanepoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
             epoch_metrics[f"{key}-epoch-std"] = torch.stack(value).std()
 
         return EvaluatorOutput(
