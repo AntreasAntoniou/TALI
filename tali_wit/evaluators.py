@@ -252,7 +252,7 @@ class ClassificationEvaluator(Evaluator):
     ):
         epoch_metrics = {}
         for key, value in self.epoch_metrics.items():
-            wanepoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
+            epoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
             epoch_metrics[f"{key}-epoch-std"] = torch.stack(value).std()
 
         return EvaluatorOutput(
