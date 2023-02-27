@@ -439,7 +439,7 @@ class Learner(nn.Module):
             self.start_validation(val_dataloaders=val_dataloaders)
 
             with tqdm(
-                total=len(itertools.zip_longest(*val_dataloaders))
+                total=max([len(d) for d in val_dataloaders])
             ) as pbar_dataloaders:
                 for batch_idx, batch in enumerate(
                     itertools.zip_longest(*val_dataloaders)
@@ -464,7 +464,7 @@ class Learner(nn.Module):
             self.start_testing(test_dataloaders=test_dataloaders)
 
             with tqdm(
-                total=len(itertools.zip_longest(*test_dataloaders))
+                total=max([len(d) for d in test_dataloaders])
             ) as pbar_dataloaders:
                 for batch_idx, batch in enumerate(
                     itertools.zip_longest(*test_dataloaders)
