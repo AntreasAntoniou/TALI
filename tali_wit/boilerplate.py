@@ -399,11 +399,12 @@ class Learner(nn.Module):
                         itertools.zip_longest(*train_dataloaders)
                     ):
                         for modality_pair_batch in batch:
-                            self.training_step(
-                                model=self.model,
-                                batch=modality_pair_batch,
-                                batch_idx=batch_idx,
-                            )
+                            if modality_pair_batch is not None:
+                                self.training_step(
+                                    model=self.model,
+                                    batch=modality_pair_batch,
+                                    batch_idx=batch_idx,
+                                )
 
                         if (
                             self.eval_mode == Interval.STEP
@@ -448,11 +449,12 @@ class Learner(nn.Module):
                         if batch_idx >= self.limit_val_iters:
                             break
                     for modality_pair_batch in batch:
-                        self.validation_step(
-                            model=self.model,
-                            batch=modality_pair_batch,
-                            batch_idx=batch_idx,
-                        )
+                        if modality_pair_batch is not None:
+                            self.validation_step(
+                                model=self.model,
+                                batch=modality_pair_batch,
+                                batch_idx=batch_idx,
+                            )
                     pbar_dataloaders.update(1)
 
             self.end_validation(val_dataloaders=val_dataloaders)
@@ -471,11 +473,12 @@ class Learner(nn.Module):
                     itertools.zip_longest(*test_dataloaders)
                 ):
                     for modality_pair_batch in batch:
-                        self.testing_step(
-                            model=self.model,
-                            batch=modality_pair_batch,
-                            batch_idx=batch_idx,
-                        )
+                        if modality_pair_batch is not None:
+                            self.testing_step(
+                                model=self.model,
+                                batch=modality_pair_batch,
+                                batch_idx=batch_idx,
+                            )
                     pbar_dataloaders.update(1)
                     pbar_dataloaders.update(1)
 
