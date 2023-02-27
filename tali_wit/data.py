@@ -203,7 +203,9 @@ def dataclass_collate(batch):
             return default_collate(batch)
         else:
             batched_dict = {
-                key: default_collate([getattr(sample, key) for sample in batch])
+                key: default_collate(
+                    [getattr(sample, key) for sample in batch]
+                )
                 if getattr(batch[0], key) != None
                 else None
                 for key in batch[0].__dict__.keys()
@@ -999,7 +1001,7 @@ class TALIDataset(torch.utils.data.Dataset):
         self.wit_dataset = datasets.load_dataset(
             "wikimedia/wit_base",
             split="train",
-            cache_dir=root_filepath / "wit",
+            cache_dir=root_filepath / "wit_cache",
         )
         self.wit_idx_to_tali_wit_dict = load_json(
             filepath=root_filepath / "wit_idx_to_video_id_dict_cleaned.json"

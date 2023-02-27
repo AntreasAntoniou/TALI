@@ -1,3 +1,4 @@
+from math import floor
 import multiprocessing
 import os
 from dataclasses import MISSING, dataclass, field
@@ -41,6 +42,7 @@ EXP_NAME = "${exp_name}"
 SEED = "${seed}"
 RESUME = "${resume}"
 LOGGER_LEVEL = "${logger_level}"
+GPU_MEMORY = 80  # in GB
 
 
 wandb_args_config = builds(wandb.init, populate_full_signature=True)
@@ -102,6 +104,11 @@ learner_config = learner_config(
 default_callbacks = dict(hf_uploader=hf_upload)
 
 
+def compute_batch_size_given_gpu_memory(reference_batch_size, gpu_memory):
+    """Compute the batch size given the GPU memory and the reference batch size."""
+    return int(floor(reference_batch_size * gpu_memory / 24))
+
+
 @dataclass
 class BaseConfig:
     # Must be passed at command line -- neccesary arguments
@@ -133,7 +140,7 @@ class BaseConfig:
     print_config: bool = False
     train_batch_size: int = 96
     eval_batch_size: int = 96
-    num_workers: int = 2
+    num_workers: int = 6
     train: bool = True
     test: bool = False
     download_latest: bool = True
@@ -505,21 +512,41 @@ def collect_config_store():
     config_store.store(
         group="dataset",
         name="wit_image_text_dataset",
-        node={"128": wit_dataset_image_text_config},
+        node={
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=128, gpu_memory=GPU_MEMORY
+                )
+            ): wit_dataset_image_text_config
+        },
     )
 
     config_store.store(
         group="dataset",
         name="tali_image_text_dataset",
-        node={"128": tali_dataset_image_text_config},
+        node={
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=128, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_image_text_config
+        },
     )
 
     config_store.store(
         group="dataset",
         name="tali_image_audio_dataset",
         node={
-            "18": tali_dataset_youtube_image_audio_config,
-            "18": tali_dataset_wit_image_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=18, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_youtube_image_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=18, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_wit_image_audio_config,
         },
     )
 
@@ -527,7 +554,11 @@ def collect_config_store():
         group="dataset",
         name="tali_image_video_dataset",
         node={
-            "18": tali_dataset_image_video_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=18, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_image_video_config,
         },
     )
 
@@ -535,9 +566,21 @@ def collect_config_store():
         group="dataset",
         name="tali_image_text_audio_dataset",
         node={
-            "128": tali_dataset_image_text_config,
-            "12": tali_dataset_image_audio_config,
-            "16": tali_dataset_text_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=128, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_image_text_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=12, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_image_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=16, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_text_audio_config,
         },
     )
 
@@ -545,10 +588,26 @@ def collect_config_store():
         group="dataset",
         name="tali_image_text_audio_video_dataset",
         node={
-            "128": tali_dataset_image_text_config,
-            "12": tali_dataset_audio_video_config,
-            "16": tali_dataset_text_audio_config,
-            "16": tali_dataset_text_video_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=128, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_image_text_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=12, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_audio_video_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=16, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_text_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=16, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_text_video_config,
         },
     )
 
@@ -556,13 +615,41 @@ def collect_config_store():
         group="dataset",
         name="tali_everything_dataset",
         node={
-            "128": tali_dataset_image_text_config,
-            "12": tali_dataset_audio_video_config,
-            "20": tali_dataset_text_audio_config,
-            "16": tali_dataset_text_video_config,
-            "18": tali_dataset_youtube_image_audio_config,
-            "18": tali_dataset_wit_image_audio_config,
-            "24": tali_dataset_image_video_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=128, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_image_text_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=12, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_audio_video_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=20, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_text_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=16, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_text_video_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=18, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_youtube_image_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=18, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_wit_image_audio_config,
+            str(
+                compute_batch_size_given_gpu_memory(
+                    reference_batch_size=24, gpu_memory=GPU_MEMORY
+                )
+            ): tali_dataset_image_video_config,
         },
     )
 
@@ -574,6 +661,8 @@ def collect_config_store():
             num_workers=NUM_WORKERS,
             pin_memory=False,
             shuffle=True,
+            prefetch_factor=8,
+            persistent_workers=False,
         ),
     )
 

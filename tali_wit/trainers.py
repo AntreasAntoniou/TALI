@@ -84,8 +84,12 @@ class ClassificationTrainer(Trainer):
             sub_modality_b,
         ) in extract_all_possible_pairs(batch):
             sample = {
-                modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
-                modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
+                modality_a: {
+                    sub_modality_a: batch[modality_a][sub_modality_a]
+                },
+                modality_b: {
+                    sub_modality_b: batch[modality_b][sub_modality_b]
+                },
             }
             self.optimizer.zero_grad()
             output_dict = model.forward(sample, return_loss=True)
