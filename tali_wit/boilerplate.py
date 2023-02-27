@@ -1,4 +1,5 @@
 import copy
+import itertools
 import pathlib
 from copy import deepcopy
 from dataclasses import dataclass
@@ -394,7 +395,9 @@ class Learner(nn.Module):
                     ):
                         self._validation_loop()
 
-                    for batch_idx, batch in enumerate(zip(*train_dataloaders)):
+                    for batch_idx, batch in enumerate(
+                        itertools.zip_longest(*train_dataloaders)
+                    ):
                         for modality_pair_batch in batch:
                             self.training_step(
                                 model=self.model,
@@ -435,19 +438,20 @@ class Learner(nn.Module):
         if val_dataloaders is not None:
             self.start_validation(val_dataloaders=val_dataloaders)
 
-            with tqdm(total=len(val_dataloaders)) as pbar_dataloaders:
-                for val_dataloader in val_dataloaders:
-                    with tqdm(total=len(val_dataloader)) as pbar:
-                        for batch_idx, batch in enumerate(val_dataloader):
-                            if self.limit_val_iters is not None:
-                                if batch_idx >= self.limit_val_iters:
-                                    break
-                            self.validation_step(
-                                model=self.model,
-                                batch=batch,
-                                batch_idx=batch_idx,
-                            )
-                            pbar.update(1)
+            with tqdm(
+                total=len(itertools.zip_longest(*val_dataloaders))
+            ) as pbar_dataloaders:
+                for batch_idx, batch in enumerate(
+                    itertools.zip_longest(*val_dataloaders)
+                ):
+                    if self.limit_val_iters is not None:
+                        if batch_idx >= self.limit_val_iters:
+                            break
+                    self.validation_step(
+                        model=self.model,
+                        batch=batch,
+                        batch_idx=batch_idx,
+                    )
                     pbar_dataloaders.update(1)
 
             self.end_validation(val_dataloaders=val_dataloaders)
@@ -459,16 +463,17 @@ class Learner(nn.Module):
         if test_dataloader is not None:
             self.start_testing(test_dataloaders=test_dataloaders)
 
-            with tqdm(total=len(test_dataloaders)) as pbar_dataloaders:
-                for test_dataloader in test_dataloaders:
-                    with tqdm(total=len(test_dataloader)) as pbar:
-                        for batch_idx, batch in enumerate(test_dataloader):
-                            self._testing_loop(
-                                model=self.model,
-                                batch=batch,
-                                batch_idx=batch_idx,
-                            )
-                            pbar.update(1)
+            with tqdm(
+                total=len(itertools.zip_longest(*test_dataloaders))
+            ) as pbar_dataloaders:
+                for batch_idx, batch in enumerate(
+                    itertools.zip_longest(*test_dataloaders)
+                ):
+                    self._testing_loop(
+                        model=self.model,
+                        batch=batch,
+                        batch_idx=batch_idx,
+                    )
                     pbar_dataloaders.update(1)
 
             self.end_testing(test_dataloaders=test_dataloaders)

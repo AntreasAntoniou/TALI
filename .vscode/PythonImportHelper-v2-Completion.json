@@ -2912,5 +2912,23 @@
         "peekOfCode": "input_features = processor(\n    sample, sampling_rate=sampling_rate, return_tensors=\"pt\"\n).input_features\n# # generate token ids\n# predicted_ids = model.generate(input_features)\n# # decode token ids to text\n# transcription = processor.batch_decode(predicted_ids, skip_special_tokens=False)\n# transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)",
         "detail": "debug",
         "documentation": {}
+    },
+    {
+        "label": "a",
+        "kind": 5,
+        "importPath": "playground",
+        "description": "playground",
+        "peekOfCode": "a = [i for i in range(10)]\nb = [i**2 for i in range(11)]\nfor idx, batch in enumerate(itertools.zip_longest(a, b)):\n    print(idx, batch)",
+        "detail": "playground",
+        "documentation": {}
+    },
+    {
+        "label": "b",
+        "kind": 5,
+        "importPath": "playground",
+        "description": "playground",
+        "peekOfCode": "b = [i**2 for i in range(11)]\nfor idx, batch in enumerate(itertools.zip_longest(a, b)):\n    print(idx, batch)",
+        "detail": "playground",
+        "documentation": {}
     }
 ]

@@ -133,7 +133,7 @@ class BaseConfig:
     print_config: bool = False
     train_batch_size: int = 96
     eval_batch_size: int = 96
-    num_workers: int = 1
+    num_workers: int = 2
     train: bool = True
     test: bool = False
     download_latest: bool = True
@@ -343,6 +343,30 @@ def collect_config_store():
         clip_duration_in_seconds=1.5,
     )
 
+    tali_dataset_image_audio_config = dataset_config(
+        set_name="train",
+        root_filepath=DATASET_DIR,
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            # ModalityTypes.wit_caption.value,
+            # ModalityTypes.wit_title.value,
+            # ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_image.value,
+            # ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
+        ],
+        language_id="en",
+        rng_seed=42,
+        top_k_tali=10,
+        image_size=224,
+        transforms=None,
+        num_video_frames=5,
+        num_audio_frames=1 * 16000,
+        clip_duration_in_seconds=1.5,
+    )
+
     tali_dataset_youtube_image_audio_config = dataset_config(
         set_name="train",
         root_filepath=DATASET_DIR,
@@ -512,7 +536,7 @@ def collect_config_store():
         name="tali_image_text_audio_dataset",
         node={
             "128": tali_dataset_image_text_config,
-            "12": tali_dataset_audio_video_config,
+            "12": tali_dataset_image_audio_config,
             "16": tali_dataset_text_audio_config,
         },
     )
@@ -554,7 +578,9 @@ def collect_config_store():
     )
 
     config_store.store(
-        group="optimizer", name="adamw", node=adamw_optimizer_config(lr=1e-5)
+        group="optimizer",
+        name="adamw",
+        node=adamw_optimizer_config(lr=1e-5, weight_decay=0.0),
     )
 
     config_store.store(
