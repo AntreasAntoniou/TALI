@@ -301,6 +301,118 @@
         "documentation": {}
     },
     {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Tuple",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Union",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Tuple",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Union",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Any",
         "importPath": "typing",
         "description": "typing",
@@ -461,6 +573,22 @@
         "documentation": {}
     },
     {
+        "label": "print",
+        "importPath": "rich",
+        "description": "rich",
+        "isExtraImport": true,
+        "detail": "rich",
+        "documentation": {}
+    },
+    {
+        "label": "print",
+        "importPath": "rich",
+        "description": "rich",
+        "isExtraImport": true,
+        "detail": "rich",
+        "documentation": {}
+    },
+    {
         "label": "dataclass",
         "importPath": "dataclasses",
         "description": "dataclasses",
@@ -494,6 +622,14 @@
     },
     {
         "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
         "importPath": "dataclasses",
         "description": "dataclasses",
         "isExtraImport": true,
@@ -657,6 +793,22 @@
     },
     {
         "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
         "importPath": "torch.utils.data",
         "description": "torch.utils.data",
         "isExtraImport": true,
@@ -873,6 +1025,54 @@
         "documentation": {}
     },
     {
+        "label": "load_json",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "save_json",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "get_logger",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "load_json",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "save_json",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "get_logger",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
         "label": "save_json",
         "importPath": "tali_wit.utils",
         "description": "tali_wit.utils",
@@ -948,6 +1148,47 @@
         "documentation": {}
     },
     {
+        "label": "math",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "math",
+        "description": "math",
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "floor",
+        "importPath": "math",
+        "description": "math",
+        "isExtraImport": true,
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "floor",
+        "importPath": "math",
+        "description": "math",
+        "isExtraImport": true,
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "floor",
+        "importPath": "math",
+        "description": "math",
+        "isExtraImport": true,
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "floor",
+        "importPath": "math",
+        "description": "math",
+        "isExtraImport": true,
+        "detail": "math",
+        "documentation": {}
+    },
+    {
         "label": "multiprocessing",
         "kind": 6,
         "isExtraImport": true,
@@ -1007,6 +1248,22 @@
     },
     {
         "label": "make_config",
+        "importPath": "hydra_zen",
+        "description": "hydra_zen",
+        "isExtraImport": true,
+        "detail": "hydra_zen",
+        "documentation": {}
+    },
+    {
+        "label": "builds",
+        "importPath": "hydra_zen",
+        "description": "hydra_zen",
+        "isExtraImport": true,
+        "detail": "hydra_zen",
+        "documentation": {}
+    },
+    {
+        "label": "instantiate",
         "importPath": "hydra_zen",
         "description": "hydra_zen",
         "isExtraImport": true,
@@ -1178,6 +1435,38 @@
         "documentation": {}
     },
     {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "ProcessPoolExecutor",
+        "importPath": "concurrent.futures",
+        "description": "concurrent.futures",
+        "isExtraImport": true,
+        "detail": "concurrent.futures",
+        "documentation": {}
+    },
+    {
+        "label": "ThreadPoolExecutor",
+        "importPath": "concurrent.futures",
+        "description": "concurrent.futures",
+        "isExtraImport": true,
+        "detail": "concurrent.futures",
+        "documentation": {}
+    },
+    {
         "label": "ProcessPoolExecutor",
         "importPath": "concurrent.futures",
         "description": "concurrent.futures",
@@ -1202,20 +1491,11 @@
         "documentation": {}
     },
     {
-        "label": "math",
-        "kind": 6,
+        "label": "Enum",
+        "importPath": "enum",
+        "description": "enum",
         "isExtraImport": true,
-        "importPath": "math",
-        "description": "math",
-        "detail": "math",
-        "documentation": {}
-    },
-    {
-        "label": "floor",
-        "importPath": "math",
-        "description": "math",
-        "isExtraImport": true,
-        "detail": "math",
+        "detail": "enum",
         "documentation": {}
     },
     {
@@ -1228,7 +1508,31 @@
         "documentation": {}
     },
     {
+        "label": "Dataset",
+        "importPath": "datasets",
+        "description": "datasets",
+        "isExtraImport": true,
+        "detail": "datasets",
+        "documentation": {}
+    },
+    {
         "label": "load_dataset",
+        "importPath": "datasets",
+        "description": "datasets",
+        "isExtraImport": true,
+        "detail": "datasets",
+        "documentation": {}
+    },
+    {
+        "label": "load_dataset",
+        "importPath": "datasets",
+        "description": "datasets",
+        "isExtraImport": true,
+        "detail": "datasets",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
         "importPath": "datasets",
         "description": "datasets",
         "isExtraImport": true,
@@ -1250,6 +1554,14 @@
         "isExtraImport": true,
         "importPath": "PIL",
         "description": "PIL",
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
         "detail": "PIL",
         "documentation": {}
     },
@@ -1297,6 +1609,70 @@
         "documentation": {}
     },
     {
+        "label": "EncodedVideo",
+        "importPath": "pytorchvideo.data.encoded_video",
+        "description": "pytorchvideo.data.encoded_video",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.data.encoded_video",
+        "documentation": {}
+    },
+    {
+        "label": "EncodedVideo",
+        "importPath": "pytorchvideo.data.encoded_video",
+        "description": "pytorchvideo.data.encoded_video",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.data.encoded_video",
+        "documentation": {}
+    },
+    {
+        "label": "ApplyTransformToKey",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "ShortSideScale",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "UniformTemporalSubsample",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "ApplyTransformToKey",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "ShortSideScale",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "UniformTemporalSubsample",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
         "label": "ApplyTransformToKey",
         "importPath": "pytorchvideo.transforms",
         "description": "pytorchvideo.transforms",
@@ -1326,6 +1702,78 @@
         "description": "torch.utils.data.dataloader",
         "isExtraImport": true,
         "detail": "torch.utils.data.dataloader",
+        "documentation": {}
+    },
+    {
+        "label": "default_collate",
+        "importPath": "torch.utils.data.dataloader",
+        "description": "torch.utils.data.dataloader",
+        "isExtraImport": true,
+        "detail": "torch.utils.data.dataloader",
+        "documentation": {}
+    },
+    {
+        "label": "Compose",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "RandomCrop",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "Resize",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "ToTensor",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "Compose",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "RandomCrop",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "Resize",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "ToTensor",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
         "documentation": {}
     },
     {
@@ -1377,11 +1825,51 @@
         "documentation": {}
     },
     {
+        "label": "CenterCropVideo",
+        "importPath": "torchvision.transforms._transforms_video",
+        "description": "torchvision.transforms._transforms_video",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms._transforms_video",
+        "documentation": {}
+    },
+    {
+        "label": "CenterCropVideo",
+        "importPath": "torchvision.transforms._transforms_video",
+        "description": "torchvision.transforms._transforms_video",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms._transforms_video",
+        "documentation": {}
+    },
+    {
         "label": "default",
         "importPath": "traitlets",
         "description": "traitlets",
         "isExtraImport": true,
         "detail": "traitlets",
+        "documentation": {}
+    },
+    {
+        "label": "default",
+        "importPath": "traitlets",
+        "description": "traitlets",
+        "isExtraImport": true,
+        "detail": "traitlets",
+        "documentation": {}
+    },
+    {
+        "label": "CLIPModel",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "CLIPProcessor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
         "documentation": {}
     },
     {
@@ -1473,36 +1961,187 @@
         "documentation": {}
     },
     {
-        "label": "functools",
-        "kind": 6,
+        "label": "configurable",
+        "importPath": "tali_wit.decorators",
+        "description": "tali_wit.decorators",
         "isExtraImport": true,
-        "importPath": "functools",
-        "description": "functools",
-        "detail": "functools",
+        "detail": "tali_wit.decorators",
         "documentation": {}
     },
     {
-        "label": "wraps",
-        "importPath": "functools",
-        "description": "functools",
+        "label": "dataclass_collate",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
         "isExtraImport": true,
-        "detail": "functools",
+        "detail": "tali_wit.data",
         "documentation": {}
     },
     {
-        "label": "Dict",
-        "importPath": "ast",
-        "description": "ast",
+        "label": "AnyModalSample",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
         "isExtraImport": true,
-        "detail": "ast",
+        "detail": "tali_wit.data",
         "documentation": {}
     },
     {
-        "label": "field",
-        "importPath": "attr",
-        "description": "attr",
+        "label": "dataclass_collate",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
         "isExtraImport": true,
-        "detail": "attr",
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "default_image_transforms",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "ModalityTypes",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "select_subtitles_between_timestamps",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "TALIDataset",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "AnyModalSample",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "ModalityDataSample",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "ModalityTypes",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "TALISchema",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "VideoCLIPScoreSchema",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "WITFeature",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "WitSample",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass_collate",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "default_image_transforms",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "get_base_modality",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "select_subtitles_between_timestamps",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "ModalityTypes",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "TALIDataset",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass_collate",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "ModalityConfig",
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "isExtraImport": true,
+        "detail": "tali_wit.models",
         "documentation": {}
     },
     {
@@ -1538,6 +2177,47 @@
         "documentation": {}
     },
     {
+        "label": "functools",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "functools",
+        "description": "functools",
+        "detail": "functools",
+        "documentation": {}
+    },
+    {
+        "label": "wraps",
+        "importPath": "functools",
+        "description": "functools",
+        "isExtraImport": true,
+        "detail": "functools",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "ast",
+        "description": "ast",
+        "isExtraImport": true,
+        "detail": "ast",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "attr",
+        "description": "attr",
+        "isExtraImport": true,
+        "detail": "attr",
+        "documentation": {}
+    },
+    {
+        "label": "tali_generator",
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "isExtraImport": true,
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
         "label": "transforms",
         "importPath": "torchvision",
         "description": "torchvision",
@@ -1559,30 +2239,6 @@
         "description": "transformers.models.clip.modeling_clip",
         "isExtraImport": true,
         "detail": "transformers.models.clip.modeling_clip",
-        "documentation": {}
-    },
-    {
-        "label": "ModalityTypes",
-        "importPath": "tali_wit.data",
-        "description": "tali_wit.data",
-        "isExtraImport": true,
-        "detail": "tali_wit.data",
-        "documentation": {}
-    },
-    {
-        "label": "TALIDataset",
-        "importPath": "tali_wit.data",
-        "description": "tali_wit.data",
-        "isExtraImport": true,
-        "detail": "tali_wit.data",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass_collate",
-        "importPath": "tali_wit.data",
-        "description": "tali_wit.data",
-        "isExtraImport": true,
-        "detail": "tali_wit.data",
         "documentation": {}
     },
     {
@@ -1727,6 +2383,15 @@
         "documentation": {}
     },
     {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
         "label": "setup",
         "importPath": "distutils.core",
         "description": "distutils.core",
@@ -1825,6 +2490,15 @@
         "documentation": {}
     },
     {
+        "label": "compute_batch_size_given_gpu_memory",
+        "kind": 2,
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "peekOfCode": "def compute_batch_size_given_gpu_memory(reference_batch_size, gpu_memory):\n    \"\"\"Compute the batch size given the GPU memory and the reference batch size.\"\"\"\n    return int(floor(reference_batch_size * gpu_memory / 24))\n@dataclass\nclass BaseConfig:\n    # Must be passed at command line -- neccesary arguments\n    exp_name: str = MISSING\n    # Defaults for these are provided in the collect_config_store method,\n    # but will be often overridden at command line\n    model: Any = MISSING",
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
         "label": "collect_config_store",
         "kind": 2,
         "importPath": "tali_wit.config",
@@ -1892,7 +2566,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "EXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)",
+        "peekOfCode": "EXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1901,7 +2575,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "TRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(",
+        "peekOfCode": "TRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1910,7 +2584,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "CURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),",
+        "peekOfCode": "CURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1919,7 +2593,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "TRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must",
+        "peekOfCode": "TRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1928,7 +2602,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "REPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,",
+        "peekOfCode": "REPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1937,7 +2611,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "EXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,",
+        "peekOfCode": "EXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1946,7 +2620,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "SEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)",
+        "peekOfCode": "SEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1955,7 +2629,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "RESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(",
+        "peekOfCode": "RESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -1964,7 +2638,16 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "LOGGER_LEVEL = \"${logger_level}\"\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True",
+        "peekOfCode": "LOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(",
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "GPU_MEMORY",
+        "kind": 5,
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "peekOfCode": "GPU_MEMORY = 80  # in GB\nwandb_args_config = builds(wandb.init, populate_full_signature=True)\nwandb_args_default = wandb_args_config(\n    project=os.environ.get(\"WANDB_PROJECT\", \"mlproject\"),\n    resume=\"allow\",  # allow, True, False, must\n    dir=CURRENT_EXPERIMENT_DIR,\n    save_code=True,\n)\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2090,7 +2773,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "default_callbacks = dict(hf_uploader=hf_upload)\n@dataclass\nclass BaseConfig:\n    # Must be passed at command line -- neccesary arguments\n    exp_name: str = MISSING\n    # Defaults for these are provided in the collect_config_store method,\n    # but will be often overridden at command line\n    model: Any = MISSING\n    dataset: Any = MISSING\n    dataloader: Any = MISSING",
+        "peekOfCode": "default_callbacks = dict(hf_uploader=hf_upload)\ndef compute_batch_size_given_gpu_memory(reference_batch_size, gpu_memory):\n    \"\"\"Compute the batch size given the GPU memory and the reference batch size.\"\"\"\n    return int(floor(reference_batch_size * gpu_memory / 24))\n@dataclass\nclass BaseConfig:\n    # Must be passed at command line -- neccesary arguments\n    exp_name: str = MISSING\n    # Defaults for these are provided in the collect_config_store method,\n    # but will be often overridden at command line",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2225,7 +2908,7 @@
         "kind": 6,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "class WITFeature:\n    item_idx: int\n    language: str\n    page_url: str\n    image: PIL.Image.Image\n    image_url: str\n    attribution_passes_lang_id: bool\n    caption_alt_text_description: Optional[str] = None\n    caption_reference_description: Optional[str] = None\n    caption_title_and_reference_description: Optional[str] = None",
+        "peekOfCode": "class WITFeature:\n    item_idx: int\n    image: PIL.Image.Image\n    image_url: str\n    caption_alt_text_description: Optional[str] = None\n    caption_reference_description: Optional[str] = None\n    caption_title_and_reference_description: Optional[str] = None\n    context_page_description: Optional[str] = None\n    context_section_description: Optional[str] = None\n    hierarchical_section_title: Optional[str] = None",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2333,7 +3016,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def dataclass_collate(batch):\n    \"\"\"Collate data from a list of dataclass objects.\n    Args:\n        batch (list): List of dataclass objects.\n    Returns:\n        dict: Dictionary of values from the dataclass objects.\n    \"\"\"\n    try:\n        if isinstance(batch[0], dict) or not hasattr(\n            batch[0], \"__dataclass_fields__\"",
+        "peekOfCode": "def dataclass_collate(batch):\n    \"\"\"Collate data from a list of dataclass objects.\n    Args:\n        batch (list): List of dataclass objects.\n    Returns:\n        dict: Dictionary of values from the dataclass objects.\n    \"\"\"\n    batch = list(filter(lambda x: x is not None, batch))\n    batch = list(filter(lambda x: len(list(x.keys())) != 0, batch))\n    try:",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2342,7 +3025,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def get_image_transforms_instait():\n    return Compose([Resize((224, 224)), ToTensor(), ToThreeChannels()])\nimport pathlib\nfrom dataclasses import dataclass\nfrom typing import List\n@dataclass\nclass TALISchema:\n    wit_idx: pa.int64()\n    term_idx: pa.int64()\n    sort_type: pa.string()",
+        "peekOfCode": "def get_image_transforms_instait():\n    return Compose([Resize((224, 224)), ToTensor(), ToThreeChannels()])\nimport pathlib\nfrom dataclasses import dataclass\nfrom typing import List\nfrom tali_wit.data import dataclass_collate\n@dataclass\nclass TALISchema:\n    wit_idx: pa.int64()\n    term_idx: pa.int64()",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -2491,6 +3174,195 @@
         "documentation": {}
     },
     {
+        "label": "TALIBaseTransformConfig",
+        "kind": 6,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "class TALIBaseTransformConfig:\n    root_filepath: Union[str, pathlib.Path]\n    modality_list: List[AnyModalSample]\n    rng_seed: int = 42\n    top_k_tali: int = 10\n    image_size: int = 224\n    num_video_frames: int = 30\n    num_audio_frames: int = 44100\n    clip_duration_in_seconds: float = 3\ndef get_submodality_name(item: AnyModalSample):",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "TALIBaseTransform",
+        "kind": 6,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "class TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = (\n            lambda x, start, end: videoclip_to_video_audio_tensors(\n                video_path=x,",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "get_video_clip",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_clip, image_size, video_duration, fps):\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n            UniformTemporalSubsample(\n                num_samples=int(video_duration * fps),\n                temporal_dim=1,",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "get_video_tensors",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def get_video_tensors(video_clip, image_size, video_duration, fps):\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n            UniformTemporalSubsample(\n                num_samples=int(video_duration * fps),\n                temporal_dim=1,\n            ),\n        ]",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "get_audio_tensors",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def get_audio_tensors(video_clip, video_duration):\n    audio_transform = Compose(\n        [\n            UniformTemporalSubsample(\n                num_samples=int(video_duration * 16000),\n                temporal_dim=0,\n            ),\n        ]\n    )\n    audio_tensors = ApplyTransformToKey(\"audio\", audio_transform)(video_clip)[",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "videoclip_to_video_audio_tensors",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool = True,\n    return_audio: bool = False,\n    image_size: int = 224,\n    starting_second: int = 0,\n    ending_second: int = None,\n    fps: int = 5,\n    num_audio_frames: int = 1 * 16000,\n    num_video_frames: int = 10,",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "get_submodality_name",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def get_submodality_name(item: AnyModalSample):\n    return str(item.sub_modality.value)\nclass TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = (",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "logger = get_logger(__name__)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_clip, image_size, video_duration, fps):\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n            UniformTemporalSubsample(\n                num_samples=int(video_duration * fps),",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "TALIDatasetGenerator",
+        "kind": 6,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "class TALIDatasetGenerator:\n    def __init__(\n        self,\n        set_name: str,\n        root_filepath: Union[str, pathlib.Path],\n        modality_list: List[AnyModalSample],\n    ):\n        super().__init__()\n        if isinstance(root_filepath, str):\n            root_filepath = pathlib.Path(root_filepath)",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "videoclip_to_video_audio_tensors",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "def videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,\n):\n    video: EncodedVideo = EncodedVideo.from_path(video_path)\n    video_duration_in_seconds = float(video.duration)",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_wit_sample",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "def get_wit_sample(\n    dataset: Any,\n    wit_index: int,\n):\n    wit_index = int(wit_index)\n    data_dict = get_language_specific_entries(\n        wit_idx=wit_index, wit_entry=dataset[wit_index]\n    )\n    return data_dict\ndef get_tali_sample(",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_tali_sample",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "def get_tali_sample(\n    video_id: int,\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    if isinstance(root_filepath, str):\n        root_filepath = pathlib.Path(root_filepath)\n    video_filepath = root_filepath / pathlib.Path(\n        f\"video_clip_scores.parquet/relevance/{video_id}.parquet\"\n    )\n    taliwit_table = ds.dataset(",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_sample_from_video_id",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "def get_sample_from_video_id(\n    dataset: Any,\n    video_id: str,\n    modality_list: List[ModalityTypes],\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    output_dict = {}\n    if isinstance(root_filepath, str):\n        root_filepath = pathlib.Path(root_filepath)\n    ### Fetch video data ###",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_language_specific_entries",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "def get_language_specific_entries(wit_idx: int, wit_entry: Any):\n    output_dict = {\n        \"image\": wit_entry[\"image\"],\n        \"image_url\": wit_entry[\"image_url\"],\n        \"item_idx\": wit_idx,\n        \"wit_features\": wit_entry[\"wit_features\"].copy(),\n    }\n    return output_dict\ndef get_wit_sample_idx_with_video_available(\n    root_path: pathlib.Path = pathlib.Path(\"/data/\"),",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_wit_sample_idx_with_video_available",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "def get_wit_sample_idx_with_video_available(\n    root_path: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    wit_idx_to_tali_wit_table_path = defaultdict(list)\n    wit_to_video_paths_table_path = (\n        root_path / \"wit_to_video_paths.parquet\" / \"relevance\"\n    )\n    # /data/wit_to_video_paths.parquet/relevance/\n    with tqdm.tqdm(total=558) as top_pbar:\n        for top_level_dir in pathlib.Path(",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "tali_generator",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "def tali_generator(set_name):\n    failed_samples = 0\n    dataset = TALIDatasetGenerator(\n        set_name=set_name,\n        root_filepath=\"/data/datasets/tali-wit-2-1-buckets/\",\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "logger = get_logger(__name__)\ntali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "tali_schema",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "tali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "tali_schema",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "tali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "video_score_schema",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "video_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
+        "label": "video_score_schema",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_generator",
+        "description": "tali_wit.dataset_generator",
+        "peekOfCode": "video_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,\n):\n    video: EncodedVideo = EncodedVideo.from_path(video_path)",
+        "detail": "tali_wit.dataset_generator",
+        "documentation": {}
+    },
+    {
         "label": "configurable",
         "kind": 2,
         "importPath": "tali_wit.decorators",
@@ -2560,6 +3432,42 @@
         "description": "tali_wit.evaluators",
         "peekOfCode": "logger = get_logger(__name__)\ndef get_dict_shapes(x):\n    return (\n        {\n            key: value.shape if isinstance(value, torch.Tensor) else len(value)\n            for key, value in x.items()\n        }\n        if isinstance(x, dict)\n        else get_dict_shapes(x.__dict__)\n    )",
         "detail": "tali_wit.evaluators",
+        "documentation": {}
+    },
+    {
+        "label": "train_tali_generator",
+        "kind": 2,
+        "importPath": "tali_wit.generate_dataset",
+        "description": "tali_wit.generate_dataset",
+        "peekOfCode": "def train_tali_generator():\n    return tali_generator(set_name=\"train\")\ndef val_tali_generator():\n    return tali_generator(set_name=\"val\")\ndef test_tali_generator():\n    return tali_generator(set_name=\"test\")\n# ds = Dataset.from_generator(\n#     val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\"\n# )\n# ds.save_to_disk(\"/devcode/tali-2-2/val.parquet\")",
+        "detail": "tali_wit.generate_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "val_tali_generator",
+        "kind": 2,
+        "importPath": "tali_wit.generate_dataset",
+        "description": "tali_wit.generate_dataset",
+        "peekOfCode": "def val_tali_generator():\n    return tali_generator(set_name=\"val\")\ndef test_tali_generator():\n    return tali_generator(set_name=\"test\")\n# ds = Dataset.from_generator(\n#     val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\"\n# )\n# ds.save_to_disk(\"/devcode/tali-2-2/val.parquet\")\n# ds = Dataset.from_generator(\n#     test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"",
+        "detail": "tali_wit.generate_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "test_tali_generator",
+        "kind": 2,
+        "importPath": "tali_wit.generate_dataset",
+        "description": "tali_wit.generate_dataset",
+        "peekOfCode": "def test_tali_generator():\n    return tali_generator(set_name=\"test\")\n# ds = Dataset.from_generator(\n#     val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\"\n# )\n# ds.save_to_disk(\"/devcode/tali-2-2/val.parquet\")\n# ds = Dataset.from_generator(\n#     test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"\n# )\n# ds.save_to_disk(\"/devcode/tali-2-2/test.parquet\")",
+        "detail": "tali_wit.generate_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "ds",
+        "kind": 5,
+        "importPath": "tali_wit.generate_dataset",
+        "description": "tali_wit.generate_dataset",
+        "peekOfCode": "ds = Dataset.from_generator(\n    train_tali_generator, cache_dir=\"/devcode/tali-2-2/train/cache\"\n)\nds.save_to_disk(\"/devcode/tali-2-2/train-set\")",
+        "detail": "tali_wit.generate_dataset",
         "documentation": {}
     },
     {
@@ -2711,7 +3619,7 @@
         "kind": 2,
         "importPath": "tali_wit.run",
         "description": "tali_wit.run",
-        "peekOfCode": "def run(cfg: BaseConfig) -> None:\n    wandb_args = {\n        key: value for key, value in cfg.wandb_args.items() if key != \"_target_\"\n    }\n    ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)\n    config_dict = OmegaConf.to_container(cfg, resolve=True)\n    wandb_args[\"config\"] = config_dict\n    wandb_args[\"notes\"] = repo_url\n    wandb.init(**wandb_args)  # init wandb and log config\n    upload_code_to_wandb(cfg.code_dir)  # log code to wandb",
+        "peekOfCode": "def run(cfg: BaseConfig) -> None:\n    wandb_args = {\n        key: value\n        for key, value in cfg.wandb_args.items()\n        if key != \"_target_\"\n    }\n    ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)\n    config_dict = OmegaConf.to_container(cfg, resolve=True)\n    wandb_args[\"config\"] = config_dict\n    wandb_args[\"notes\"] = repo_url",
         "detail": "tali_wit.run",
         "documentation": {}
     },
@@ -2914,20 +3822,56 @@
         "documentation": {}
     },
     {
-        "label": "a",
-        "kind": 5,
+        "label": "get_pokemon_info",
+        "kind": 2,
         "importPath": "playground",
         "description": "playground",
-        "peekOfCode": "a = [i for i in range(10)]\nb = [i**2 for i in range(11)]\nfor idx, batch in enumerate(itertools.zip_longest(a, b)):\n    print(idx, batch)",
+        "peekOfCode": "def get_pokemon_info(pokemon_url):\n    response = requests.get(pokemon_url)\n    if response.status_code == 200:\n        pokemon = response.json()\n    else:\n        print(\"Could not retrieve information about Pikachu.\")\n    return pokemon\nfrom datasets import Dataset\nfrom rich import print\nbase_url = \"https://pokeapi.co/api/v2/pokemon/\"",
         "detail": "playground",
         "documentation": {}
     },
     {
-        "label": "b",
+        "label": "gen",
+        "kind": 2,
+        "importPath": "playground",
+        "description": "playground",
+        "peekOfCode": "def gen():\n    for url in pokemon_urls:\n        yield get_pokemon_info(url)\nds = Dataset.from_generator(gen)\n# dataloader = torch.utils.data.DataLoader(ds, batch_size=10)\n# for item in ds:\n#     print(item)",
+        "detail": "playground",
+        "documentation": {}
+    },
+    {
+        "label": "base_url",
         "kind": 5,
         "importPath": "playground",
         "description": "playground",
-        "peekOfCode": "b = [i**2 for i in range(11)]\nfor idx, batch in enumerate(itertools.zip_longest(a, b)):\n    print(idx, batch)",
+        "peekOfCode": "base_url = \"https://pokeapi.co/api/v2/pokemon/\"\npokemon_ids = [str(i) for i in range(1, 152)]\npokemon_urls = [base_url + pokemon_id for pokemon_id in pokemon_ids]\n# print(pokemon_urls)\ndef gen():\n    for url in pokemon_urls:\n        yield get_pokemon_info(url)\nds = Dataset.from_generator(gen)\n# dataloader = torch.utils.data.DataLoader(ds, batch_size=10)\n# for item in ds:",
+        "detail": "playground",
+        "documentation": {}
+    },
+    {
+        "label": "pokemon_ids",
+        "kind": 5,
+        "importPath": "playground",
+        "description": "playground",
+        "peekOfCode": "pokemon_ids = [str(i) for i in range(1, 152)]\npokemon_urls = [base_url + pokemon_id for pokemon_id in pokemon_ids]\n# print(pokemon_urls)\ndef gen():\n    for url in pokemon_urls:\n        yield get_pokemon_info(url)\nds = Dataset.from_generator(gen)\n# dataloader = torch.utils.data.DataLoader(ds, batch_size=10)\n# for item in ds:\n#     print(item)",
+        "detail": "playground",
+        "documentation": {}
+    },
+    {
+        "label": "pokemon_urls",
+        "kind": 5,
+        "importPath": "playground",
+        "description": "playground",
+        "peekOfCode": "pokemon_urls = [base_url + pokemon_id for pokemon_id in pokemon_ids]\n# print(pokemon_urls)\ndef gen():\n    for url in pokemon_urls:\n        yield get_pokemon_info(url)\nds = Dataset.from_generator(gen)\n# dataloader = torch.utils.data.DataLoader(ds, batch_size=10)\n# for item in ds:\n#     print(item)",
+        "detail": "playground",
+        "documentation": {}
+    },
+    {
+        "label": "ds",
+        "kind": 5,
+        "importPath": "playground",
+        "description": "playground",
+        "peekOfCode": "ds = Dataset.from_generator(gen)\n# dataloader = torch.utils.data.DataLoader(ds, batch_size=10)\n# for item in ds:\n#     print(item)",
         "detail": "playground",
         "documentation": {}
     }

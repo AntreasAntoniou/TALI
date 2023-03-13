@@ -509,9 +509,7 @@ def extract_all_possible_pairs(batch_dict):
     # get all possible pairs of two lists
     pairs = []
     for key1, key2 in pairs_keys:
-        for sub_key1, sub_key2 in zip(
-            modality_dict[key1], modality_dict[key2]
-        ):
+        for sub_key1, sub_key2 in zip(modality_dict[key1], modality_dict[key2]):
             pairs.append((key1, sub_key1, key2, sub_key2))
 
     return pairs

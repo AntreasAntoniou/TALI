@@ -196,6 +196,8 @@ def dataclass_collate(batch):
     Returns:
         dict: Dictionary of values from the dataclass objects.
     """
+    batch = list(filter(lambda x: x is not None, batch))
+    batch = list(filter(lambda x: len(list(x.keys())) != 0, batch))
     try:
         if isinstance(batch[0], dict) or not hasattr(
             batch[0], "__dataclass_fields__"
@@ -203,9 +205,7 @@ def dataclass_collate(batch):
             return default_collate(batch)
         else:
             batched_dict = {
-                key: default_collate(
-                    [getattr(sample, key) for sample in batch]
-                )
+                key: default_collate([getattr(sample, key) for sample in batch])
                 if getattr(batch[0], key) != None
                 else None
                 for key in batch[0].__dict__.keys()
@@ -225,6 +225,7 @@ def get_image_transforms_instait():
 import pathlib
 from dataclasses import dataclass
 from typing import List
+from tali_wit.data import dataclass_collate
 
 
 @dataclass
@@ -865,11 +866,8 @@ def get_sample_from_video_id(
 @dataclass
 class WITFeature:
     item_idx: int
-    language: str
-    page_url: str
     image: PIL.Image.Image
     image_url: str
-    attribution_passes_lang_id: bool
     caption_alt_text_description: Optional[str] = None
     caption_reference_description: Optional[str] = None
     caption_title_and_reference_description: Optional[str] = None
@@ -880,6 +878,7 @@ class WITFeature:
     page_changed_recently: Optional[bool] = None
     page_title: Optional[str] = None
     section_title: Optional[str] = None
+    text: Optional[Dict[str, str]] = None
 
 
 def get_language_specific_entries(
@@ -979,6 +978,7 @@ class DefaultVideoTransforms:
         return x
 
 
+
 @configurable
 class TALIDataset(torch.utils.data.Dataset):
     def __init__(
@@ -1003,6 +1003,7 @@ class TALIDataset(torch.utils.data.Dataset):
             split="train",
             cache_dir=root_filepath / "wit_cache",
         )
+        
         self.wit_idx_to_tali_wit_dict = load_json(
             filepath=root_filepath / "wit_idx_to_video_id_dict_cleaned.json"
         )
@@ -1082,6 +1083,7 @@ class TALIDataset(torch.utils.data.Dataset):
             )
 
         self.broken_idx = set()
+        self.started_sampling = False
         # create two get item top level methods,
         # one for wit index and one for video id,
         # these will also need different ways to sample the dataset_dict
@@ -1092,6 +1094,14 @@ class TALIDataset(torch.utils.data.Dataset):
         return self.total_items
 
     def __getitem__(self, idx):
+        # if not self.started_sampling:
+        #     self.wit_dataset = datasets.load_dataset(
+        #         "wikimedia/wit_base",
+        #         split="train",
+        #         cache_dir=self.root_filepath / "wit_cache",
+        #     )
+        #     self.started_sampling = True
+
         if idx in self.broken_idx:
             return self.__getitem__(idx + 1)
         try:
@@ -1326,9 +1336,9 @@ class TALIDataset(torch.utils.data.Dataset):
             output_dict["wit_idx"] = wit_idx
 
         except Exception as e:
-            # logger.exception(
-            #     f"{e} {self.requested_youtube_data}, {self.modality_list}"
-            # )
+            logger.exception(
+                f"{e} {self.requested_youtube_data}, {self.modality_list}"
+            )
             self.broken_idx.add(idx)
             return self.__getitem__(idx + 1)
 
@@ -1351,31 +1361,50 @@ if __name__ == "__main__":
             ModalityTypes.wit_caption.value,
             ModalityTypes.wit_title.value,
             ModalityTypes.wit_main_body.value,
-            ModalityTypes.youtube_video.value,
-            ModalityTypes.youtube_subtitles.value,
-            ModalityTypes.youtube_audio.value,
-            ModalityTypes.youtube_description.value,
+            # ModalityTypes.youtube_video.value,
+            # ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.youtube_audio.value,
+            # ModalityTypes.youtube_description.value,
         ],
         language_id="en",
         rng_seed=42,
         top_k_tali=10,
         image_size=224,
         transforms=None,
-        num_video_frames=30,
+        num_video_frames=5,
         num_audio_frames=1 * 16000,
-        clip_duration_in_seconds=2.0,
+        clip_duration_in_seconds=5.0,
     )
 
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=64,
-        num_workers=2,
+        batch_size=16,
+        num_workers=8,
         shuffle=True,
         pin_memory=False,
         collate_fn=dataclass_collate,
+        prefetch_factor=2,
     )
 
-    with tqdm.tqdm(total=len(dataset)) as pbar:
-        for item in dataset:
-            print(item)
+    def get_batch(data, batch_size):
+        for i in range(0, len(data), batch_size):
+            batch = []
+            for i in range(i, min(i + batch_size, len(data))):
+                batch.append(data[i])
+            yield dataclass_collate(batch)
+
+    with tqdm.tqdm(total=len(dataloader)) as pbar:
+        for idx, item in enumerate(dataloader):
+            # print(item)
+            
             pbar.update(1)
+
+    
+    # print("check2")
+    # with tqdm.tqdm(total=len(dataset) / 16) as pbar:
+    #     for idx, item in enumerate(dataset):
+    #         # print(item)
+    #         if idx % 16 == 0:
+    #             pbar.update(1)
+    
+   
