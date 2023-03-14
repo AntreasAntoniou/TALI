@@ -58,15 +58,15 @@ def get_video_clip(video, starting_second, ending_second):
     return video.get_clip(start_sec=starting_second, end_sec=ending_second)
 
 
-def get_video_tensors(video_clip, image_size, video_duration, fps):
+def get_video_tensors(video_clip, image_size, video_duration, num_video_frames):
     video_transform = Compose(
         [
-            ShortSideScale(size=image_size),
-            CenterCropVideo(crop_size=(image_size, image_size)),
             UniformTemporalSubsample(
-                num_samples=int(video_duration * fps),
+                num_samples=num_video_frames,
                 temporal_dim=1,
             ),
+            ShortSideScale(size=image_size),
+            CenterCropVideo(crop_size=(image_size, image_size)),
         ]
     )
     video_clip = ApplyTransformToKey("video", video_transform)(video_clip)
@@ -82,9 +82,7 @@ def get_audio_tensors(video_clip, video_duration):
             ),
         ]
     )
-    audio_tensors = ApplyTransformToKey("audio", audio_transform)(video_clip)[
-        "audio"
-    ]
+    audio_tensors = ApplyTransformToKey("audio", audio_transform)(video_clip)["audio"]
     return audio_tensors
 
 
@@ -110,23 +108,25 @@ def videoclip_to_video_audio_tensors(
     video_clip = get_video_clip(video, starting_second, ending_second)
     video_shape = video_clip["video"].shape
     audio_shape = video_clip["audio"].shape
+    video_fps = video_shape[1] / video_duration
+    audio_fps = audio_shape[0] / video_duration
 
     output = {}
 
     if return_video:
         output["video"] = get_video_tensors(
-            video_clip, image_size, video_duration, fps
+            video_clip, image_size, video_duration, num_video_frames
         )
-        starting_video_frame = np.random.randint(
-            0, output["video"].shape[0] - num_video_frames
-        )
+        # starting_video_frame = np.random.randint(
+        #     0, output["video"].shape[0] - num_video_frames
+        # )
         video_shape = output["video"].shape
-        output["video"] = output["video"][
-            starting_video_frame : starting_video_frame + num_video_frames,
-            :,
-            :,
-            :,
-        ]
+        # output["video"] = output["video"][
+        #     starting_video_frame : starting_video_frame + num_video_frames,
+        #     :,
+        #     :,
+        #     :,
+        # ]
         if output["video"].shape[0] < num_video_frames:
             output["video"] = torch.cat(
                 [
@@ -143,21 +143,16 @@ def videoclip_to_video_audio_tensors(
             )
 
     if return_audio:
-        output["audio"] = get_audio_tensors(video_clip, video_duration)
-        audio_shape = output["audio"].shape
-        if return_video:
-            starting_audio_frame = floor(
-                audio_shape[0] * starting_video_frame / video_shape[0]
-            )
-        else:
-            starting_audio_frame = np.random.randint(
-                0, audio_shape[0] - num_audio_frames
-            )[0]
-
-        starting_audio_frame = int(starting_audio_frame)
-        output["audio"] = output["audio"][
-            starting_audio_frame : starting_audio_frame + num_audio_frames
+        audio_duration_target = float(num_audio_frames) / 16000.0
+        video_clip["audio"] = video_clip["audio"][
+            : int(float(audio_fps * float(audio_duration_target)))
         ]
+        output["audio"] = get_audio_tensors(video_clip, audio_duration_target)
+        audio_shape = output["audio"].shape
+        # starting_audio_frame = np.random.randint(0, audio_shape[0] - num_audio_frames)
+        # output["audio"] = output["audio"][
+        #     starting_audio_frame : starting_audio_frame + num_audio_frames
+        # ]
 
         if output["audio"].shape[0] < num_audio_frames:
             output["audio"] = torch.cat(
@@ -196,29 +191,21 @@ class TALIBaseTransform:
             get_submodality_name(item) for item in self.config.modality_list
         ]
         self.image_transform = default_image_transforms(self.config.image_size)
-        self.video_transform = (
-            lambda x, start, end: videoclip_to_video_audio_tensors(
-                video_path=x,
-                image_size=self.config.image_size,
-                starting_second=start,
-                ending_second=end,
-                fps=5,
-                return_video=get_submodality_name(
-                    ModalityTypes.youtube_video.value
-                )
-                in self.modality_list,
-                return_audio=get_submodality_name(
-                    ModalityTypes.youtube_audio.value
-                )
-                in self.modality_list,
-                num_audio_frames=self.config.num_audio_frames,
-                num_video_frames=self.config.num_video_frames,
-            )
+        self.video_transform = lambda x, start, end: videoclip_to_video_audio_tensors(
+            video_path=x,
+            image_size=self.config.image_size,
+            starting_second=start,
+            ending_second=end,
+            fps=5,
+            return_video=get_submodality_name(ModalityTypes.youtube_video.value)
+            in self.modality_list,
+            return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
+            in self.modality_list,
+            num_audio_frames=self.config.num_audio_frames,
+            num_video_frames=self.config.num_video_frames,
         )
 
-        self.select_subtitles_between_timestamps = (
-            select_subtitles_between_timestamps
-        )
+        self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
 
     def __call__(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
         """Wrapper function for the transform function.
@@ -319,13 +306,9 @@ class TALIBaseTransform:
                 in self.modality_list
             ):
                 output_dict[
-                    get_submodality_name(
-                        ModalityTypes.youtube_description.value
-                    )
+                    get_submodality_name(ModalityTypes.youtube_description.value)
                 ] = (
-                    f"<ydesc> "
-                    + input_dict["youtube_description_text"]
-                    + f" </ydesc>"
+                    f"<ydesc> " + input_dict["youtube_description_text"] + f" </ydesc>"
                 )
 
             if (
@@ -333,17 +316,12 @@ class TALIBaseTransform:
                 in self.modality_list
             ):
                 output_dict[
-                    get_submodality_name(
-                        ModalityTypes.youtube_description.value
-                    )
+                    get_submodality_name(ModalityTypes.youtube_description.value)
                 ] = (
                     "<ysub> "
                     + select_subtitles_between_timestamps(
-                        subtitle_dict=load_json(
-                            input_dict["youtube_subtitle_text"]
-                        ),
-                        starting_timestamp=video_starting_second
-                        + clip_starting_second,
+                        subtitle_dict=load_json(input_dict["youtube_subtitle_text"]),
+                        starting_timestamp=video_starting_second + clip_starting_second,
                         ending_timestamp=video_starting_second
                         + clip_starting_second
                         + clip_ending_second,
@@ -389,24 +367,24 @@ if __name__ == "__main__":
                 image_size=224,
                 num_video_frames=5,
                 num_audio_frames=16000,
-                clip_duration_in_seconds=5.0,
+                clip_duration_in_seconds=3.0,
             )
         )
         dataset = datasets.load_from_disk("/devcode/tali-2-2/train-set")
         dataset = dataset.with_transform(transform)
         # dataloader = DataLoader(
         #     dataset,
-        #     batch_size=128,
-        #     num_workers=4,
+        #     batch_size=16,
+        #     num_workers=16,
         #     shuffle=True,
         #     collate_fn=dataclass_collate,
         # )
-
-        with tqdm.tqdm(total=len(dataset)) as pbar:
+        num_samples = 100
+        with tqdm.tqdm(total=num_samples) as pbar:
             for i, example in enumerate(dataset):
                 pbar.set_description(f"Processing {i}th example")
                 pbar.update(1)
-                if i == 100:
+                if i == num_samples:
                     break
 
     pr = cProfile.Profile()
