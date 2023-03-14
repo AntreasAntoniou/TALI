@@ -192,11 +192,12 @@ class TALIBaseTransform:
         ]
         self.image_transform = default_image_transforms(self.config.image_size)
         self.video_transform = lambda x, start, end: videoclip_to_video_audio_tensors(
-            video_path=x,
+            video_path=x.replace(
+                "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+            ),
             image_size=self.config.image_size,
             starting_second=start,
             ending_second=end,
-            fps=5,
             return_video=get_submodality_name(ModalityTypes.youtube_video.value)
             in self.modality_list,
             return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
@@ -229,6 +230,7 @@ class TALIBaseTransform:
                 input_dict[key] = input_dict[key][0]
 
             wit_sample = input_dict["wit_features"]
+            output_dict["wit_idx"] = [input_dict["wit_idx"]]
 
             if (
                 get_submodality_name(ModalityTypes.wit_image.value)
@@ -320,7 +322,12 @@ class TALIBaseTransform:
                 ] = (
                     "<ysub> "
                     + select_subtitles_between_timestamps(
-                        subtitle_dict=load_json(input_dict["youtube_subtitle_text"]),
+                        subtitle_dict=load_json(
+                            input_dict["youtube_subtitle_text"].replace(
+                                "/data/datasets/tali-wit-2-1-buckets/",
+                                self.config.root_filepath,
+                            )
+                        ),
                         starting_timestamp=video_starting_second + clip_starting_second,
                         ending_timestamp=video_starting_second
                         + clip_starting_second
@@ -351,7 +358,7 @@ if __name__ == "__main__":
     def sample():
         transform = TALIBaseTransform(
             config=TALIBaseTransformConfig(
-                root_filepath="/data/datasets/tali-wit-2-1-buckets/",
+                root_filepath="/data/",
                 modality_list=[
                     ModalityTypes.wit_image.value,
                     ModalityTypes.wit_caption.value,
@@ -370,22 +377,20 @@ if __name__ == "__main__":
                 clip_duration_in_seconds=3.0,
             )
         )
-        dataset = datasets.load_from_disk("/devcode/tali-2-2/train-set")
+        dataset = datasets.load_from_disk("/data/train-set")
         dataset = dataset.with_transform(transform)
-        # dataloader = DataLoader(
-        #     dataset,
-        #     batch_size=16,
-        #     num_workers=16,
-        #     shuffle=True,
-        #     collate_fn=dataclass_collate,
-        # )
+        dataloader = DataLoader(
+            dataset,
+            batch_size=128,
+            num_workers=8,
+            shuffle=True,
+            collate_fn=dataclass_collate,
+        )
         num_samples = 100
-        with tqdm.tqdm(total=num_samples) as pbar:
-            for i, example in enumerate(dataset):
+        with tqdm.tqdm(total=len(dataloader)) as pbar:
+            for i, example in enumerate(dataloader):
                 pbar.set_description(f"Processing {i}th example")
                 pbar.update(1)
-                if i == num_samples:
-                    break
 
     pr = cProfile.Profile()
     pr.runcall(sample)
