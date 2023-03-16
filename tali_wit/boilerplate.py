@@ -30,11 +30,9 @@ class Learner(nn.Module):
         model: torch.nn.Module,
         resume: Union[bool, str] = False,
         evaluate_every_n_steps: int = None,
-        evaluate_every_n_epochs: int = None,
         checkpoint_every_n_steps: int = None,
         checkpoint_after_validation: bool = False,
         train_iters: int = None,
-        train_epochs: int = None,
         train_dataloaders: List[DataLoader] = None,
         limit_train_iters: int = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
@@ -48,9 +46,7 @@ class Learner(nn.Module):
         super().__init__()
         self.experiment_name = experiment_name
         self.experiment_dir = (
-            experiment_dir
-            if isinstance(experiment_dir, Path)
-            else Path(experiment_dir)
+            experiment_dir if isinstance(experiment_dir, Path) else Path(experiment_dir)
         )
         self.background_threads = []
         self.checkpoints_dir = Path(self.experiment_dir / "checkpoints")
@@ -62,7 +58,6 @@ class Learner(nn.Module):
             self.checkpoints_dir.mkdir(parents=True)
         self.model = model
         self.evaluate_every_n_steps = evaluate_every_n_steps
-        self.evaluate_every_n_epochs = evaluate_every_n_epochs
         self.checkpoint_every_n_steps = checkpoint_every_n_steps
         self.checkpoint_after_validation = checkpoint_after_validation
         self.step_idx = 0
@@ -70,15 +65,7 @@ class Learner(nn.Module):
         self.limit_train_iters = limit_train_iters
         self.limit_val_iters = limit_val_iters
 
-        if train_iters is None and train_epochs is None:
-            raise ValueError(
-                "Either train_iters or train_epochs must be specified"
-            )
-
         self.train_iters = train_iters
-        self.train_epochs = (
-            99999999 if train_iters is not None else train_epochs
-        )
 
         self.train_dataloaders = train_dataloaders
 
@@ -97,9 +84,7 @@ class Learner(nn.Module):
         for name, params in self.model.named_parameters():
             logger.info(f"{name}, {params.shape}")
 
-        self.callbacks = (
-            [callbacks] if isinstance(callbacks, Callback) else callbacks
-        )
+        self.callbacks = [callbacks] if isinstance(callbacks, Callback) else callbacks
 
         if self.callbacks is None:
             self.callbacks = []
@@ -120,17 +105,7 @@ class Learner(nn.Module):
             Interval.STEP if self.evaluate_every_n_steps else Interval.EPOCH
         )
 
-        if (
-            evaluate_every_n_steps is not None
-            and evaluate_every_n_epochs is not None
-        ):
-            raise ValueError(
-                "You can only specify one of `evaluate_every_n_steps` and `evaluate_every_n_epochs`"
-            )
-
-        self.trainers = (
-            [trainers] if isinstance(trainers, Trainer) else trainers
-        )
+        self.trainers = [trainers] if isinstance(trainers, Trainer) else trainers
         self.evaluators = (
             [evaluators] if isinstance(evaluators, Evaluator) else evaluators
         )
@@ -145,9 +120,7 @@ class Learner(nn.Module):
 
         # use if you want to debug unused parameter errors in DDP
         self.accelerator = Accelerator(
-            kwargs_handlers=[
-                DistributedDataParallelKwargs(find_unused_parameters=True)
-            ]
+            kwargs_handlers=[DistributedDataParallelKwargs(find_unused_parameters=True)]
         )
 
         self.model = self.model.to(self.accelerator.device)
@@ -159,15 +132,10 @@ class Learner(nn.Module):
             train_dataloader = self.accelerator.prepare(train_dataloader)
             self.train_dataloaders.append(train_dataloader)
 
-        temp_trainers = copy.deepcopy(self.trainers)
-        self.trainers = []
-        for trainer in temp_trainers:
-            trainer.optimizer = self.accelerator.prepare(
-                trainer.get_optimizer()
-            )
+        for trainer in self.trainers:
+            trainer.optimizer = self.accelerator.prepare(trainer.get_optimizer())
             if trainer.scheduler is not None:
                 trainer.scheduler = self.accelerator.prepare(trainer.scheduler)
-            self.trainers.append(trainer)
 
         if self.val_dataloaders is not None:
             temp_val_dataloaders = copy.deepcopy(self.val_dataloaders)
@@ -380,9 +348,7 @@ class Learner(nn.Module):
 
         if train_dataloaders is not None:
             self.start_training(train_dataloaders=train_dataloaders)
-            with tqdm(
-                initial=self.step_idx, total=self.train_iters
-            ) as pbar_steps:
+            with tqdm(initial=self.step_idx, total=self.train_iters) as pbar_steps:
                 for epoch_idx in range(self.epoch_idx, self.train_epochs):
                     self.epoch_idx = epoch_idx
 
@@ -408,8 +374,7 @@ class Learner(nn.Module):
 
                         if (
                             self.eval_mode == Interval.STEP
-                            and self.step_idx % self.evaluate_every_n_steps
-                            == 0
+                            and self.step_idx % self.evaluate_every_n_steps == 0
                         ):
                             self._validation_loop()
 
@@ -425,9 +390,7 @@ class Learner(nn.Module):
                         self.step_idx += 1
 
                         if self.step_idx >= self.train_iters:
-                            return self.end_training(
-                                train_dataloader=train_dataloaders
-                            )
+                            return self.end_training(train_dataloader=train_dataloaders)
 
                         pbar_steps.update(1)
 
@@ -440,9 +403,7 @@ class Learner(nn.Module):
         if val_dataloaders is not None:
             self.start_validation(val_dataloaders=val_dataloaders)
 
-            with tqdm(
-                total=max([len(d) for d in val_dataloaders])
-            ) as pbar_dataloaders:
+            with tqdm(total=max([len(d) for d in val_dataloaders])) as pbar_dataloaders:
                 for batch_idx, batch in enumerate(
                     itertools.zip_longest(*val_dataloaders)
                 ):
@@ -504,7 +465,13 @@ class Learner(nn.Module):
             ckpt_save_path.mkdir(parents=True)
 
         experiment_hyperparameters = dict(
-            step_idx=self.step_idx, epoch_idx=self.epoch_idx
+            step_idx=self.step_idx,
+            epoch_idx=self.epoch_idx,
+            global_step=self.global_step,
+            state_dict={
+                "train": [trainer.state_dict for trainer in self.trainers],
+                "eval": [evaluator.state_dict for evaluator in self.evaluators],
+            },
         )
         torch.save(
             obj=experiment_hyperparameters,
@@ -531,11 +498,23 @@ class Learner(nn.Module):
             else Path(checkpoint_path)
         )
         logger.info(f"Loading checkpoint from {checkpoint_path}")
-        trainer_state = torch.load(
-            pathlib.Path(checkpoint_path) / "trainer_state.pt"
-        )
+        trainer_state = torch.load(pathlib.Path(checkpoint_path) / "trainer_state.pt")
         self.step_idx = trainer_state["step_idx"]
         self.epoch_idx = trainer_state["epoch_idx"]
+        self.global_step = trainer_state["global_step"]
+        state_dict = trainer_state["state_dict"]
+
+        for trainer in self.trainers:
+            setattr(
+                trainer, "state_dict", state_dict["train"][self.trainers.index(trainer)]
+            )
+
+        for evaluator in self.evaluators:
+            setattr(
+                evaluator,
+                "state_dict",
+                state_dict["eval"][self.evaluators.index(evaluator)],
+            )
 
         self.accelerator.load_state(checkpoint_path)
 
@@ -604,9 +583,7 @@ if __name__ == "__main__":
         test_dataset, collate_fn=collate_fn, batch_size=256, num_workers=4
     )
 
-    model = torch.hub.load(
-        "pytorch/vision:v0.9.0", "resnet18", pretrained=False
-    )
+    model = torch.hub.load("pytorch/vision:v0.9.0", "resnet18", pretrained=False)
     model.fc = torch.nn.Linear(512, 4)
 
     optimizer = Adam(model.parameters(), lr=1e-3)

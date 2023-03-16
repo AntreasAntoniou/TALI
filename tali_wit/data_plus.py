@@ -35,6 +35,10 @@ from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.dataloader import default_collate
 from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
 from torchvision.transforms._transforms_video import CenterCropVideo
+import torch
+import torchaudio
+import torchaudio.functional as F
+import torchaudio.transforms as T
 from traitlets import default
 from transformers import CLIPModel, CLIPProcessor
 import datasets
@@ -73,23 +77,24 @@ def get_video_tensors(video_clip, image_size, video_duration, num_video_frames):
     return video_clip["video"].permute(1, 0, 2, 3) / 255.0
 
 
-def get_audio_tensors(video_clip, video_duration):
-    audio_transform = Compose(
-        [
-            UniformTemporalSubsample(
-                num_samples=int(video_duration * 16000),
-                temporal_dim=0,
-            ),
-        ]
-    )
-    audio_tensors = ApplyTransformToKey("audio", audio_transform)(video_clip)["audio"]
-    return audio_tensors
+# def get_audio_tensors(video_clip, video_duration):
+#     # audio_transform = Compose(
+#     #     [
+#     #         UniformTemporalSubsample(
+#     #             num_samples=int(video_duration * 16000),
+#     #             temporal_dim=0,
+#     #         ),
+#     #     ]
+#     # )
+#     audio_tensors = ApplyTransformToKey("audio", audio_transform)(video_clip)["audio"]
+#     return audio_tensors
 
 
 def videoclip_to_video_audio_tensors(
     video_path: pathlib.Path,
     return_video: bool = True,
     return_audio: bool = False,
+    return_image: bool = False,
     image_size: int = 224,
     starting_second: int = 0,
     ending_second: int = None,
@@ -108,8 +113,10 @@ def videoclip_to_video_audio_tensors(
     video_clip = get_video_clip(video, starting_second, ending_second)
     video_shape = video_clip["video"].shape
     audio_shape = video_clip["audio"].shape
+
     video_fps = video_shape[1] / video_duration
     audio_fps = audio_shape[0] / video_duration
+    # print(f"audio_fps: {audio_fps}, audio_shape: {audio_shape}")
 
     output = {}
 
@@ -141,31 +148,41 @@ def videoclip_to_video_audio_tensors(
                 ],
                 dim=0,
             )
+    if return_image:
+        output["image"] = get_video_tensors(video_clip, image_size, video_duration, 1)[
+            0
+        ]
 
     if return_audio:
-        audio_duration_target = float(num_audio_frames) / 16000.0
-        video_clip["audio"] = video_clip["audio"][
-            : int(float(audio_fps * float(audio_duration_target)))
-        ]
-        output["audio"] = get_audio_tensors(video_clip, audio_duration_target)
-        audio_shape = output["audio"].shape
-        # starting_audio_frame = np.random.randint(0, audio_shape[0] - num_audio_frames)
-        # output["audio"] = output["audio"][
-        #     starting_audio_frame : starting_audio_frame + num_audio_frames
-        # ]
-
-        if output["audio"].shape[0] < num_audio_frames:
-            output["audio"] = torch.cat(
-                [
-                    output["audio"],
-                    torch.zeros(
-                        num_audio_frames - output["audio"].shape[0],
-                    ),
-                ],
-                dim=0,
-            )
-
+        output["audio"] = extract_audio(num_audio_frames, video_clip)
     return output
+
+
+# TODO Rename this here and in `videoclip_to_video_audio_tensors`
+def extract_audio(num_audio_frames, video_clip):
+    audio_duration_target = float(num_audio_frames) / 16000.0
+    source_sample_rate = 44100
+    target_sample_rate = 16000
+    video_clip["audio"] = video_clip["audio"][
+        : int(floor(float(44100 * float(audio_duration_target))))
+    ]
+    resampler = T.Resample(
+        source_sample_rate, target_sample_rate, dtype=video_clip["audio"].dtype
+    )
+    audio = resampler(video_clip["audio"])
+    # audio_shape = audio.shape
+
+    if audio.shape[0] < num_audio_frames:
+        audio = torch.cat(
+            [
+                audio,
+                torch.zeros(
+                    num_audio_frames - audio.shape[0],
+                ),
+            ],
+            dim=0,
+        )
+    return audio
 
 
 @dataclass
@@ -201,6 +218,8 @@ class TALIBaseTransform:
             return_video=get_submodality_name(ModalityTypes.youtube_video.value)
             in self.modality_list,
             return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
+            in self.modality_list,
+            return_image=get_submodality_name(ModalityTypes.youtube_image.value)
             in self.modality_list,
             num_audio_frames=self.config.num_audio_frames,
             num_video_frames=self.config.num_video_frames,
@@ -251,7 +270,9 @@ class TALIBaseTransform:
                 choose_language = np.random.choice(wit_sample["language"])
                 language_idx = wit_sample["language"].index(choose_language)
                 wit_text = [
-                    f"<{key}> " + wit_sample[key][language_idx] + f" </{key}>"
+                    f"<{key}> <{choose_language}>"
+                    + wit_sample[key][language_idx]
+                    + f"</{choose_language}> </{key}>"
                     for key in [
                         "caption_alt_text_description",
                         "caption_reference_description",
@@ -303,6 +324,11 @@ class TALIBaseTransform:
                         get_submodality_name(ModalityTypes.youtube_audio.value)
                     ] = youtube_media_data["audio"]
 
+                if "image" in youtube_media_data:
+                    output_dict[
+                        get_submodality_name(ModalityTypes.youtube_image.value)
+                    ] = youtube_media_data["image"]
+
             if (
                 get_submodality_name(ModalityTypes.youtube_description.value)
                 in self.modality_list
@@ -338,6 +364,182 @@ class TALIBaseTransform:
         except Exception as e:
             logger.exception(e)
             return {}
+
+        for key, value in list(output_dict.items()):
+            if not isinstance(value, list):
+                output_dict[key] = [value]
+
+        return output_dict
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.config})"
+
+
+class TALIBaseDemoTransform:
+    def __init__(self, config: TALIBaseTransformConfig):
+        self.config = config
+        self.modality_list = [
+            get_submodality_name(item) for item in self.config.modality_list
+        ]
+        self.image_transform = default_image_transforms(self.config.image_size)
+        self.video_transform = lambda x, start, end: videoclip_to_video_audio_tensors(
+            video_path=x.replace(
+                "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+            ),
+            image_size=self.config.image_size,
+            starting_second=start,
+            ending_second=end,
+            return_video=get_submodality_name(ModalityTypes.youtube_video.value)
+            in self.modality_list,
+            return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
+            in self.modality_list,
+            return_image=get_submodality_name(ModalityTypes.youtube_image.value)
+            in self.modality_list,
+            num_audio_frames=self.config.num_audio_frames,
+            num_video_frames=self.config.num_video_frames,
+        )
+
+        self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
+
+    def __call__(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Wrapper function for the transform function.
+
+        This function is used to make the transform function configurable.
+
+        Args:
+            input_dict (Dict[str, Any]): The input dictionary.
+            dict_keys([
+                'image', 'image_url', 'item_idx',
+                'wit_features', 'wit_idx', 'youtube_content_video',
+                'youtube_subtitle_text', 'youtube_title_text',
+                'youtube_description_text'])
+
+        Returns:
+            Dict[str, Any]: The transformed dictionary.
+        """
+        try:
+            output_dict = {}
+            for key in list(input_dict.keys()):
+                input_dict[key] = input_dict[key][0]
+
+            wit_sample = input_dict["wit_features"]
+            output_dict["wit_idx"] = [input_dict["wit_idx"]]
+            output_dict["captions"] = {}
+            if (
+                get_submodality_name(ModalityTypes.wit_image.value)
+                in self.modality_list
+            ):
+                output_dict[
+                    get_submodality_name(ModalityTypes.wit_image.value)
+                ] = self.image_transform(input_dict["image"])
+
+            if (
+                get_submodality_name(ModalityTypes.wit_caption.value)
+                in self.modality_list
+                or get_submodality_name(ModalityTypes.wit_title.value)
+                in self.modality_list
+                or get_submodality_name(ModalityTypes.wit_main_body.value)
+                in self.modality_list
+            ):
+                for language in wit_sample["language"]:
+                    language_idx = wit_sample["language"].index(language)
+                    wit_text = {
+                        key: f"" + wit_sample[key][language_idx] + f""
+                        for key in [
+                            "caption_alt_text_description",
+                            "caption_reference_description",
+                            "caption_title_and_reference_description",
+                            "context_page_description",
+                            "context_section_description",
+                            "hierarchical_section_title",
+                            "page_title",
+                            "section_title",
+                        ]
+                        if wit_sample[key][language_idx] is not None
+                    }
+                    output_dict["captions"][language] = wit_text
+
+            choose_video = np.random.choice(
+                input_dict["youtube_content_video"][: self.config.top_k_tali]
+            )
+            video_id = choose_video.split("/")[-2]
+            video_starting_second = float(
+                choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
+            )
+            clip_starting_second = np.random.randint(
+                0, 30 - self.config.clip_duration_in_seconds
+            )
+            clip_ending_second = (
+                clip_starting_second + self.config.clip_duration_in_seconds
+            )
+            output_dict["youtube_video_id"] = video_id
+
+            if (
+                get_submodality_name(ModalityTypes.youtube_video.value)
+                in self.modality_list
+                or get_submodality_name(ModalityTypes.youtube_audio.value)
+                in self.modality_list
+            ):
+                youtube_media_data = self.video_transform(
+                    x=choose_video,
+                    start=clip_starting_second,
+                    end=clip_ending_second,
+                )
+
+                if "video" in youtube_media_data:
+                    output_dict[
+                        get_submodality_name(ModalityTypes.youtube_video.value)
+                    ] = youtube_media_data["video"]
+
+                if "audio" in youtube_media_data:
+                    output_dict[
+                        get_submodality_name(ModalityTypes.youtube_audio.value)
+                    ] = youtube_media_data["audio"]
+
+                if "image" in youtube_media_data:
+                    output_dict[
+                        get_submodality_name(ModalityTypes.youtube_image.value)
+                    ] = youtube_media_data["image"]
+
+            if (
+                get_submodality_name(ModalityTypes.youtube_description.value)
+                in self.modality_list
+            ):
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_description.value)
+                ] = (
+                    f"<ydesc> " + input_dict["youtube_description_text"] + f" </ydesc>"
+                )
+
+            if (
+                get_submodality_name(ModalityTypes.youtube_subtitles.value)
+                in self.modality_list
+            ):
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_description.value)
+                ] = (
+                    "<ysub> "
+                    + select_subtitles_between_timestamps(
+                        subtitle_dict=load_json(
+                            input_dict["youtube_subtitle_text"].replace(
+                                "/data/datasets/tali-wit-2-1-buckets/",
+                                self.config.root_filepath,
+                            )
+                        ),
+                        starting_timestamp=video_starting_second + clip_starting_second,
+                        ending_timestamp=video_starting_second
+                        + clip_starting_second
+                        + clip_ending_second,
+                    )
+                    + " </ysub>"
+                )
+        except Exception as e:
+            logger.exception(e)
+            return {}
+
+        for key, value in list(output_dict.items()):
+            if not isinstance(value, list):
+                output_dict[key] = [value]
 
         return output_dict
 
