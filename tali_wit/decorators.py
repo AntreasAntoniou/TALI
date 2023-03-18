@@ -17,9 +17,7 @@ def configurable(func: Callable) -> Callable:
 
 
 def check_if_configurable(func: Callable, phase_name: str) -> bool:
-    return (
-        func.__configurable__ if hasattr(func, "__configurable__") else False
-    )
+    return func.__configurable__ if hasattr(func, "__configurable__") else False
 
 
 def collect_metrics(func: Callable) -> Callable:

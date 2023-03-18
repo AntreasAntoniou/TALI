@@ -62,7 +62,7 @@ def get_video_clip(video, starting_second, ending_second):
     return video.get_clip(start_sec=starting_second, end_sec=ending_second)
 
 
-def get_video_tensors(video_clip, image_size, video_duration, num_video_frames):
+def get_video_tensors(video_clip, image_size, num_video_frames):
     video_transform = Compose(
         [
             UniformTemporalSubsample(
@@ -77,28 +77,31 @@ def get_video_tensors(video_clip, image_size, video_duration, num_video_frames):
     return video_clip["video"].permute(1, 0, 2, 3) / 255.0
 
 
-# def get_audio_tensors(video_clip, video_duration):
-#     # audio_transform = Compose(
-#     #     [
-#     #         UniformTemporalSubsample(
-#     #             num_samples=int(video_duration * 16000),
-#     #             temporal_dim=0,
-#     #         ),
-#     #     ]
-#     # )
-#     audio_tensors = ApplyTransformToKey("audio", audio_transform)(video_clip)["audio"]
-#     return audio_tensors
+def get_image_tensor(video_clip, image_size, rng):
+    input_dict = {
+        "video": video_clip["video"][
+            :, rng.randint(0, video_clip["video"].shape[1]), :, :
+        ].unsqueeze(1)
+    }
+    video_transform = Compose(
+        [
+            ShortSideScale(size=image_size),
+            CenterCropVideo(crop_size=(image_size, image_size)),
+        ]
+    )
+    video_clip = ApplyTransformToKey("video", video_transform)(input_dict)
+    return video_clip["video"].permute(1, 0, 2, 3) / 255.0
 
 
 def videoclip_to_video_audio_tensors(
     video_path: pathlib.Path,
+    rng: np.random.Generator,
     return_video: bool = True,
     return_audio: bool = False,
     return_image: bool = False,
     image_size: int = 224,
     starting_second: int = 0,
     ending_second: int = None,
-    fps: int = 5,
     num_audio_frames: int = 1 * 16000,
     num_video_frames: int = 10,
 ):
@@ -111,29 +114,15 @@ def videoclip_to_video_audio_tensors(
         starting_second = max(0, starting_second)
         ending_second = video_duration
     video_clip = get_video_clip(video, starting_second, ending_second)
-    video_shape = video_clip["video"].shape
-    audio_shape = video_clip["audio"].shape
-
-    video_fps = video_shape[1] / video_duration
-    audio_fps = audio_shape[0] / video_duration
-    # print(f"audio_fps: {audio_fps}, audio_shape: {audio_shape}")
 
     output = {}
 
     if return_video:
         output["video"] = get_video_tensors(
-            video_clip, image_size, video_duration, num_video_frames
+            video_clip=video_clip,
+            image_size=image_size,
+            num_video_frames=num_video_frames,
         )
-        # starting_video_frame = np.random.randint(
-        #     0, output["video"].shape[0] - num_video_frames
-        # )
-        video_shape = output["video"].shape
-        # output["video"] = output["video"][
-        #     starting_video_frame : starting_video_frame + num_video_frames,
-        #     :,
-        #     :,
-        #     :,
-        # ]
         if output["video"].shape[0] < num_video_frames:
             output["video"] = torch.cat(
                 [
@@ -149,16 +138,17 @@ def videoclip_to_video_audio_tensors(
                 dim=0,
             )
     if return_image:
-        output["image"] = get_video_tensors(video_clip, image_size, video_duration, 1)[
-            0
-        ]
+        output["image"] = get_image_tensor(
+            video_clip=video_clip, image_size=image_size, rng=rng
+        )[0]
 
     if return_audio:
-        output["audio"] = extract_audio(num_audio_frames, video_clip)
+        output["audio"] = extract_audio(
+            num_audio_frames=num_audio_frames, video_clip=video_clip
+        )
     return output
 
 
-# TODO Rename this here and in `videoclip_to_video_audio_tensors`
 def extract_audio(num_audio_frames, video_clip):
     audio_duration_target = float(num_audio_frames) / 16000.0
     source_sample_rate = 44100
@@ -195,6 +185,8 @@ class TALIBaseTransformConfig:
     num_video_frames: int = 30
     num_audio_frames: int = 44100
     clip_duration_in_seconds: float = 3
+    deterministic_sampling: bool = False
+    priority_caption_language: Optional[str] = "en"
 
 
 def get_submodality_name(item: AnyModalSample):
@@ -208,21 +200,24 @@ class TALIBaseTransform:
             get_submodality_name(item) for item in self.config.modality_list
         ]
         self.image_transform = default_image_transforms(self.config.image_size)
-        self.video_transform = lambda x, start, end: videoclip_to_video_audio_tensors(
-            video_path=x.replace(
-                "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
-            ),
-            image_size=self.config.image_size,
-            starting_second=start,
-            ending_second=end,
-            return_video=get_submodality_name(ModalityTypes.youtube_video.value)
-            in self.modality_list,
-            return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
-            in self.modality_list,
-            return_image=get_submodality_name(ModalityTypes.youtube_image.value)
-            in self.modality_list,
-            num_audio_frames=self.config.num_audio_frames,
-            num_video_frames=self.config.num_video_frames,
+        self.video_transform = (
+            lambda x, start, end, rng: videoclip_to_video_audio_tensors(
+                video_path=x.replace(
+                    "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+                ),
+                image_size=self.config.image_size,
+                starting_second=start,
+                ending_second=end,
+                return_video=get_submodality_name(ModalityTypes.youtube_video.value)
+                in self.modality_list,
+                return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
+                in self.modality_list,
+                return_image=get_submodality_name(ModalityTypes.youtube_image.value)
+                in self.modality_list,
+                num_audio_frames=self.config.num_audio_frames,
+                num_video_frames=self.config.num_video_frames,
+                rng=rng,
+            )
         )
 
         self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
@@ -243,6 +238,12 @@ class TALIBaseTransform:
         Returns:
             Dict[str, Any]: The transformed dictionary.
         """
+
+        if self.config.deterministic_sampling:
+            rng = np.random.RandomState(input_dict["wit_idx"])
+        else:
+            rng = np.random.RandomState(seed=random.randint(0, 10000000))
+
         try:
             output_dict = {}
             for key in list(input_dict.keys()):
@@ -267,7 +268,12 @@ class TALIBaseTransform:
                 or get_submodality_name(ModalityTypes.wit_main_body.value)
                 in self.modality_list
             ):
-                choose_language = np.random.choice(wit_sample["language"])
+                if self.config.priority_caption_language is None:
+                    choose_language = rng.choice(wit_sample["language"])
+                elif self.config.priority_caption_language in wit_sample["language"]:
+                    choose_language = self.config.priority_caption_language
+                else:
+                    choose_language = rng.choice(wit_sample["language"])
                 language_idx = wit_sample["language"].index(choose_language)
                 wit_text = [
                     f"<{key}> <{choose_language}>"
@@ -285,16 +291,16 @@ class TALIBaseTransform:
                     ]
                     if wit_sample[key][language_idx] is not None
                 ]
-                output_dict["wikipedia_text"] = np.random.choice(wit_text)
+                output_dict["wikipedia_text"] = rng.choice(wit_text)
 
-            choose_video = np.random.choice(
+            choose_video = rng.choice(
                 input_dict["youtube_content_video"][: self.config.top_k_tali]
             )
             video_id = choose_video.split("/")[-2]
             video_starting_second = float(
                 choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
             )
-            clip_starting_second = np.random.randint(
+            clip_starting_second = rng.randint(
                 0, 30 - self.config.clip_duration_in_seconds
             )
             clip_ending_second = (
@@ -312,6 +318,7 @@ class TALIBaseTransform:
                     x=choose_video,
                     start=clip_starting_second,
                     end=clip_ending_second,
+                    rng=rng,
                 )
 
                 if "video" in youtube_media_data:
@@ -382,21 +389,24 @@ class TALIBaseDemoTransform:
             get_submodality_name(item) for item in self.config.modality_list
         ]
         self.image_transform = default_image_transforms(self.config.image_size)
-        self.video_transform = lambda x, start, end: videoclip_to_video_audio_tensors(
-            video_path=x.replace(
-                "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
-            ),
-            image_size=self.config.image_size,
-            starting_second=start,
-            ending_second=end,
-            return_video=get_submodality_name(ModalityTypes.youtube_video.value)
-            in self.modality_list,
-            return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
-            in self.modality_list,
-            return_image=get_submodality_name(ModalityTypes.youtube_image.value)
-            in self.modality_list,
-            num_audio_frames=self.config.num_audio_frames,
-            num_video_frames=self.config.num_video_frames,
+        self.video_transform = (
+            lambda x, start, end, rng: videoclip_to_video_audio_tensors(
+                video_path=x.replace(
+                    "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+                ),
+                image_size=self.config.image_size,
+                starting_second=start,
+                ending_second=end,
+                return_video=get_submodality_name(ModalityTypes.youtube_video.value)
+                in self.modality_list,
+                return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
+                in self.modality_list,
+                return_image=get_submodality_name(ModalityTypes.youtube_image.value)
+                in self.modality_list,
+                num_audio_frames=self.config.num_audio_frames,
+                num_video_frames=self.config.num_video_frames,
+                rng=rng,
+            )
         )
 
         self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
@@ -417,6 +427,11 @@ class TALIBaseDemoTransform:
         Returns:
             Dict[str, Any]: The transformed dictionary.
         """
+        if self.config.deterministic_sampling:
+            rng = np.random.RandomState(input_dict["wit_idx"])
+        else:
+            rng = np.random.RandomState(seed=random.randint(0, 10000000))
+
         try:
             output_dict = {}
             for key in list(input_dict.keys()):
@@ -459,14 +474,14 @@ class TALIBaseDemoTransform:
                     }
                     output_dict["captions"][language] = wit_text
 
-            choose_video = np.random.choice(
+            choose_video = rng.choice(
                 input_dict["youtube_content_video"][: self.config.top_k_tali]
             )
             video_id = choose_video.split("/")[-2]
             video_starting_second = float(
                 choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
             )
-            clip_starting_second = np.random.randint(
+            clip_starting_second = rng.randint(
                 0, 30 - self.config.clip_duration_in_seconds
             )
             clip_ending_second = (
@@ -484,6 +499,7 @@ class TALIBaseDemoTransform:
                     x=choose_video,
                     start=clip_starting_second,
                     end=clip_ending_second,
+                    rng=rng,
                 )
 
                 if "video" in youtube_media_data:
@@ -560,12 +576,13 @@ if __name__ == "__main__":
     def sample():
         transform = TALIBaseTransform(
             config=TALIBaseTransformConfig(
-                root_filepath="/data/",
+                root_filepath="/data/datasets/tali-wit-2-1-buckets/",
                 modality_list=[
                     ModalityTypes.wit_image.value,
                     ModalityTypes.wit_caption.value,
                     ModalityTypes.wit_title.value,
                     ModalityTypes.wit_main_body.value,
+                    ModalityTypes.youtube_image.value,
                     ModalityTypes.youtube_video.value,
                     ModalityTypes.youtube_subtitles.value,
                     ModalityTypes.youtube_audio.value,
@@ -577,9 +594,12 @@ if __name__ == "__main__":
                 num_video_frames=5,
                 num_audio_frames=16000,
                 clip_duration_in_seconds=3.0,
+                deterministic_sampling=True,
             )
         )
-        dataset = datasets.load_from_disk("/data/train-set")
+        dataset = datasets.load_from_disk(
+            "/home/evolvingfungus/forge/workspaces/tali-2-2/train-set"
+        )
         dataset = dataset.with_transform(transform)
         dataloader = DataLoader(
             dataset,
@@ -589,8 +609,8 @@ if __name__ == "__main__":
             collate_fn=dataclass_collate,
         )
         num_samples = 100
-        with tqdm.tqdm(total=len(dataloader)) as pbar:
-            for i, example in enumerate(dataloader):
+        with tqdm.tqdm(total=len(dataset)) as pbar:
+            for i, example in enumerate(dataset):
                 pbar.set_description(f"Processing {i}th example")
                 pbar.update(1)
 

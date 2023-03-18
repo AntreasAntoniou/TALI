@@ -289,9 +289,7 @@ def upload_code_to_wandb(code_dir: Union[pathlib.Path, str]):
 @hydra.main(config_path=None, config_name="config", version_base=None)
 def run(cfg: BaseConfig) -> None:
     wandb_args = {
-        key: value
-        for key, value in cfg.wandb_args.items()
-        if key != "_target_"
+        key: value for key, value in cfg.wandb_args.items() if key != "_target_"
     }
     ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)
     config_dict = OmegaConf.to_container(cfg, resolve=True)

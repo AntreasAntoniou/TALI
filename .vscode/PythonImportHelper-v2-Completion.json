@@ -3187,7 +3187,7 @@
         "kind": 6,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "class TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = (\n            lambda x, start, end: videoclip_to_video_audio_tensors(\n                video_path=x,",
+        "peekOfCode": "class TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = lambda x, start, end: videoclip_to_video_audio_tensors(\n            video_path=x,\n            image_size=self.config.image_size,",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3214,7 +3214,7 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def get_audio_tensors(video_clip, video_duration):\n    audio_transform = Compose(\n        [\n            UniformTemporalSubsample(\n                num_samples=int(video_duration * 16000),\n                temporal_dim=0,\n            ),\n        ]\n    )\n    audio_tensors = ApplyTransformToKey(\"audio\", audio_transform)(video_clip)[",
+        "peekOfCode": "def get_audio_tensors(video_clip, video_duration):\n    audio_transform = Compose(\n        [\n            UniformTemporalSubsample(\n                num_samples=int(video_duration * 16000),\n                temporal_dim=0,\n            ),\n        ]\n    )\n    audio_tensors = ApplyTransformToKey(\"audio\", audio_transform)(video_clip)[\"audio\"]",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3232,7 +3232,7 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def get_submodality_name(item: AnyModalSample):\n    return str(item.sub_modality.value)\nclass TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = (",
+        "peekOfCode": "def get_submodality_name(item: AnyModalSample):\n    return str(item.sub_modality.value)\nclass TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = lambda x, start, end: videoclip_to_video_audio_tensors(",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3277,7 +3277,7 @@
         "kind": 2,
         "importPath": "tali_wit.dataset_generator",
         "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def get_tali_sample(\n    video_id: int,\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    if isinstance(root_filepath, str):\n        root_filepath = pathlib.Path(root_filepath)\n    video_filepath = root_filepath / pathlib.Path(\n        f\"video_clip_scores.parquet/relevance/{video_id}.parquet\"\n    )\n    taliwit_table = ds.dataset(",
+        "peekOfCode": "def get_tali_sample(\n    video_id: int,\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    if isinstance(root_filepath, str):\n        root_filepath = pathlib.Path(root_filepath)\n    video_filepath = root_filepath / pathlib.Path(\n        f\"video_clip_scores.parquet/relevance/{video_id}.parquet\"\n    )\n    taliwit_table = ds.dataset(video_filepath, schema=video_score_schema).to_table()",
         "detail": "tali_wit.dataset_generator",
         "documentation": {}
     },
@@ -3304,7 +3304,7 @@
         "kind": 2,
         "importPath": "tali_wit.dataset_generator",
         "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def get_wit_sample_idx_with_video_available(\n    root_path: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    wit_idx_to_tali_wit_table_path = defaultdict(list)\n    wit_to_video_paths_table_path = (\n        root_path / \"wit_to_video_paths.parquet\" / \"relevance\"\n    )\n    # /data/wit_to_video_paths.parquet/relevance/\n    with tqdm.tqdm(total=558) as top_pbar:\n        for top_level_dir in pathlib.Path(",
+        "peekOfCode": "def get_wit_sample_idx_with_video_available(\n    root_path: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    wit_idx_to_tali_wit_table_path = defaultdict(list)\n    wit_to_video_paths_table_path = (\n        root_path / \"wit_to_video_paths.parquet\" / \"relevance\"\n    )\n    # /data/wit_to_video_paths.parquet/relevance/\n    with tqdm.tqdm(total=558) as top_pbar:\n        for top_level_dir in pathlib.Path(wit_to_video_paths_table_path).iterdir():",
         "detail": "tali_wit.dataset_generator",
         "documentation": {}
     },
@@ -3322,7 +3322,7 @@
         "kind": 5,
         "importPath": "tali_wit.dataset_generator",
         "description": "tali_wit.dataset_generator",
-        "peekOfCode": "logger = get_logger(__name__)\ntali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,",
+        "peekOfCode": "logger = get_logger(__name__)\ntali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items())\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,",
         "detail": "tali_wit.dataset_generator",
         "documentation": {}
     },
@@ -3331,7 +3331,7 @@
         "kind": 5,
         "importPath": "tali_wit.dataset_generator",
         "description": "tali_wit.dataset_generator",
-        "peekOfCode": "tali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,",
+        "peekOfCode": "tali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items())\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,",
         "detail": "tali_wit.dataset_generator",
         "documentation": {}
     },
@@ -3340,7 +3340,7 @@
         "kind": 5,
         "importPath": "tali_wit.dataset_generator",
         "description": "tali_wit.dataset_generator",
-        "peekOfCode": "tali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,",
+        "peekOfCode": "tali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items())\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,",
         "detail": "tali_wit.dataset_generator",
         "documentation": {}
     },
@@ -3349,7 +3349,7 @@
         "kind": 5,
         "importPath": "tali_wit.dataset_generator",
         "description": "tali_wit.dataset_generator",
-        "peekOfCode": "video_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,",
+        "peekOfCode": "video_score_schema = list(VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items())\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,\n):",
         "detail": "tali_wit.dataset_generator",
         "documentation": {}
     },

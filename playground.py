@@ -35,30 +35,35 @@ import tqdm
 
 import requests
 
+
 def get_pokemon_info(pokemon_url):
     response = requests.get(pokemon_url)
 
     if response.status_code == 200:
         pokemon = response.json()
-        
+
     else:
         print("Could not retrieve information about Pikachu.")
     return pokemon
 
+
 from datasets import Dataset
 from rich import print
+
 base_url = "https://pokeapi.co/api/v2/pokemon/"
 pokemon_ids = [str(i) for i in range(1, 152)]
 pokemon_urls = [base_url + pokemon_id for pokemon_id in pokemon_ids]
 
 # print(pokemon_urls)
 
+
 def gen():
     for url in pokemon_urls:
         yield get_pokemon_info(url)
+
+
 ds = Dataset.from_generator(gen)
 # dataloader = torch.utils.data.DataLoader(ds, batch_size=10)
 
 # for item in ds:
 #     print(item)
-        

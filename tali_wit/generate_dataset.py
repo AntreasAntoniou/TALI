@@ -1,4 +1,4 @@
-`from datasets import Dataset
+from datasets import Dataset
 
 from tali_wit.dataset_generator import tali_generator
 

@@ -31,9 +31,7 @@ if __name__ == "__main__":
         name=f"{datetime_seed}-{os.getenv('EXPERIMENT_NAME_PREFIX')}",
         script_list=script_list,
         docker_image_path=os.getenv("DOCKER_IMAGE_PATH"),
-        secret_variables={
-            os.getenv("EXPERIMENT_NAME_PREFIX"): "WANDB_API_KEY"
-        },
+        secret_variables={os.getenv("EXPERIMENT_NAME_PREFIX"): "WANDB_API_KEY"},
         environment_variables={
             "HF_TOKEN": os.getenv("HF_TOKEN"),
             "HF_USERNAME": os.getenv("HF_USERNAME"),

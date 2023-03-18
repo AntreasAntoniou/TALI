@@ -978,7 +978,6 @@ class DefaultVideoTransforms:
         return x
 
 
-
 @configurable
 class TALIDataset(torch.utils.data.Dataset):
     def __init__(
@@ -1003,7 +1002,7 @@ class TALIDataset(torch.utils.data.Dataset):
             split="train",
             cache_dir=root_filepath / "wit_cache",
         )
-        
+
         self.wit_idx_to_tali_wit_dict = load_json(
             filepath=root_filepath / "wit_idx_to_video_id_dict_cleaned.json"
         )
@@ -1396,15 +1395,12 @@ if __name__ == "__main__":
     with tqdm.tqdm(total=len(dataloader)) as pbar:
         for idx, item in enumerate(dataloader):
             # print(item)
-            
+
             pbar.update(1)
 
-    
     # print("check2")
     # with tqdm.tqdm(total=len(dataset) / 16) as pbar:
     #     for idx, item in enumerate(dataset):
     #         # print(item)
     #         if idx % 16 == 0:
     #             pbar.update(1)
-    
-   

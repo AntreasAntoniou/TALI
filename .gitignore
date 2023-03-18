@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+demo/temp_data/*
+notebooks/flagged_data_points/*
 
 # C extensions
 *.so

@@ -40,7 +40,9 @@ logger = get_logger(__name__)
 tali_schema = list(TALISchema.__dict__["__annotations__"].items())
 tali_schema = pa.schema(tali_schema)
 
-video_score_schema = list(VideoCLIPScoreSchema.__dict__["__annotations__"].items())
+video_score_schema = list(
+    VideoCLIPScoreSchema.__dict__["__annotations__"].items()
+)
 video_score_schema = pa.schema(video_score_schema)
 
 
@@ -71,8 +73,12 @@ def videoclip_to_video_audio_tensors(
         end_sec=clip_start_sec + clip_duration_in_seconds,
     )
 
-    audio_sample_rate = floor(video_data["audio"].shape[0] / video_duration_in_seconds)
-    video_sample_rate = floor(video_data["video"].shape[1] / video_duration_in_seconds)
+    audio_sample_rate = floor(
+        video_data["audio"].shape[0] / video_duration_in_seconds
+    )
+    video_sample_rate = floor(
+        video_data["video"].shape[1] / video_duration_in_seconds
+    )
     video_tensors = None
     audio_tensors = None
     output_dict = {
@@ -154,7 +160,9 @@ def get_tali_sample(
         f"video_clip_scores.parquet/relevance/{video_id}.parquet"
     )
 
-    taliwit_table = ds.dataset(video_filepath, schema=video_score_schema).to_table()
+    taliwit_table = ds.dataset(
+        video_filepath, schema=video_score_schema
+    ).to_table()
     table: VideoCLIPScoreSchema = taliwit_table.to_pandas()
 
     table_idx = table.video_id.tolist().index(video_id)
@@ -170,7 +178,8 @@ def get_tali_sample(
     video_data_filepath = pathlib.Path(video_data_root / video_path).parent
     subclip_filepaths = list(video_data_filepath.rglob("*.mp4"))[:10]
     subclip_filepaths = [
-        str(subclip_filepath.as_posix()) for subclip_filepath in subclip_filepaths
+        str(subclip_filepath.as_posix())
+        for subclip_filepath in subclip_filepaths
     ]
 
     output_dict = {
@@ -260,7 +269,9 @@ def get_sample_from_video_id(
             f"video_clip_scores.parquet/relevance/{video_id}.parquet"
         )
 
-        taliwit_table = ds.dataset(video_filepath, schema=video_score_schema).to_table()
+        taliwit_table = ds.dataset(
+            video_filepath, schema=video_score_schema
+        ).to_table()
         table: VideoCLIPScoreSchema = taliwit_table.to_pandas()
 
         video_id = table.video_id[0]
@@ -297,7 +308,9 @@ def get_wit_sample_idx_with_video_available(
     )
     # /data/wit_to_video_paths.parquet/relevance/
     with tqdm.tqdm(total=558) as top_pbar:
-        for top_level_dir in pathlib.Path(wit_to_video_paths_table_path).iterdir():
+        for top_level_dir in pathlib.Path(
+            wit_to_video_paths_table_path
+        ).iterdir():
             with tqdm.tqdm(total=600) as inner_pbar:
                 for file in pathlib.Path(top_level_dir).rglob("*.parquet"):
                     if file.is_file():
@@ -307,7 +320,9 @@ def get_wit_sample_idx_with_video_available(
                             .to_pydict()
                         )
                         video_clip_score_table_path = (
-                            pathlib.Path("/data/video_clip_scores.parquet/relevance/")
+                            pathlib.Path(
+                                "/data/video_clip_scores.parquet/relevance/"
+                            )
                             / f"{table['video_id'][0]}.parquet"
                         )
                         if video_clip_score_table_path.exists():
@@ -357,7 +372,9 @@ class TALIDatasetGenerator:
 
         self.video_id_list = list(self.video_id_list.keys())
 
-        train_video_id_list = self.video_id_list[: int(len(self.video_id_list) * 0.9)]
+        train_video_id_list = self.video_id_list[
+            : int(len(self.video_id_list) * 0.9)
+        ]
 
         val_video_id_list = self.video_id_list[
             len(train_video_id_list) : len(train_video_id_list)
