@@ -1,9 +1,6 @@
-from copy import deepcopy
 import math
 import os
-from collections import defaultdict
 from dataclasses import dataclass
-import numpy as np
 import torch.nn.functional
 from typing import Any, Dict
 
@@ -11,17 +8,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from rich import print
-from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
-from torchvision.transforms import ToTensor
+from torch.utils.data import DataLoader
 from transformers import (
     CLIPModel,
     CLIPProcessor,
     WhisperModel,
     WhisperProcessor,
-    WhisperFeatureExtractor,
 )
-from transformers.models.clip.modeling_clip import CLIPOutput, contrastive_loss
+from transformers.models.clip.modeling_clip import contrastive_loss
 
 from accelerate import Accelerator
 from tali_wit.data import ModalityTypes, TALIDataset, dataclass_collate

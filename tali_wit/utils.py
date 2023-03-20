@@ -1,8 +1,6 @@
 import logging
-import random
 import shutil
 
-import numpy as np
 import torch
 from omegaconf import DictConfig, OmegaConf
 from rich.logging import RichHandler
@@ -11,7 +9,6 @@ from rich.traceback import install
 from rich.tree import Tree
 
 from huggingface_hub import (
-    Repository,
     create_repo,
     hf_hub_download,
     login,
@@ -144,7 +141,7 @@ def pretty_config(
 import os
 import os.path
 import pathlib
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 
 import orjson as json
 
@@ -342,7 +339,6 @@ def download_model_with_name(
 
 
 def create_hf_model_repo_and_download_maybe(cfg: Any):
-    import orjson
     import yaml
     from huggingface_hub import HfApi
 

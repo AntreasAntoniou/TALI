@@ -1,14 +1,12 @@
-import os
 import pathlib
 from collections import defaultdict
 from math import floor
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, List, Union
 import datasets
 
 import numpy as np
 import pyarrow as pa
 import pyarrow.dataset as ds
-import torch
 import tqdm
 from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.transforms import (
@@ -16,7 +14,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformTemporalSubsample,
 )
-from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
+from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import CenterCropVideo
 import datasets
 from tali_wit.data import (
@@ -25,15 +23,9 @@ from tali_wit.data import (
     ModalityTypes,
     TALISchema,
     VideoCLIPScoreSchema,
-    WITFeature,
-    WitSample,
-    dataclass_collate,
-    default_image_transforms,
-    get_base_modality,
-    select_subtitles_between_timestamps,
 )
 
-from tali_wit.utils import get_logger, load_json, save_json
+from tali_wit.utils import get_logger, load_json
 
 logger = get_logger(__name__)
 

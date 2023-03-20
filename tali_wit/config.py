@@ -1,30 +1,25 @@
 from math import floor
-import multiprocessing
 import os
-from dataclasses import MISSING, dataclass, field
-from datetime import timedelta
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import MISSING, dataclass
+import pathlib
+from typing import Any, Optional
 
-import timm
 import torch
-import wandb
 from accelerate import Accelerator
 from hydra.core.config_store import ConfigStore
 from hydra_zen import (
     MISSING,
     ZenField,
     builds,
-    hydrated_dataclass,
     make_config,
 )
-from omegaconf import OmegaConf
 from timm.scheduler import CosineLRScheduler
 from torch.utils.data import DataLoader
 
 from tali_wit.boilerplate import Learner
 from tali_wit.callbacks import UploadCheckpointsToHuggingFace
 from tali_wit.data import ModalityTypes
-from tali_wit.data_plus import TALIBase, get_dataset
+from tali_wit.data_plus import TALIBase
 from tali_wit.utils import get_hydra_config, get_logger
 from tali_wit.wit import WITBase
 
@@ -80,7 +75,7 @@ tali_dataset_config = TALIBase.build_config(
     populate_full_signature=True,
     set_name="train",
     tali_root_filepath=DATASET_DIR,
-    hf_tali_root_filepath="/home/evolvingfungus/forge/workspaces/tali-2-2/",
+    hf_tali_root_filepath=DATASET_DIR,
     modality_list=[
         ModalityTypes.wit_image.value,
         ModalityTypes.wit_caption.value,
@@ -107,7 +102,7 @@ tali_dataset_config = TALIBase.build_config(
 wit_dataset_config = WITBase.build_config(
     populate_full_signature=True,
     set_name="train",
-    cache_dir="/data/datasets/tali-wit-2-1-buckets/wit_cache",
+    cache_dir=pathlib.Path(DATASET_DIR) / "wit_cache",
     image_size=224,
     deterministic_sampling=False,
     infinite_sampling=False,  # True,
@@ -155,8 +150,6 @@ class BaseConfig:
     scheduler: Any = MISSING
     learner: Any = MISSING
     callbacks: Any = MISSING
-
-    wandb_args: Any = MISSING
 
     hf_username: str = (
         os.environ["HF_USERNAME"] if "HF_USERNAME" in os.environ else MISSING
@@ -271,7 +264,7 @@ def collect_config_store():
     )
 
     wit_dataset_image_text_config = wit_dataset_config(
-        tali_dataset_dir="/home/evolvingfungus/forge/workspaces/tali-2-2/"
+        tali_dataset_dir=DATASET_DIR
     )
 
     tali_dataset_image_text_config = tali_dataset_config(

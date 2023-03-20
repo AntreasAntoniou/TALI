@@ -1,59 +1,24 @@
-from calendar import c
-import copy
-import json
 import os
 import pathlib
-import random
-import sys
 import time
-from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from dataclasses import dataclass
-from enum import Enum
-from math import floor
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 import datasets
 
 import numpy as np
-import pandas as pd
-import PIL
-import pyarrow as pa
-import pyarrow.dataset as ds
-import pyarrow.parquet as pq
-import torch
-import torch.nn as nn
 import tqdm
-from hydra_zen import builds, instantiate
-from PIL import Image
-from pytorchvideo.data.encoded_video import EncodedVideo
-from pytorchvideo.transforms import (
-    ApplyTransformToKey,
-    ShortSideScale,
-    UniformTemporalSubsample,
-)
-from rich import print
 from torch.utils.data import DataLoader, Dataset
-from torch.utils.data.dataloader import default_collate
 from torch.utils.data import Dataset, Subset, DataLoader
-from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
-from torchvision.transforms._transforms_video import CenterCropVideo
-from traitlets import default
-from transformers import CLIPModel, CLIPProcessor
 import datasets
 from tali_wit.data import (
-    AnyModalSample,
     dataclass_collate,
     default_image_transforms,
     ModalityTypes,
-    select_subtitles_between_timestamps,
-    TALIDataset,
 )
 
 from tali_wit.data_plus import get_submodality_name
 
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger, load_json, save_json
-from tali_wit.models import ModalityConfig
 
 logger = get_logger(__name__)
 
@@ -209,7 +174,6 @@ class WITBaseTransform:
 
 if __name__ == "__main__":
     import tqdm
-    from rich import print
     from rich.traceback import install
     import cProfile
     import pstats

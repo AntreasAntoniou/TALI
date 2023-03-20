@@ -1,13 +1,9 @@
 from ast import Dict
 from dataclasses import dataclass
-from typing import Any, Iterator, List, Tuple
+from typing import Any, List
 
 import torch
-import torch.nn.functional as F
-import wandb
 from accelerate import Accelerator
-from attr import field
-from hydra_zen import instantiate
 from torch.utils.data import DataLoader
 from tali_wit.data_plus import generate_hierarchical_data_dict
 
@@ -44,7 +40,7 @@ class EvaluatorOutput:
 
 
 class ClassificationEvaluator(Evaluator):
-    def __init__(self, experiment_tracker: wandb.wandb_sdk.wandb_run.Run = None):
+    def __init__(self, experiment_tracker: Any):
         super().__init__()
         self.state_dict = {}
         self.experiment_tracker = experiment_tracker

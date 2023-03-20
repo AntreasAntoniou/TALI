@@ -1,12 +1,8 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict, Iterator, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict
 
 import torch
-import torch.nn.functional as F
-import wandb
 from accelerate import Accelerator
-from hydra_zen import instantiate
-from torch.utils.data import DataLoader
 
 from tali_wit.callbacks import Interval
 from tali_wit.data_plus import generate_hierarchical_data_dict
@@ -48,7 +44,7 @@ class ClassificationTrainer(Trainer):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler._LRScheduler = None,
         scheduler_interval: str = Interval.STEP,
-        experiment_tracker: wandb.wandb_sdk.wandb_run.Run = None,
+        experiment_tracker: Any = None,
     ):
         super().__init__()
 

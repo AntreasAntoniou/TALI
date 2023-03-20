@@ -1,19 +1,11 @@
-import copy
 import itertools
-import logging
 import pathlib
-from copy import deepcopy
-from dataclasses import dataclass
 from pathlib import Path
-from tabnanny import check
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Union
 
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from accelerate import Accelerator, DistributedDataParallelKwargs
-from numpy import argsort
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -23,9 +15,8 @@ from tali_wit.evaluators import ClassificationEvaluator, Evaluator
 from tali_wit.trainers import (
     ClassificationTrainer,
     Trainer,
-    get_dict_shapes,
 )
-from tali_wit.utils import download_model_with_name, get_logger
+from tali_wit.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -640,11 +631,11 @@ class Learner(nn.Module):
 if __name__ == "__main__":
     # a minimal example of how to use the Learner class
     import torch
-    from datasets import Image, load_dataset
+    from datasets import load_dataset
     from rich import print
     from torch.nn import CrossEntropyLoss
     from torch.optim import Adam
-    from torch.utils.data import DataLoader, Dataset
+    from torch.utils.data import DataLoader
     from torchvision.transforms import ColorJitter, Compose, Resize, ToTensor
 
     train_dataset = load_dataset("beans", split="train")

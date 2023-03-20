@@ -1,14 +1,12 @@
 import os
-import shutil
 
 import neptune
 from rich import print
 from rich.traceback import install
 
-from tali_wit.models import ModelAndTransform, TALIModel
+from tali_wit.models import TALIModel
 from tali_wit.utils import (
     create_hf_model_repo_and_download_maybe,
-    save_json,
 )
 from tali_wit.ctools import get_max_supported_batch_size
 
@@ -27,21 +25,12 @@ os.environ[
 install()  # beautiful and clean tracebacks for debugging
 
 
-import pathlib
-from typing import Callable, List, Optional, Union
+from typing import List, Optional
 
 import hydra
 import torch
-from huggingface_hub import (
-    Repository,
-    create_repo,
-    hf_hub_download,
-    login,
-    snapshot_download,
-)
 from hydra_zen import instantiate
 from omegaconf import OmegaConf
-from torch import nn
 from torch.utils.data import Dataset
 
 from tali_wit.boilerplate import Learner
