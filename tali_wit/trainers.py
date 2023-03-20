@@ -9,6 +9,7 @@ from hydra_zen import instantiate
 from torch.utils.data import DataLoader
 
 from tali_wit.callbacks import Interval
+from tali_wit.data_plus import generate_hierarchical_data_dict
 from tali_wit.models import extract_all_possible_pairs
 
 from .decorators import collect_metrics
@@ -18,6 +19,7 @@ logger = get_logger(__name__)
 
 
 def get_dict_shapes(x):
+    print(x)
     if not isinstance(x, dict):
         return get_dict_shapes(x.__dict__)
     return {
@@ -34,9 +36,10 @@ class Trainer(object):
 @dataclass
 class TrainerOutput:
     opt_loss: torch.Tensor
-    step_idx: int
+    global_step: int
     metrics: Dict[str, Any]
     phase_name: str
+    experiment_tracker: Any = None
 
 
 class ClassificationTrainer(Trainer):
@@ -52,7 +55,7 @@ class ClassificationTrainer(Trainer):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.experiment_tracker = experiment_tracker
-        self.epoch_metrics = {}
+        self.state_dict = {}
 
         if self.scheduler is not None:
             assert scheduler_interval in {"step", "epoch"}
@@ -66,9 +69,7 @@ class ClassificationTrainer(Trainer):
         self,
         model,
         batch,
-        batch_idx,
-        step_idx,
-        epoch_idx,
+        global_step,
         accelerator: Accelerator,
     ) -> TrainerOutput:
         model.train()
@@ -77,6 +78,8 @@ class ClassificationTrainer(Trainer):
         overall_accuracy = []
         overall_accuracy_top_5 = []
         overall_output_dict = {}
+        batch = generate_hierarchical_data_dict(batch)
+
         for (
             modality_a,
             sub_modality_a,
@@ -89,13 +92,10 @@ class ClassificationTrainer(Trainer):
             }
             self.optimizer.zero_grad()
             output_dict = model.forward(sample, return_loss=True)
+
             loss = torch.mean(
                 torch.stack(
-                    [
-                        value
-                        for key, value in output_dict.items()
-                        if "_loss" in key
-                    ]
+                    [value for key, value in output_dict.items() if "_loss" in key]
                 )
             )
             accuracy = torch.mean(
@@ -121,6 +121,8 @@ class ClassificationTrainer(Trainer):
                 if "_loss" not in key and "_accuracy" not in key:
                     del output_dict[key]
             accelerator.backward(loss)
+            self.optimizer.step()
+
             overall_output_dict |= output_dict
             overall_loss.append(loss)
             overall_accuracy.append(accuracy)
@@ -134,44 +136,46 @@ class ClassificationTrainer(Trainer):
         metrics |= overall_output_dict
 
         for key, value in metrics.items():
-            self.epoch_metrics.setdefault(key, []).append(value)
+            self.state_dict.setdefault(key, []).append(value)
 
         metrics["lr"] = self.optimizer.param_groups[0]["lr"]
 
         return TrainerOutput(
             phase_name="training",
             opt_loss=torch.mean(torch.stack(overall_loss)),
-            step_idx=step_idx,
+            global_step=global_step,
             metrics=metrics,
+            experiment_tracker=self.experiment_tracker,
         )
 
     @collect_metrics
     def start_training(
         self,
-        epoch_idx: int,
-        step_idx: int,
-        train_dataloader: DataLoader = None,
+        global_step: int,
     ):
-        self.epoch_metrics = {}
+        self.state_dict = {}
         return TrainerOutput(
-            opt_loss=None, step_idx=step_idx, metrics={}, phase_name="training"
+            opt_loss=None,
+            global_step=global_step,
+            metrics={},
+            phase_name="training",
+            experiment_tracker=self.experiment_tracker,
         )
 
     @collect_metrics
     def end_training(
         self,
-        epoch_idx: int,
-        step_idx: int,
-        train_dataloader: DataLoader = None,
+        global_step: int,
     ):
         epoch_metrics = {}
-        for key, value in self.epoch_metrics.items():
+        for key, value in self.state_dict.items():
             epoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
             epoch_metrics[f"{key}-epoch-std"] = torch.stack(value).std()
 
         return TrainerOutput(
             opt_loss=None,
-            step_idx=step_idx,
+            global_step=global_step,
             metrics=epoch_metrics,
             phase_name="training",
+            experiment_tracker=self.experiment_tracker,
         )

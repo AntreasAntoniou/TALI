@@ -9,6 +9,7 @@ from accelerate import Accelerator
 from attr import field
 from hydra_zen import instantiate
 from torch.utils.data import DataLoader
+from tali_wit.data_plus import generate_hierarchical_data_dict
 
 from tali_wit.models import extract_all_possible_pairs
 
@@ -36,29 +37,28 @@ class Evaluator(object):
 
 @dataclass
 class EvaluatorOutput:
-    step_idx: int
+    global_step: int
     metrics: Dict
     phase_name: str
+    experiment_tracker: Any = None
 
 
 class ClassificationEvaluator(Evaluator):
-    def __init__(
-        self, experiment_tracker: wandb.wandb_sdk.wandb_run.Run = None
-    ):
+    def __init__(self, experiment_tracker: wandb.wandb_sdk.wandb_run.Run = None):
         super().__init__()
-        self.epoch_metrics = {}
+        self.state_dict = {}
         self.experiment_tracker = experiment_tracker
 
     def validation_step(
         self,
         model,
         batch,
-        batch_idx,
-        step_idx,
-        epoch_idx,
+        global_step,
         accelerator: Accelerator,
     ):
         model.eval()
+        batch = generate_hierarchical_data_dict(batch)
+
         with torch.no_grad():
             overall_loss = []
             overall_accuracy = []
@@ -71,21 +71,13 @@ class ClassificationEvaluator(Evaluator):
                 sub_modality_b,
             ) in extract_all_possible_pairs(batch):
                 sample = {
-                    modality_a: {
-                        sub_modality_a: batch[modality_a][sub_modality_a]
-                    },
-                    modality_b: {
-                        sub_modality_b: batch[modality_b][sub_modality_b]
-                    },
+                    modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
+                    modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
                 }
                 output_dict = model.forward(sample, return_loss=True)
                 loss = torch.mean(
                     torch.stack(
-                        [
-                            value
-                            for key, value in output_dict.items()
-                            if "_loss" in key
-                        ]
+                        [value for key, value in output_dict.items() if "_loss" in key]
                     )
                 )
                 accuracy = torch.mean(
@@ -117,32 +109,31 @@ class ClassificationEvaluator(Evaluator):
 
             metrics = {
                 "accuracy": torch.mean(torch.stack(overall_accuracy)),
-                "accuracy_top_5": torch.mean(
-                    torch.stack(overall_accuracy_top_5)
-                ),
+                "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
                 "loss": torch.mean(torch.stack(overall_loss)),
             }
             metrics |= overall_output_dict
 
             for key, value in metrics.items():
-                self.epoch_metrics.setdefault(key, []).append(value)
+                self.state_dict.setdefault(key, []).append(value)
 
         return EvaluatorOutput(
-            step_idx=step_idx,
+            global_step=global_step,
             phase_name="validation",
             metrics=metrics,
+            experiment_tracker=self.experiment_tracker,
         )
 
     def test_step(
         self,
         model,
         batch,
-        batch_idx,
-        step_idx,
-        epoch_idx,
+        global_step,
         accelerator: Accelerator,
     ):
         model.eval()
+        batch = generate_hierarchical_data_dict(batch)
+
         with torch.no_grad():
             overall_loss = []
             overall_accuracy = []
@@ -155,21 +146,13 @@ class ClassificationEvaluator(Evaluator):
                 sub_modality_b,
             ) in extract_all_possible_pairs(batch):
                 sample = {
-                    modality_a: {
-                        sub_modality_a: batch[modality_a][sub_modality_a]
-                    },
-                    modality_b: {
-                        sub_modality_b: batch[modality_b][sub_modality_b]
-                    },
+                    modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
+                    modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
                 }
                 output_dict = model.forward(sample, return_loss=True)
                 loss = torch.mean(
                     torch.stack(
-                        [
-                            value
-                            for key, value in output_dict.items()
-                            if "_loss" in key
-                        ]
+                        [value for key, value in output_dict.items() if "_loss" in key]
                     )
                 )
                 accuracy = torch.mean(
@@ -201,76 +184,81 @@ class ClassificationEvaluator(Evaluator):
 
             metrics = {
                 "accuracy": torch.mean(torch.stack(overall_accuracy)),
-                "accuracy_top_5": torch.mean(
-                    torch.stack(overall_accuracy_top_5)
-                ),
+                "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
                 "loss": torch.mean(torch.stack(overall_loss)),
             }
             metrics |= overall_output_dict
 
             for key, value in metrics.items():
-                self.epoch_metrics.setdefault(key, []).append(value)
+                self.state_dict.setdefault(key, []).append(value)
 
         return EvaluatorOutput(
-            step_idx=step_idx,
+            global_step=global_step,
             phase_name="test",
             metrics=metrics,
+            experiment_tracker=self.experiment_tracker,
         )
 
     @collect_metrics
     def start_validation(
         self,
-        epoch_idx: int,
-        step_idx: int,
+        global_step: int,
         val_dataloaders: List[DataLoader] = None,
     ):
-        self.epoch_metrics = {}
+        self.state_dict = {}
         return EvaluatorOutput(
-            step_idx=step_idx,
+            global_step=global_step,
             phase_name="validation",
-            metrics=self.epoch_metrics,
+            metrics=self.state_dict,
+            experiment_tracker=self.experiment_tracker,
         )
 
     @collect_metrics
     def start_testing(
         self,
-        epoch_idx: int,
-        step_idx: int,
+        global_step: int,
         test_dataloaders: List[DataLoader] = None,
     ):
-        self.epoch_metrics = {}
+        self.state_dict = {}
         return EvaluatorOutput(
-            step_idx=step_idx, phase_name="testing", metrics=self.epoch_metrics
+            global_step=global_step,
+            phase_name="testing",
+            metrics=self.state_dict,
+            experiment_tracker=self.experiment_tracker,
         )
 
     @collect_metrics
     def end_validation(
         self,
-        epoch_idx: int,
-        step_idx: int,
+        global_step: int,
         val_dataloaders: List[DataLoader] = None,
     ):
         epoch_metrics = {}
-        for key, value in self.epoch_metrics.items():
+        for key, value in self.state_dict.items():
             epoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
             epoch_metrics[f"{key}-epoch-std"] = torch.stack(value).std()
 
         return EvaluatorOutput(
-            step_idx=step_idx, phase_name="validation", metrics=epoch_metrics
+            global_step=global_step,
+            phase_name="validation",
+            metrics=epoch_metrics,
+            experiment_tracker=self.experiment_tracker,
         )
 
     @collect_metrics
     def end_testing(
         self,
-        epoch_idx: int,
-        step_idx: int,
+        global_step: int,
         test_dataloaders: List[DataLoader] = None,
     ):
         epoch_metrics = {}
-        for key, value in self.epoch_metrics.items():
+        for key, value in self.state_dict.items():
             epoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
             epoch_metrics[f"{key}-epoch-std"] = torch.stack(value).std()
 
         return EvaluatorOutput(
-            step_idx=step_idx, phase_name="testing", metrics=epoch_metrics
+            global_step=global_step,
+            phase_name="testing",
+            metrics=epoch_metrics,
+            experiment_tracker=self.experiment_tracker,
         )

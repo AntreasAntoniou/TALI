@@ -22,7 +22,6 @@ def check_if_configurable(func: Callable, phase_name: str) -> bool:
 
 def collect_metrics(func: Callable) -> Callable:
     def collect_metrics(
-        step_idx: int,
         metrics_dict: dict(),
         phase_name: str,
         experiment_tracker: Any,
@@ -30,29 +29,22 @@ def collect_metrics(func: Callable) -> Callable:
         for metric_key, computed_value in metrics_dict.items():
             if computed_value is not None:
                 value = (
-                    computed_value.detach()
+                    computed_value.detach().item()
                     if isinstance(computed_value, torch.Tensor)
                     else computed_value
                 )
-                experiment_tracker.log(
-                    {f"{phase_name}/{metric_key}": value},
-                    step=step_idx,
-                )
-
-                # print(f"{phase_name}/{metric_key} {value} {step_idx}")
+                experiment_tracker[f"{phase_name}/{metric_key}"].append(value)
 
     @functools.wraps(func)
     def wrapper_collect_metrics(*args, **kwargs):
         outputs = func(*args, **kwargs)
-        experiment_tracker = args[0].experiment_tracker
         metrics_dict = outputs.metrics
         phase_name = outputs.phase_name
-        step_idx = outputs.step_idx
+        run = outputs.experiment_tracker
         collect_metrics(
-            step_idx=step_idx,
             metrics_dict=metrics_dict,
             phase_name=phase_name,
-            experiment_tracker=experiment_tracker,
+            experiment_tracker=run,
         )
         return outputs
 
@@ -65,9 +57,7 @@ if __name__ == "__main__":
     def build_something(batch_size: int, num_layers: int):
         return batch_size, num_layers
 
-    build_something_config = build_something.build_config(
-        populate_full_signature=True
-    )
+    build_something_config = build_something.build_config(populate_full_signature=True)
     dummy_config = build_something_config(batch_size=32, num_layers=2)
     print(dummy_config)
 

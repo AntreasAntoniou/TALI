@@ -180,7 +180,7 @@ scheduler:
 learner:
   _target_: tali_wit.boilerplate.Learner
   experiment_name: ${exp_name}
-  experiment_dir: ${hf_repo_dir}
+  experiment_dir: ${hf_cache_dir}
   model: null
   resume: ${resume}
   evaluate_every_n_steps: 500
@@ -246,7 +246,7 @@ root_experiment_dir: /experiments
 data_dir: /data
 current_experiment_dir: ${root_experiment_dir}/${exp_name}
 repo_path: ${hf_username}/${exp_name}
-hf_repo_dir: ${current_experiment_dir}/repo
+hf_cache_dir: ${current_experiment_dir}/repo
 code_dir: ${hydra:runtime.cwd}
 
 

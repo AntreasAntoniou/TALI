@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 demo/temp_data/*
 notebooks/flagged_data_points/*
+.neptune/*
+outputs/*
 
 # C extensions
 *.so

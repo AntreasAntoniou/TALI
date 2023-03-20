@@ -1,4 +1,8 @@
 import os
+
+os.environ["HYDRA_FULL_ERROR"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
 import pathlib
 import random
 
@@ -10,7 +14,6 @@ import datasets
 from tali_wit.data import ModalityTypes
 
 
-os.environ["HYDRA_FULL_ERROR"] = "1"
 install()
 
 from tali_wit.decorators import configurable
@@ -59,18 +62,6 @@ test_dataset = datasets.load_from_disk(
 test_dataset = test_dataset.with_transform(transform)
 num_samples = 0
 
-
-# {
-#     'wit_idx': 502620,
-#     'wikipedia_caption_image': torch.Size([3, 224, 224]),
-#     'wikipedia_text': '<section_title> Station layout </section_title>',
-#     'youtube_video_id': '6e7RO-o6u6w',
-#     'youtube_content_video': torch.Size([10, 3, 224, 224]),
-#     'youtube_content_audio': torch.Size([16000]),
-#     'youtube_description_text': "<ysub> it's open somebody's gonna be building something there so the neighborhood
-# isn't is in change i don't think shintomicho has much of a personality when they took away the kabuki theater it
-# really did change  </ysub>"
-# }
 from collections import defaultdict
 from distutils.command.upload import upload
 from importlib.resources import path

@@ -2512,7 +2512,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "CHECKPOINT_DIR = \"${hf_repo_dir}\"\nNUM_WORKERS = \"${num_workers}\"\nHF_USERNAME = \"${hf_username}\"\nCODE_DIR = \"${code_dir}\"\nDATASET_DIR = \"${data_dir}\"\nEXPERIMENT_NAME = \"${exp_name}\"\nEXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"",
+        "peekOfCode": "CHECKPOINT_DIR = \"${hf_cache_dir}\"\nNUM_WORKERS = \"${num_workers}\"\nHF_USERNAME = \"${hf_username}\"\nCODE_DIR = \"${code_dir}\"\nDATASET_DIR = \"${data_dir}\"\nEXPERIMENT_NAME = \"${exp_name}\"\nEXPERIMENTS_ROOT_DIR = \"${root_experiment_dir}\"\nTRAIN_BATCH_SIZE = \"${train_batch_size}\"\nCURRENT_EXPERIMENT_DIR = \"${current_experiment_dir}\"\nTRAIN_ITERS = \"${learner.train_iters}\"",
         "detail": "tali_wit.config",
         "documentation": {}
     },

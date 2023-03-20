@@ -34,6 +34,7 @@ from pytorchvideo.transforms import (
 from rich import print
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.dataloader import default_collate
+from torch.utils.data import Dataset, Subset, DataLoader
 from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
 from torchvision.transforms._transforms_video import CenterCropVideo
 from traitlets import default
@@ -47,6 +48,7 @@ from tali_wit.data import (
     select_subtitles_between_timestamps,
     TALIDataset,
 )
+
 from tali_wit.data_plus import get_submodality_name
 
 from tali_wit.decorators import configurable
@@ -56,38 +58,100 @@ from tali_wit.models import ModalityConfig
 logger = get_logger(__name__)
 
 
+@configurable
 class WITBase(Dataset):
     def __init__(
         self,
         cache_dir: str,
+        tali_dataset_dir: str,
         image_size: int,
+        set_name: str,
         deterministic_sampling: bool = False,
+        infinite_sampling: bool = False,
         priority_caption_language: Optional[str] = None,
+        dummy_batch_mode: bool = False,
     ):
+        super().__init__()
         self.cache_dir = cache_dir
         self.image_size = image_size
         self.wit_transform = WITBaseTransform(
-            image_size=image_size, deterministic_sampling=deterministic_sampling
+            image_size=image_size,
+            priority_caption_language=priority_caption_language,
+            deterministic_sampling=deterministic_sampling,
         )
         self.dataset = datasets.load_dataset(
             "wikimedia/wit_base",
             split="train",
             cache_dir=cache_dir,
         )
+        self.indices_filepath = pathlib.Path(cache_dir) / "wit_indices.json"
+
+        if not self.indices_filepath.exists():
+            tali_val_dataset = datasets.load_from_disk(
+                pathlib.Path(tali_dataset_dir) / "val-set"
+            )
+            tali_val_indices = [sample["wit_idx"] for sample in tali_val_dataset]
+            # print(len(tali_val_indices))
+
+            tali_test_dataset = datasets.load_from_disk(
+                pathlib.Path(tali_dataset_dir) / "test-set"
+            )
+            tali_test_indices = [sample["wit_idx"] for sample in tali_test_dataset]
+            # print(len(tali_test_indices))
+
+            train_wit_indices = []
+            with tqdm.tqdm(total=len(self.dataset)) as pbar:
+                for i in range(len(self.dataset)):
+                    if i not in tali_val_indices and i not in tali_test_indices:
+                        train_wit_indices.append(i)
+                    pbar.update(1)
+
+            # print(len(train_wit_indices))
+
+            self.indices = {
+                "train": train_wit_indices,
+                "val": tali_val_indices,
+                "test": tali_test_indices,
+            }
+            save_json(
+                filepath=os.path.join(self.cache_dir, "wit_indices.json"),
+                dict_to_store=self.indices,
+            )
+        else:
+            self.indices = load_json(self.indices_filepath)
+
+        self.dataset = Subset(self.dataset, self.indices[set_name])
+
+        self.infinite_sampling = infinite_sampling
+        if infinite_sampling:
+            self.num_samples = 10**8
+        else:
+            self.num_samples = len(self.dataset)
 
     def __getitem__(self, idx):
+        if self.infinite_sampling:
+            idx = idx % len(self.dataset)
+
         sample = self.dataset[idx] | {"wit_idx": idx}
-        return self.wit_transform(sample)
+        sample = self.wit_transform(sample)
+
+        return sample
 
     def __len__(self):
-        return len(self.dataset)
+        return self.num_samples
 
 
 class WITBaseTransform:
-    def __init__(self, image_size, deterministic_sampling: bool = False):
+    def __init__(
+        self,
+        image_size,
+        deterministic_sampling: bool = False,
+        priority_caption_language: Optional[str] = None,
+    ):
         self.image_size = image_size
         self.image_transform = default_image_transforms(self.image_size)
         self.deterministic_sampling = deterministic_sampling
+        self.priority_caption_language = priority_caption_language
 
     def __call__(self, input_dict: Dict[str, Any]) -> Any:
         input_dict = {
@@ -101,7 +165,8 @@ class WITBaseTransform:
         if self.deterministic_sampling:
             rng = np.random.RandomState(input_dict["wit_idx"])
         else:
-            rng = np.random.RandomState(seed=random.randint(0, 10000000))
+            seconds_rng = int(time.time()) % 1000000
+            rng = np.random.RandomState(input_dict["wit_idx"] + seconds_rng)
 
         output_dict = {}
         wit_sample = input_dict["wit_features"]
@@ -113,8 +178,8 @@ class WITBaseTransform:
 
         if self.priority_caption_language is None:
             choose_language = rng.choice(wit_sample["language"])
-        elif self.config.priority_caption_language in wit_sample["language"]:
-            choose_language = self.config.priority_caption_language
+        elif self.priority_caption_language in wit_sample["language"]:
+            choose_language = self.priority_caption_language
         else:
             choose_language = rng.choice(wit_sample["language"])
         choose_language = rng.choice(wit_sample["language"])
@@ -135,7 +200,9 @@ class WITBaseTransform:
             ]
             if wit_sample[key][language_idx] is not None
         ]
-        output_dict["wikipedia_text"] = rng.choice(wit_text)
+        output_dict[get_submodality_name(ModalityTypes.wit_caption.value)] = rng.choice(
+            wit_text
+        )
 
         return output_dict
 
@@ -154,9 +221,12 @@ if __name__ == "__main__":
     def sample():
         dataset = WITBase(
             cache_dir="/data/datasets/tali-wit-2-1-buckets/wit_cache",
+            tali_dataset_dir="/home/evolvingfungus/forge/workspaces/tali-2-2/",
             image_size=224,
-            deterministic_sampling=False,
+            deterministic_sampling=True,
+            infinite_sampling=False,  # True,
             priority_caption_language="en",
+            set_name="train",
         )
         dataloader = DataLoader(
             dataset,

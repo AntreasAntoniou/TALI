@@ -28,7 +28,7 @@ from tali_wit.data import ModalityTypes, TALIDataset, dataclass_collate
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger
 
-logger = get_logger(__name__, set_default_rich_handler=True)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -53,8 +53,7 @@ class MultiModalityConfig:
 
 def contrastive_accuracy(logits):
     targets = torch.arange(logits.shape[0]).to(logits.device)
-    accuracy = (logits.argmax(dim=-1) == targets).float().mean()
-    return accuracy
+    return (logits.argmax(dim=-1) == targets).float().mean()
 
 
 def contrastive_accuracy_top_k(logits, k: int = 5):
@@ -210,9 +209,9 @@ def get_similarities(
         * logit_scale
     }
 
-    similarities[
-        f"{modality_b_name}_to_{modality_a_name}_similarities"
-    ] = similarities[f"{modality_a_name}_to_{modality_b_name}_similarities"].T
+    similarities[f"{modality_b_name}_to_{modality_a_name}_similarities"] = similarities[
+        f"{modality_a_name}_to_{modality_b_name}_similarities"
+    ].T
 
     if return_loss:
         contrastive_losses_dict = {
@@ -221,9 +220,7 @@ def get_similarities(
         }
 
         contrastive_accuracy_dict = {
-            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(
-                value
-            )
+            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(value)
             for key, value in similarities.items()
         }
 
@@ -251,18 +248,12 @@ class TALIModel(nn.Module):
         image_text_model_name: str = "openai/clip-vit-large-patch14",
         audio_model_name: str = "openai/whisper-small",
         multi_modality_config: MultiModalityConfig = MultiModalityConfig(),
-        num_video_frames: int = 8,
-        num_audio_frames: int = 8,
-        audio_sampling_rate: int = 16000,
     ):
         super().__init__()
 
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
         self.multi_modality_config = multi_modality_config
-        self.num_video_frames = num_video_frames
-        self.num_audio_frames = num_audio_frames
-        self.audio_sampling_rate = audio_sampling_rate
 
         self.build_model()
         self.build_logit_scales()
@@ -280,9 +271,7 @@ class TALIModel(nn.Module):
         self.model["text"] = self.clip_model.text_model
         self.text_linear_layer = self.clip_model.text_projection
 
-        self.model["audio"] = WhisperModel.from_pretrained(
-            self.audio_model_name
-        )
+        self.model["audio"] = WhisperModel.from_pretrained(self.audio_model_name)
         self.audio_output_shape = self.model["audio"].config.d_model
         self.model["audio"] = WhisperModel.from_pretrained(
             self.audio_model_name
@@ -310,9 +299,7 @@ class TALIModel(nn.Module):
             self.model["video"].d_model, self.linear_projection_dim, bias=False
         )
 
-        self.logit_init_value = float(
-            self.clip_model.config.logit_scale_init_value
-        )
+        self.logit_init_value = float(self.clip_model.config.logit_scale_init_value)
 
         if (
             not self.multi_modality_config.image.support
@@ -355,9 +342,7 @@ class TALIModel(nn.Module):
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
         )
-        self.audio_processor = WhisperProcessor.from_pretrained(
-            self.audio_model_name
-        )
+        self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
 
         self.transforms = {
             "image": lambda x: self.image_text_processor(
@@ -370,7 +355,7 @@ class TALIModel(nn.Module):
                 [
                     self.audio_processor(
                         item,
-                        sampling_rate=self.audio_sampling_rate,
+                        sampling_rate=16000,
                         return_tensors="pt",
                     ).input_features
                     for item in x.unbind(0)
@@ -394,8 +379,7 @@ class TALIModel(nn.Module):
                     name = f"{modality_a}_to_{modality_b}"
                     if name not in self.logit_scales.keys():
                         self.logit_scales[name] = nn.Parameter(
-                            torch.ones(1, requires_grad=True)
-                            * self.logit_init_value
+                            torch.ones(1, requires_grad=True) * self.logit_init_value
                         )
 
     def print_model_summary(self):
@@ -433,9 +417,7 @@ class TALIModel(nn.Module):
                         sub_modality_b,
                     ) in modality_b.items():
                         pair_name = f"{modality_a_name}_to_{modality_b_name}"
-                        reverse_pair_name = (
-                            f"{modality_b_name}_to_{modality_a_name}"
-                        )
+                        reverse_pair_name = f"{modality_b_name}_to_{modality_a_name}"
                         if (
                             pair_name in processed_pairs
                             or reverse_pair_name in processed_pairs
@@ -457,7 +439,9 @@ class TALIModel(nn.Module):
 
     def forward_image(self, x: torch.Tensor) -> torch.Tensor:
         if "image" in self.transforms:
-            x = self.transforms["image"](x.cpu().unbind(0))
+            if isinstance(x, torch.Tensor):
+                x = x.cpu().unbind(0)
+            x = self.transforms["image"](x)
         x = x.to(self.image_linear_layer.weight.device)
         features = self.model["image"](pixel_values=x).pooler_output
         projection_output = self.image_linear_layer(features)
@@ -480,16 +464,12 @@ class TALIModel(nn.Module):
         return {"features": features, "projection_output": projection_output}
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
-        input_shape = (
-            x.shape
-        )  # (batch_size, num_frames, channels, height, width)
+        input_shape = x.shape  # (batch_size, num_frames, channels, height, width)
 
         if "video" in self.transforms:
             x = self.transforms["video"](x.cpu())
         out = x.to(self.video_linear_layer.weight.device)
-        out = self.forward_image(out.view(-1, *out.shape[-3:]))[
-            "projection_output"
-        ]
+        out = self.forward_image(out.view(-1, *out.shape[-3:]))["projection_output"]
         out = out.view(input_shape[0], input_shape[1], -1)
         features = self.model["video"](out)
         projection_output = self.video_linear_layer(features)
@@ -501,7 +481,7 @@ def extract_all_possible_pairs(batch_dict):
 
     modality_dict = {}
     for key, value in batch_dict.items():
-        if isinstance(value, dict):
+        if isinstance(value, dict) and key != "other":
             modality_dict[key] = list(value.keys())
 
     pairs_keys = combinations(list(modality_dict.keys()), 2)
@@ -591,9 +571,7 @@ if __name__ == "__main__":
     accelerator = Accelerator(mixed_precision="bf16")
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
 
-    model, optimizer, dataloader = accelerator.prepare(
-        model, optimizer, dataloader
-    )
+    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
 
     # have the model update the model by taking one sub modality from each modality, in pairs, to maximize the batch size
     # Use transpose for similarities to speed up contrastive loss computation, and add accuracy and top-k accuracy
@@ -607,21 +585,13 @@ if __name__ == "__main__":
                 sub_modality_b,
             ) in extract_all_possible_pairs(batch):
                 sample = {
-                    modality_a: {
-                        sub_modality_a: batch[modality_a][sub_modality_a]
-                    },
-                    modality_b: {
-                        sub_modality_b: batch[modality_b][sub_modality_b]
-                    },
+                    modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
+                    modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
                 }
                 output_dict = model.forward(sample, return_loss=True)
                 loss = torch.mean(
                     torch.stack(
-                        [
-                            value
-                            for key, value in output_dict.items()
-                            if "_loss" in key
-                        ]
+                        [value for key, value in output_dict.items() if "_loss" in key]
                     )
                 )
                 accuracy = torch.mean(

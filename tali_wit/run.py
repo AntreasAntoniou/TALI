@@ -1,12 +1,16 @@
 import os
 import shutil
 
-import wandb
+import neptune
 from rich import print
 from rich.traceback import install
 
 from tali_wit.models import ModelAndTransform, TALIModel
-from tali_wit.utils import save_json
+from tali_wit.utils import (
+    create_hf_model_repo_and_download_maybe,
+    save_json,
+)
+from tali_wit.ctools import get_max_supported_batch_size
 
 os.environ[
     "HYDRA_FULL_ERROR"
@@ -60,299 +64,121 @@ def instantiate_callbacks(callback_dict: dict) -> List[Callback]:
     return callbacks
 
 
-def create_hf_model_repo_and_download_maybe(cfg: BaseConfig):
-    import orjson
-    import yaml
-    from huggingface_hub import HfApi
-
-    if (
-        cfg.download_checkpoint_with_name is not None
-        and cfg.download_latest is True
-    ):
-        raise ValueError(
-            "Cannot use both continue_from_checkpoint_with_name and continue_from_latest"
-        )
-
-    repo_path = cfg.repo_path
-    login(token=os.environ["HF_TOKEN"], add_to_git_credential=True)
-    print(
-        f"Logged in to huggingface with token {os.environ['HF_TOKEN']}, creating repo {repo_path}"
-    )
-    repo_url = create_repo(repo_path, repo_type="model", exist_ok=True)
-
-    logger.info(f"Created repo {repo_path}, {cfg.hf_repo_dir}")
-
-    if not pathlib.Path(cfg.hf_repo_dir).exists():
-        pathlib.Path(cfg.hf_repo_dir).mkdir(parents=True, exist_ok=True)
-        pathlib.Path(pathlib.Path(cfg.hf_repo_dir) / "checkpoints").mkdir(
-            parents=True, exist_ok=True
-        )
-
-    config_dict = OmegaConf.to_container(cfg, resolve=True)
-
-    hf_api = HfApi()
-    config_json_path: pathlib.Path = save_json(
-        filepath=pathlib.Path(cfg.hf_repo_dir) / "config.json",
-        dict_to_store=config_dict,
-        overwrite=True,
-    )
-    hf_api.upload_file(
-        repo_id=repo_path,
-        path_or_fileobj=config_json_path.as_posix(),
-        path_in_repo="config.json",
-    )
-
-    config_yaml_path = pathlib.Path(cfg.hf_repo_dir) / "config.yaml"
-    with open(config_yaml_path, "w") as file:
-        documents = yaml.dump(config_dict, file)
-
-    hf_api.upload_file(
-        repo_id=repo_path,
-        path_or_fileobj=config_yaml_path.as_posix(),
-        path_in_repo="config.yaml",
-    )
-
-    try:
-        if cfg.download_checkpoint_with_name is not None:
-            logger.info(
-                f"Download {cfg.download_checkpoint_with_name} checkpoint, if it exists, from the huggingface hub 👨🏻‍💻"
-            )
-
-            ckpt_filepath = hf_hub_download(
-                repo_id=repo_path,
-                cache_dir=pathlib.Path(cfg.hf_repo_dir),
-                resume_download=True,
-                subfolder="checkpoints",
-                filename=cfg.download_checkpoint_with_name,
-                repo_type="model",
-            )
-            if pathlib.Path(
-                pathlib.Path(cfg.hf_repo_dir) / "checkpoints"
-            ).exists():
-                pathlib.Path(
-                    pathlib.Path(cfg.hf_repo_dir) / "checkpoints"
-                ).mkdir(parents=True, exist_ok=True)
-
-            shutil.copy(
-                pathlib.Path(ckpt_filepath),
-                pathlib.Path(cfg.hf_repo_dir)
-                / "checkpoints"
-                / cfg.download_checkpoint_with_name,
-            )
-            logger.info(
-                f"Downloaded checkpoint from huggingface hub to {cfg.hf_repo_dir}"
-            )
-            return (
-                pathlib.Path(cfg.hf_repo_dir)
-                / "checkpoints"
-                / cfg.download_checkpoint_with_name
-            ), repo_url
-
-        elif cfg.download_latest:
-            logger.info(
-                "Download latest checkpoint, if it exists, from the huggingface hub 👨🏻‍💻"
-            )
-
-            optimizer_filepath = hf_hub_download(
-                repo_id=repo_path,
-                cache_dir=pathlib.Path(cfg.hf_repo_dir),
-                resume_download=True,
-                subfolder="checkpoints/latest",
-                filename="optimizer.bin",
-                repo_type="model",
-            )
-
-            model_filepath = hf_hub_download(
-                repo_id=repo_path,
-                cache_dir=pathlib.Path(cfg.hf_repo_dir),
-                resume_download=True,
-                subfolder="checkpoints/latest",
-                filename="pytorch_model.bin",
-                repo_type="model",
-            )
-
-            random_states_filepath = hf_hub_download(
-                repo_id=repo_path,
-                cache_dir=pathlib.Path(cfg.hf_repo_dir),
-                resume_download=True,
-                subfolder="checkpoints/latest",
-                filename="random_states_0.pkl",
-                repo_type="model",
-            )
-
-            trainer_state_filepath = hf_hub_download(
-                repo_id=repo_path,
-                cache_dir=pathlib.Path(cfg.hf_repo_dir),
-                resume_download=True,
-                subfolder="checkpoints/latest",
-                filename="trainer_state.pt",
-                repo_type="model",
-            )
-
-            if not pathlib.Path(
-                pathlib.Path(cfg.hf_repo_dir) / "checkpoints" / "latest"
-            ).exists():
-                pathlib.Path(
-                    pathlib.Path(cfg.hf_repo_dir) / "checkpoints" / "latest"
-                ).mkdir(parents=True, exist_ok=True)
-
-            shutil.copy(
-                pathlib.Path(optimizer_filepath),
-                pathlib.Path(cfg.hf_repo_dir)
-                / "checkpoints"
-                / "latest"
-                / "optimizer.bin",
-            )
-
-            shutil.copy(
-                pathlib.Path(model_filepath),
-                pathlib.Path(cfg.hf_repo_dir)
-                / "checkpoints"
-                / "latest"
-                / "pytorch_model.bin",
-            )
-
-            shutil.copy(
-                pathlib.Path(random_states_filepath),
-                pathlib.Path(cfg.hf_repo_dir)
-                / "checkpoints"
-                / "latest"
-                / "random_states_0.pkl",
-            )
-
-            shutil.copy(
-                pathlib.Path(trainer_state_filepath),
-                pathlib.Path(cfg.hf_repo_dir)
-                / "checkpoints"
-                / "latest"
-                / "trainer_state.pt",
-            )
-
-            logger.info(
-                f"Downloaded checkpoint from huggingface hub to {cfg.hf_repo_dir}"
-            )
-            return (
-                pathlib.Path(cfg.hf_repo_dir) / "checkpoints" / "latest",
-                repo_url,
-            )
-        else:
-            logger.info(
-                "Download all available checkpoints, if they exist, from the huggingface hub 👨🏻‍💻"
-            )
-
-            ckpt_folderpath = snapshot_download(
-                repo_id=repo_path,
-                cache_dir=pathlib.Path(cfg.hf_repo_dir),
-                resume_download=True,
-            )
-            latest_checkpoint = (
-                pathlib.Path(cfg.hf_repo_dir) / "checkpoints" / "latest"
-            )
-
-            if pathlib.Path(
-                pathlib.Path(cfg.hf_repo_dir) / "checkpoints"
-            ).exists():
-                pathlib.Path(
-                    pathlib.Path(cfg.hf_repo_dir) / "checkpoints"
-                ).mkdir(parents=True, exist_ok=True)
-
-            shutil.copy(
-                pathlib.Path(ckpt_folderpath), cfg.hf_repo_dir / "checkpoints"
-            )
-
-            if latest_checkpoint.exists():
-                logger.info(
-                    f"Downloaded checkpoint from huggingface hub to {latest_checkpoint}"
-                )
-            return cfg.hf_repo_dir / "checkpoints" / "latest"
-        return None, repo_url
-
-    except Exception as e:
-        logger.exception(
-            f"Could not download latest checkpoint from huggingface hub: {e}"
-        )
-        return None, repo_url
-
-
-def upload_code_to_wandb(code_dir: Union[pathlib.Path, str]):
-    if isinstance(code_dir, str):
-        code_dir = pathlib.Path(code_dir)
-
-    code = wandb.Artifact("project-source", type="code")
-
-    for path in code_dir.resolve().rglob("*.py"):
-        code.add_file(str(path), name=str(path.relative_to(code_dir)))
-
-    wandb.log_artifact(code)
-
-
 @hydra.main(config_path=None, config_name="config", version_base=None)
 def run(cfg: BaseConfig) -> None:
-    wandb_args = {
-        key: value for key, value in cfg.wandb_args.items() if key != "_target_"
-    }
     ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)
-    config_dict = OmegaConf.to_container(cfg, resolve=True)
-    wandb_args["config"] = config_dict
-    wandb_args["notes"] = repo_url
-    wandb.init(**wandb_args)  # init wandb and log config
 
-    upload_code_to_wandb(cfg.code_dir)  # log code to wandb
+    if ckpt_path is not None:
+        logger.info(
+            f"ckpt_path: {ckpt_path}, exists: {ckpt_path.exists()}, resume: {cfg.resume}, not resume: {not cfg.resume}"
+        )
+    else:
+        logger.info(
+            f"ckpt_path: {ckpt_path}, resume: {cfg.resume}, not resume: {not cfg.resume}"
+        )
+
+    logger.info(f"Using checkpoint: {ckpt_path}")
+
+    config_dict = OmegaConf.to_container(cfg, resolve=True)
+    experiment_tracker = neptune.init_run(
+        source_files=["tali_wit/*.py", "kubernetes/*.py"]
+    )
+    experiment_tracker["config"] = config_dict
+    experiment_tracker["notes"] = repo_url
+
     print(pretty_config(cfg, resolve=True))
 
     set_seed(seed=cfg.seed)
 
     model: TALIModel = instantiate(cfg.model)
 
-    train_dataset: Dataset = instantiate(cfg.dataset, set_name="train")
-    val_dataset: Dataset = instantiate(cfg.dataset, set_name="val")
-    test_dataset: Dataset = instantiate(cfg.dataset, set_name="test")
-
     train_dataloaders = []
     val_dataloaders = []
     test_dataloaders = []
 
-    for batch_size, dataset in cfg.dataset.items():
-        train_dataset: Dataset = instantiate(dataset, set_name="train")
+    for dataset_name, (batch_size, dataset) in cfg.dataset.items():
+        logger.info(f"Setting up {dataset_name} train dataset")
+        train_dataset: Dataset = instantiate(
+            dataset, set_name="train", infinite_sampling=True
+        )
+        logger.info(f"Setting up {dataset_name} train dataloader")
         train_dataloader = instantiate(
             cfg.dataloader,
             dataset=train_dataset,
-            batch_size=int(batch_size),
+            batch_size=1,
+            shuffle=True,
+        )
+        dummy_batch = next(iter(train_dataloader))
+        logger.info(f"Finding max batch size for {dataset_name} train dataloader")
+        optimal_batch_size = get_max_supported_batch_size(
+            model=model, batch=dummy_batch
+        )
+
+        train_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=train_dataset,
+            batch_size=optimal_batch_size,
             shuffle=True,
         )
 
         train_dataloaders.append(train_dataloader)
 
-    for batch_size, dataset in cfg.dataset.items():
+    for dataset_name, (batch_size, dataset) in cfg.dataset.items():
+        logger.info(f"Setting up {dataset_name} val dataset")
         val_dataset: Dataset = instantiate(dataset, set_name="val")
         val_dataloader = instantiate(
             cfg.dataloader,
             dataset=val_dataset,
-            batch_size=int(batch_size),
+            batch_size=1,
+            shuffle=False,
+        )
+
+        dummy_batch = next(iter(val_dataloader))
+
+        optimal_batch_size = get_max_supported_batch_size(
+            model=model, batch=dummy_batch
+        )
+
+        val_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=val_dataset,
+            batch_size=optimal_batch_size,
             shuffle=False,
         )
 
         val_dataloaders.append(val_dataloader)
 
-    for batch_size, dataset in cfg.dataset.items():
+    for dataset_name, (batch_size, dataset) in cfg.dataset.items():
+        logger.info(f"Setting up {dataset_name} test dataset")
         test_dataset: Dataset = instantiate(dataset, set_name="test")
         test_dataloader = instantiate(
             cfg.dataloader,
             dataset=test_dataset,
-            batch_size=int(batch_size),
+            batch_size=1,
+            shuffle=False,
+        )
+
+        dummy_batch = next(iter(test_dataloader))
+
+        optimal_batch_size = get_max_supported_batch_size(
+            model=model, batch=dummy_batch
+        )
+
+        test_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=test_dataset,
+            batch_size=optimal_batch_size,
             shuffle=False,
         )
 
         test_dataloaders.append(test_dataloader)
 
-    params = (
-        model.classifier.parameters()
-        if cfg.freeze_backbone
-        else model.parameters()
+    experiment_tracker["num_parameters"] = sum(
+        p.numel() for p in model.parameters() if p.requires_grad
     )
 
     optimizer: torch.optim.Optimizer = instantiate(
-        cfg.optimizer, params=params, _partial_=False
+        cfg.optimizer, params=model.parameters(), _partial_=False
     )
 
     scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = instantiate(
@@ -369,14 +195,15 @@ def run(cfg: BaseConfig) -> None:
             ClassificationTrainer(
                 optimizer=optimizer,
                 scheduler=scheduler,
-                experiment_tracker=wandb,
+                experiment_tracker=experiment_tracker,
             )
         ],
-        evaluators=[ClassificationEvaluator(experiment_tracker=wandb)],
+        evaluators=[ClassificationEvaluator(experiment_tracker=experiment_tracker)],
         train_dataloaders=train_dataloaders,
         val_dataloaders=val_dataloaders,
         callbacks=instantiate_callbacks(cfg.callbacks),
         resume=ckpt_path,
+        experiment_tracker=experiment_tracker,
     )
 
     if cfg.train:

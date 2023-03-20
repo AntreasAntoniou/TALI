@@ -15,7 +15,8 @@ from tqdm.rich import tqdm
 
 from .utils import get_logger
 
-logger = get_logger(__name__, set_default_rich_handler=True)
+logger = get_logger(__name__)
+hf_logger = get_logger("huggingface_hub", logging_level="ERROR")
 
 
 @dataclass
@@ -32,7 +33,7 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
@@ -42,7 +43,7 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
@@ -52,7 +53,7 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
@@ -62,20 +63,16 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         pass
 
-    def on_batch_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_batch_start(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
         pass
 
-    def on_batch_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_batch_end(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
         pass
 
     def on_training_step_start(
@@ -112,7 +109,7 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
     ) -> None:
         pass
 
@@ -120,7 +117,7 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
@@ -250,15 +247,11 @@ class CallbackHandler(Callback):
                 test_dataloaders,
             )
 
-    def on_batch_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_batch_start(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
         for callback in self.callbacks:
             callback.on_batch_start(model, batch, batch_idx)
 
-    def on_batch_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_batch_end(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
         for callback in self.callbacks:
             callback.on_batch_end(model, batch, batch_idx)
 
@@ -302,16 +295,16 @@ class CallbackHandler(Callback):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_train_start(experiment, model, train_dataloader)
+            callback.on_train_start(experiment, model, train_dataloaders)
 
     def on_train_end(
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloader: DataLoader = None,
+        train_dataloaders: DataLoader = None,
         val_dataloaders: Union[List[DataLoader], DataLoader] = None,
         test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
@@ -319,7 +312,7 @@ class CallbackHandler(Callback):
             callback.on_train_end(
                 experiment,
                 model,
-                train_dataloader,
+                train_dataloaders,
                 val_dataloaders,
                 test_dataloaders,
             )
@@ -368,9 +361,7 @@ class CallbackHandler(Callback):
         checkpoint_path: Path,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_save_checkpoint(
-                model, optimizers, experiment, checkpoint_path
-            )
+            callback.on_save_checkpoint(model, optimizers, experiment, checkpoint_path)
 
     def on_load_checkpoint(
         self,
@@ -380,9 +371,7 @@ class CallbackHandler(Callback):
         checkpoint_path: Path,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_load_checkpoint(
-                model, optimizers, experiment, checkpoint_path
-            )
+            callback.on_load_checkpoint(model, optimizers, experiment, checkpoint_path)
 
 
 class UploadCheckpointToHuggingFaceBackground(threading.Thread):
@@ -394,13 +383,25 @@ class UploadCheckpointToHuggingFaceBackground(threading.Thread):
         self.repo_owner = repo_owner
         self.checkpoint_path = checkpoint_path
         self.hf_api = HfApi()
+        self.done = False
 
     def run(self):
-        self.hf_api.upload_folder(
-            repo_id=f"{self.repo_owner}/{self.repo_name}",
-            folder_path=self.checkpoint_path,
-            path_in_repo=f"checkpoints/{self.checkpoint_path.name}",
-        )
+        try:
+            self.hf_api.upload_folder(
+                repo_id=f"{self.repo_owner}/{self.repo_name}",
+                folder_path=self.checkpoint_path,
+                path_in_repo=f"checkpoints/{self.checkpoint_path.name}",
+            )
+            self.hf_api.upload_folder(
+                repo_id=f"{self.repo_owner}/{self.repo_name}",
+                folder_path=self.checkpoint_path,
+                path_in_repo=f"checkpoints/latest",
+            )
+
+            self.done = True
+        except Exception as e:
+            logger.exception(e)
+            self.done = True
 
 
 class UploadCheckpointsToHuggingFace(Callback):
@@ -424,5 +425,4 @@ class UploadCheckpointsToHuggingFace(Callback):
             repo_owner=self.repo_owner,
             checkpoint_path=checkpoint_path,
         )
-        background_upload_thread.start()
         experiment.background_threads.append(background_upload_thread)
