@@ -28,7 +28,7 @@ RUN mamba install -c conda-forge starship jupyterlab black git-lfs -y
 RUN mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
 RUN mamba install -c conda-forge timm accelerate datasets transformers -y
 RUN mamba install -c conda-forge orjson -y
-RUN mamba install -c conda-forge -c fvcore -c iopath fvcore iopath -y
+RUN mamba install -c conda-forge -c fvcore fvcore -y
 RUN mamba install -c conda-forge git gh -y
 RUN mamba install -c conda-forge starship -y
 

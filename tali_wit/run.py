@@ -100,7 +100,7 @@ def run(cfg: BaseConfig) -> None:
         dummy_batch = next(iter(train_dataloader))
         logger.info(f"Finding max batch size for {dataset_name} train dataloader")
         optimal_batch_size = get_max_supported_batch_size(
-            model=model, batch=dummy_batch
+            model=model, batch=dummy_batch, train_mode=True
         )
 
         train_dataloader = instantiate(
@@ -109,59 +109,34 @@ def run(cfg: BaseConfig) -> None:
             batch_size=optimal_batch_size,
             shuffle=True,
         )
+        
+        val_dataset: Dataset = instantiate(dataset, set_name="val")
+        
+        val_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=val_dataset,
+            batch_size=optimal_batch_size,
+            shuffle=False,
+        )
+        
+        test_dataset: Dataset = instantiate(dataset, set_name="test")
+        
+        test_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=test_dataset,
+            batch_size=optimal_batch_size,
+            shuffle=False,
+        )
 
         train_dataloaders.append(train_dataloader)
-
-    for dataset_name, (batch_size, dataset) in cfg.dataset.items():
-        logger.info(f"Setting up {dataset_name} val dataset")
-        val_dataset: Dataset = instantiate(dataset, set_name="val")
-        val_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=val_dataset,
-            batch_size=1,
-            shuffle=False,
-        )
-
-        dummy_batch = next(iter(val_dataloader))
-
-        optimal_batch_size = get_max_supported_batch_size(
-            model=model, batch=dummy_batch
-        )
-
-        val_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=val_dataset,
-            batch_size=optimal_batch_size,
-            shuffle=False,
-        )
-
         val_dataloaders.append(val_dataloader)
-
-    for dataset_name, (batch_size, dataset) in cfg.dataset.items():
-        logger.info(f"Setting up {dataset_name} test dataset")
-        test_dataset: Dataset = instantiate(dataset, set_name="test")
-        test_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=test_dataset,
-            batch_size=1,
-            shuffle=False,
-        )
-
-        dummy_batch = next(iter(test_dataloader))
-
-        optimal_batch_size = get_max_supported_batch_size(
-            model=model, batch=dummy_batch
-        )
-
-        test_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=test_dataset,
-            batch_size=optimal_batch_size,
-            shuffle=False,
-        )
-
         test_dataloaders.append(test_dataloader)
 
+
+        
+
+        
+        
     experiment_tracker["num_parameters"] = sum(
         p.numel() for p in model.parameters() if p.requires_grad
     )
