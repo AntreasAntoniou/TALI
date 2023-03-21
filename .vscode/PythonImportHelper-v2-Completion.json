@@ -896,6 +896,14 @@
         "documentation": {}
     },
     {
+        "label": "set_seed",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
         "label": "get_logger",
         "importPath": "tali_wit.utils",
         "description": "tali_wit.utils",
@@ -2084,6 +2092,14 @@
     },
     {
         "label": "cpu",
+        "importPath": "decord",
+        "description": "decord",
+        "isExtraImport": true,
+        "detail": "decord",
+        "documentation": {}
+    },
+    {
+        "label": "gpu",
         "importPath": "decord",
         "description": "decord",
         "isExtraImport": true,
@@ -3430,24 +3446,6 @@
         "documentation": {}
     },
     {
-        "label": "select_video_frame_idx",
-        "kind": 2,
-        "importPath": "tali_wit.data_plus",
-        "description": "tali_wit.data_plus",
-        "peekOfCode": "def select_video_frame_idx(total_frames, total_seconds, segment_length, rng, num_frames_to_select, key_frame_indices):\n    total_seconds_integer = int(floor(total_seconds))\n    max_starting_second = total_seconds_integer - segment_length\n    if max_starting_second < 0:\n        max_starting_second = total_seconds_integer\n    starting_second = rng.choice(list(range(0, max_starting_second)))\n    ending_second = starting_second + segment_length\n    if ending_second > total_seconds_integer:\n        ending_second = total_seconds_integer\n    starting_frame = int(starting_second * total_frames / total_seconds_integer)",
-        "detail": "tali_wit.data_plus",
-        "documentation": {}
-    },
-    {
-        "label": "select_audio_frame_idx",
-        "kind": 2,
-        "importPath": "tali_wit.data_plus",
-        "description": "tali_wit.data_plus",
-        "peekOfCode": "def select_audio_frame_idx(total_frames, total_seconds, segment_length, rng, num_frames_to_select):\n    total_seconds_integer = int(floor(total_seconds))\n    max_starting_second = total_seconds_integer - segment_length\n    if max_starting_second < 0:\n        max_starting_second = total_seconds_integer\n    starting_second = rng.choice(list(range(0, max_starting_second)))\n    ending_second = starting_second + segment_length\n    if ending_second > total_seconds_integer:\n        ending_second = total_seconds_integer\n    starting_frame = int(starting_second * total_frames / total_seconds_integer)",
-        "detail": "tali_wit.data_plus",
-        "documentation": {}
-    },
-    {
         "label": "videoclip_to_video_audio_tensors",
         "kind": 2,
         "importPath": "tali_wit.data_plus",
@@ -3506,7 +3504,7 @@
         "kind": 5,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "logger = get_logger(__name__)\npytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.CRITICAL)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),",
+        "peekOfCode": "logger = get_logger(__name__)\npytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.NOTSET)\ndecord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3515,7 +3513,16 @@
         "kind": 5,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "pytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.CRITICAL)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
+        "peekOfCode": "pytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.NOTSET)\ndecord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "decord_logger",
+        "kind": 5,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "decord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },

@@ -35,14 +35,15 @@ from tali_wit.data import (
 )
 
 from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger, load_json
+from tali_wit.utils import get_logger, load_json, set_seed
 from transformers import (
     CLIPProcessor,
     WhisperProcessor,
 )
 
 logger = get_logger(__name__)
-pytorchvideo_logger = get_logger("pytorchvideo", logging_level=logging.CRITICAL)
+pytorchvideo_logger = get_logger("pytorchvideo", logging_level=logging.NOTSET)
+decord_logger = get_logger("decord", logging_level=logging.NOTSET)
 
 
 def get_video_clip(video, starting_second, ending_second):
@@ -78,49 +79,9 @@ def get_image_tensor(video_frame, image_size, rng):
     return video_frame["video"].permute(1, 0, 2, 3) / 255.0
 
 from decord import VideoReader, AudioReader
-from decord import cpu
+from decord import cpu, gpu
 import decord
 
-def select_video_frame_idx(total_frames, total_seconds, segment_length, rng, num_frames_to_select, key_frame_indices):
-    total_seconds_integer = int(floor(total_seconds))
-    
-    max_starting_second = total_seconds_integer - segment_length
-    if max_starting_second < 0:
-        max_starting_second = total_seconds_integer
-    starting_second = rng.choice(list(range(0, max_starting_second)))
-    ending_second = starting_second + segment_length
-    if ending_second > total_seconds_integer:
-        ending_second = total_seconds_integer
-    
-    starting_frame = int(starting_second * total_frames / total_seconds_integer)
-    ending_frame = int(ending_second * total_frames / total_seconds_integer) if ending_second else total_frames
-    
-    selected_frames = key_frame_indices[(key_frame_indices >= starting_frame) & (key_frame_indices <= ending_frame)]
-    if len(selected_frames) < num_frames_to_select:
-        additional_num_frames = num_frames_to_select - len(selected_frames)
-        additional_frames = rng.choice([i for i in range(starting_frame, ending_frame) if i not in selected_frames], additional_num_frames)
-        selected_frames = np.concatenate([selected_frames, additional_frames])
-
-    # print(f"Summary: {len(selected_frames)} frames selected from {starting_frame} to {ending_frame}, {num_frames_to_select} frames requested. Starting second: {starting_second}, ending second: {ending_second}, max starting second: {max_starting_second}, total seconds: {total_seconds_integer}")
-    return sorted(selected_frames[:num_frames_to_select])
-    
-def select_audio_frame_idx(total_frames, total_seconds, segment_length, rng, num_frames_to_select):
-    total_seconds_integer = int(floor(total_seconds))
-    max_starting_second = total_seconds_integer - segment_length
-    if max_starting_second < 0:
-        max_starting_second = total_seconds_integer
-    starting_second = rng.choice(list(range(0, max_starting_second)))
-    ending_second = starting_second + segment_length
-    if ending_second > total_seconds_integer:
-        ending_second = total_seconds_integer
-    
-    starting_frame = int(starting_second * total_frames / total_seconds_integer)
-    ending_frame = starting_frame + num_frames_to_select
-    
-    return sorted(range(starting_frame, ending_frame))
-    
-
-    
 
 def videoclip_to_video_audio_tensors(
     video_path: pathlib.Path,
@@ -137,23 +98,21 @@ def videoclip_to_video_audio_tensors(
     
     output = {}
     segment_length = int(float(ending_second - starting_second))
+    # print(video_path)
     decord.bridge.set_bridge('torch')
+    
     
     if return_video:
         video = VideoReader(video_path, ctx=cpu(0))
         key_frame_idx = np.array(video.get_key_indices())
+        total_frames = len(video)
         
-        selected_frame_idx = select_video_frame_idx(
-            total_frames=len(video) - 1,
-            total_seconds=video.get_frame_timestamp([len(video) - 1])[0][1],
-            segment_length=segment_length,
-            rng=rng,
-            num_frames_to_select=num_video_frames,
-            key_frame_indices=key_frame_idx,
-        )
+        if len(key_frame_idx) < num_video_frames:
+            selected_frame_idx = sorted(np.concatenate([key_frame_idx, rng.choice([i for i in range(total_frames) if i not in key_frame_idx], num_video_frames - len(key_frame_idx))]))
+        else:
+            selected_frame_idx = sorted(key_frame_idx[:num_video_frames])
         
         video_frames = video.get_batch(selected_frame_idx).permute(0, 3, 1, 2)
-        
         output["video"] = get_video_tensors(
             video_frames=video_frames,
             image_size=image_size,
@@ -176,23 +135,14 @@ def videoclip_to_video_audio_tensors(
             )
     
     if return_image:
-        video = VideoReader(video_path, ctx=cpu(0))
+        video = VideoReader(video_path, ctx=gpu(0))
         key_frame_idx = np.array(video.get_key_indices())
-        selected_frame_idx = select_video_frame_idx(
-            total_frames=len(video) - 1,
-            total_seconds=video.get_frame_timestamp([len(video) - 1])[0][1],
-            segment_length=segment_length,
-            rng=rng,
-            num_frames_to_select=1,
-            key_frame_indices=key_frame_idx,
-        )
-        
-        video_frames = video.get_batch(selected_frame_idx).permute(0, 3, 1, 2)
-        
+
+        image = video[rng.choice(key_frame_idx, 1)[0]]
         output["image"] = get_video_tensors(
-            video_frames=video_frames,
+            video_frames=image.unsqueeze(0).permute(0, 3, 1, 2),
             image_size=image_size,
-            num_video_frames=num_video_frames,
+            num_video_frames=1,
             rng=rng,
         )[0]
         
@@ -205,16 +155,10 @@ def videoclip_to_video_audio_tensors(
         total_seconds_integer = int(floor(total_seconds))
         audio_segment = int(floor(num_audio_frames / 16000.0))
         
-        selected_frame_idx = select_audio_frame_idx(
-            total_frames=total_frames - 1,
-            total_seconds=total_seconds_integer,
-            segment_length=audio_segment,
-            rng=rng,
-            num_frames_to_select=num_audio_frames,
-        )
+        max_starting_second = total_seconds_integer - audio_segment
+        starting_second = rng.choice(list(range(0, max_starting_second if max_starting_second > 0 else 1)))
+        audio_frames = audio[starting_second * 44100 : (starting_second + audio_segment) * 44100]
         
-        audio_frames = audio.get_batch(selected_frame_idx)
-
         output["audio"] = extract_audio(
             num_audio_frames=num_audio_frames, audio_frames=audio_frames
         )
@@ -394,12 +338,21 @@ class TALIBaseTransform:
             video_starting_second = float(
                 choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
             )
-            clip_starting_second = rng.randint(
-                0, 30 - self.config.clip_duration_in_seconds
-            )
-            clip_ending_second = (
-                clip_starting_second + self.config.clip_duration_in_seconds
-            )
+            video = VideoReader(choose_video.replace(
+                    "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+                ), ctx=gpu(0))
+            total_frames = len(video)
+            timestamp = video.get_frame_timestamp(total_frames - 1)
+            duration = timestamp[1]
+            total_time_in_seconds = int(floor(duration))
+            max_starting_second = total_time_in_seconds - self.config.clip_duration_in_seconds
+            if max_starting_second <= 0:
+                clip_starting_second = 0
+                clip_ending_second = total_time_in_seconds
+            else:
+                clip_starting_second = rng.randint(0, max_starting_second)
+                clip_ending_second = clip_starting_second + self.config.clip_duration_in_seconds
+                
             output_dict["youtube_video_id"] = video_id
 
             if (
@@ -850,7 +803,7 @@ if __name__ == "__main__":
 
     install()
     os.environ["HYDRA_FULL_ERROR"] = "1"
-
+    set_seed(42)
     def sample():
         # transform = TALIBaseTransform(
         #     config=TALIBaseTransformConfig(
@@ -910,7 +863,7 @@ if __name__ == "__main__":
             dataset,
             batch_size=32,
             num_workers=12,
-            shuffle=True,
+            shuffle=False,
             collate_fn=dataclass_collate,
             persistent_workers=True,
             prefetch_factor=2,
