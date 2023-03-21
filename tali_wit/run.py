@@ -3,6 +3,7 @@ import os
 import neptune
 from rich import print
 from rich.traceback import install
+from tali_wit.data import dataclass_collate
 
 from tali_wit.models import TALIModel
 from tali_wit.utils import (
@@ -19,8 +20,6 @@ os.environ[
 os.environ[
     "TORCH_DISTRIBUTED_DEBUG"
 ] = "DETAIL"  # extremely useful when debugging DDP setups
-
-# os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 install()  # beautiful and clean tracebacks for debugging
 
@@ -94,20 +93,28 @@ def run(cfg: BaseConfig) -> None:
         train_dataloader = instantiate(
             cfg.dataloader,
             dataset=train_dataset,
-            batch_size=1,
+            batch_size=2,
             shuffle=True,
+            collate_fn=dataclass_collate,
         )
         dummy_batch = next(iter(train_dataloader))
         logger.info(f"Finding max batch size for {dataset_name} train dataloader")
         optimal_batch_size = get_max_supported_batch_size(
             model=model, batch=dummy_batch, train_mode=True
         )
-
+        if "audio" in dataset_name:
+            if optimal_batch_size > 16:
+                optimal_batch_size -= 16
+            else:
+                optimal_batch_size //= 2
+        #o ptimal_batch_size = 16
+        
         train_dataloader = instantiate(
             cfg.dataloader,
             dataset=train_dataset,
             batch_size=optimal_batch_size,
             shuffle=True,
+            collate_fn=dataclass_collate,
         )
         
         val_dataset: Dataset = instantiate(dataset, set_name="val")
@@ -117,6 +124,7 @@ def run(cfg: BaseConfig) -> None:
             dataset=val_dataset,
             batch_size=optimal_batch_size,
             shuffle=False,
+            collate_fn=dataclass_collate,
         )
         
         test_dataset: Dataset = instantiate(dataset, set_name="test")
@@ -126,6 +134,7 @@ def run(cfg: BaseConfig) -> None:
             dataset=test_dataset,
             batch_size=optimal_batch_size,
             shuffle=False,
+            collate_fn=dataclass_collate,
         )
 
         train_dataloaders.append(train_dataloader)

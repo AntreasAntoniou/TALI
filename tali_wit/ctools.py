@@ -102,7 +102,7 @@ def get_max_supported_batch_size(
     else:
         model.eval()
 
-    batch_size = 2
+    batch_size = 16
     crashed = False
 
     # Iterate and test different batch sizes until crash 🛠️

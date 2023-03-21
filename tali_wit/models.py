@@ -1,6 +1,7 @@
 import math
 import os
 from dataclasses import dataclass
+import time
 import torch.nn.functional
 from typing import Any, Dict
 
@@ -251,8 +252,7 @@ class TALIModel(nn.Module):
 
         self.build_model()
         self.build_logit_scales()
-        self.build_transforms()
-
+        
     def build_model(self):
         self.model = nn.ModuleDict()
 
@@ -332,31 +332,6 @@ class TALIModel(nn.Module):
         ):
             self.model["video"].init_weights()
 
-    def build_transforms(self):
-        self.image_text_processor = CLIPProcessor.from_pretrained(
-            self.image_text_model_name
-        )
-        self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
-
-        self.transforms = {
-            "image": lambda x: self.image_text_processor(
-                images=x, return_tensors="pt"
-            ).pixel_values,
-            "text": lambda x: self.image_text_processor(
-                text=x, return_tensors="pt", padding=True, truncation=True
-            ).input_ids,
-            "audio": lambda x: torch.cat(
-                [
-                    self.audio_processor(
-                        item,
-                        sampling_rate=16000,
-                        return_tensors="pt",
-                    ).input_features
-                    for item in x.unbind(0)
-                ]
-            ),
-        }
-
     def build_logit_scales(self):
         self.logit_scales = nn.ParameterDict()
 
@@ -378,9 +353,9 @@ class TALIModel(nn.Module):
 
     def print_model_summary(self):
         # Print model layer summary
-        logger.info(self)
+        logger.debug(self)
         # Print total number of parameters
-        logger.info(f"Total number of parameters: {num_parameters(self)}")
+        logger.debug(f"Total number of parameters: {num_parameters(self)}")
 
     def forward(
         self,
@@ -432,36 +407,56 @@ class TALIModel(nn.Module):
         return output_dict | similarity_dict
 
     def forward_image(self, x: torch.Tensor) -> torch.Tensor:
-        if "image" in self.transforms:
-            if isinstance(x, torch.Tensor):
-                x = x.cpu().unbind(0)
-            x = self.transforms["image"](x)
+        cast_to_device_start_time = time.time()
+        if len(x.shape) == 5:
+            x = x.squeeze(1)
         x = x.to(self.image_linear_layer.weight.device)
+        cast_to_device_end_time = time.time()
+        logger.debug(f"Cast Image to device time: {cast_to_device_end_time - cast_to_device_start_time}")
+        
+        fprop_actual_start_time = time.time()
         features = self.model["image"](pixel_values=x).pooler_output
         projection_output = self.image_linear_layer(features)
+        fprop_actual_end_time = time.time()
+        logger.debug(f"Fprop image actual time: {fprop_actual_end_time - fprop_actual_start_time}")
+        
         return {"features": features, "projection_output": projection_output}
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
-        if "text" in self.transforms:
-            x = self.transforms["text"](x)
+        if len(x.shape) == 3:
+            x = x.squeeze(1)
+        cast_to_device_start_time = time.time()
         x = x.to(self.text_linear_layer.weight.device)
+        cast_to_device_end_time = time.time()
+        logger.debug(f"Cast Text to device time: {cast_to_device_end_time - cast_to_device_start_time}")
+        
+        fprop_actual_start_time = time.time()
         features = self.model["text"](x).pooler_output
         projection_output = self.text_linear_layer(features)
+        fprop_actual_end_time = time.time()
+        logger.debug(f"Fprop text actual time: {fprop_actual_end_time - fprop_actual_start_time}")
         return {"features": features, "projection_output": projection_output}
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
-        if "audio" in self.transforms:
-            x = self.transforms["audio"](x.cpu())
+        if len(x.shape) == 4:
+            x = x.squeeze(1)
+        cast_to_device_start_time = time.time()
         x = x.to(self.audio_linear_layer.weight.device)
+        cast_to_device_end_time = time.time()
+        logger.debug(f"cast audio to device time: {cast_to_device_end_time - cast_to_device_start_time}")
+        
+        fprop_actual_start_time = time.time()
         features = self.model["audio"](x).last_hidden_state[:, -1, :]
         projection_output = self.audio_linear_layer(features)
+        fprop_actual_end_time = time.time()
+        logger.debug(f"Fprop audio actual time: {fprop_actual_end_time - fprop_actual_start_time}")
+        
         return {"features": features, "projection_output": projection_output}
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
+        logger.debug("Video ---------------------------------")
         input_shape = x.shape  # (batch_size, num_frames, channels, height, width)
 
-        if "video" in self.transforms:
-            x = self.transforms["video"](x.cpu())
         out = x.to(self.video_linear_layer.weight.device)
         out = self.forward_image(out.view(-1, *out.shape[-3:]))["projection_output"]
         out = out.view(input_shape[0], input_shape[1], -1)
@@ -513,185 +508,4 @@ if __name__ == "__main__":
     # set up a config that allows to select modality pairs + batch size and then build unique dataloaders for each pair
     # add accuracy and top-k accuracy metrics
 
-    dataset = TALIDataset(
-        set_name="train",
-        root_filepath="/data/datasets/tali-wit-2-1-buckets/",
-        modality_list=[
-            ModalityTypes.wit_image.value,
-            ModalityTypes.wit_caption.value,
-            # ModalityTypes.wit_title.value,
-            # ModalityTypes.wit_main_body.value,
-            # ModalityTypes.youtube_image.value,
-            # ModalityTypes.youtube_video.value,
-            # ModalityTypes.youtube_subtitles.value,
-            # ModalityTypes.youtube_audio.value,
-            # ModalityTypes.youtube_description.value,
-        ],
-        language_id="en",
-        rng_seed=42,
-        top_k_tali=10,
-        image_size=224,
-        transforms=None,
-        num_video_frames=5,
-        num_audio_frames=1 * 16000,
-        clip_duration_in_seconds=1.5,
-    )
-
-    dataloader = DataLoader(
-        dataset=dataset,
-        batch_size=128,
-        num_workers=1,
-        shuffle=True,
-        pin_memory=False,
-        collate_fn=dataclass_collate,
-    )
-    dummy_batch = next(iter(dataloader))
-
-    # build a TALI model with all modalities available
-    model = TALIModel(
-        image_text_model_name="openai/clip-vit-base-patch16",
-        audio_model_name="openai/whisper-base",
-        multi_modality_config=MultiModalityConfig(
-            image=ModalityConfig(support=True, pretrained=True),
-            text=ModalityConfig(support=True, pretrained=True),
-            # audio=ModalityConfig(support=True, pretrained=True),
-            # video=ModalityConfig(support=True, pretrained=False),
-        ),
-        num_video_frames=8,
-        num_audio_frames=8,
-        audio_sampling_rate=16000,
-    )
-
-    accelerator = Accelerator(mixed_precision="bf16")
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
-
-    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
-
-    # have the model update the model by taking one sub modality from each modality, in pairs, to maximize the batch size
-    # Use transpose for similarities to speed up contrastive loss computation, and add accuracy and top-k accuracy
-
-    with tqdm.tqdm(total=len(dataloader)) as pbar:
-        for batch in dataloader:
-            for (
-                modality_a,
-                sub_modality_a,
-                modality_b,
-                sub_modality_b,
-            ) in extract_all_possible_pairs(batch):
-                sample = {
-                    modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
-                    modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
-                }
-                output_dict = model.forward(sample, return_loss=True)
-                loss = torch.mean(
-                    torch.stack(
-                        [value for key, value in output_dict.items() if "_loss" in key]
-                    )
-                )
-                accuracy = torch.mean(
-                    torch.stack(
-                        [
-                            value.cpu()
-                            for key, value in output_dict.items()
-                            if "_accuracy" in key
-                        ]
-                    )
-                )
-                accuracy_top_5 = torch.mean(
-                    torch.stack(
-                        [
-                            value.cpu()
-                            for key, value in output_dict.items()
-                            if "_accuracy_top_5" in key
-                        ]
-                    )
-                )
-                pbar.set_description(
-                    f"loss: {loss.item():.4f}, accuracy: {accuracy.item():.4f}, accuracy_top_5: {accuracy_top_5.item():.4f}"
-                )
-                accelerator.backward(loss)
-                optimizer.step()
-
-            pbar.update(1)
-
-    print(output_dict)
-
-    # # test no image
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=False,
-    #     modality_config=ModalityConfig(
-    #         image=False, text=True, audio=True, video=True
-    #     ),
-    # )
-    # model.print_model_summary()
-
-    # # test no text
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=False,
-    #     modality_config=ModalityConfig(
-    #         image=True, text=False, audio=True, video=True
-    #     ),
-    # )
-    # model.print_model_summary()
-
-    # # test no audio
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=False,
-    #     modality_config=ModalityConfig(
-    #         image=True, text=True, audio=False, video=True
-    #     ),
-    # )
-    # model.print_model_summary()
-
-    # # test no video
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=False,
-    #     modality_config=ModalityConfig(
-    #         image=True, text=True, audio=True, video=False
-    #     ),
-    # )
-    # model.print_model_summary()
-
-    # # test no image, no text
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=False,
-    #     modality_config=ModalityConfig(
-    #         image=False, text=False, audio=True, video=True
-    #     ),
-    # )
-    # model.print_model_summary()
-
-    # # test no image, no audio
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=False,
-    #     modality_config=ModalityConfig(
-    #         image=False, text=True, audio=False, video=True
-    #     ),
-    # )
-    # model.print_model_summary()
-
-    # # test no image, no video
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=False,
-    #     modality_config=ModalityConfig(
-    #         image=False, text=True, audio=True, video=False
-    #     ),
-    # )
-
-    # # test pretrained, all modalities
-
-    # model = TALIModel(
-    #     model_name="openai/clip-vit-large-patch14",
-    #     pretrained=True,
-    #     modality_config=ModalityConfig(
-    #         image=True, text=True, audio=True, video=True
-    #     ),
-    # )
-    # model.print_model_summary()
+    

@@ -237,6 +237,14 @@
         "documentation": {}
     },
     {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -477,6 +485,14 @@
         "documentation": {}
     },
     {
+        "label": "print",
+        "importPath": "rich",
+        "description": "rich",
+        "isExtraImport": true,
+        "detail": "rich",
+        "documentation": {}
+    },
+    {
         "label": "random",
         "kind": 6,
         "isExtraImport": true,
@@ -500,6 +516,14 @@
         "description": "tqdm",
         "isExtraImport": true,
         "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "install",
+        "importPath": "rich.traceback",
+        "description": "rich.traceback",
+        "isExtraImport": true,
+        "detail": "rich.traceback",
         "documentation": {}
     },
     {
@@ -600,6 +624,14 @@
         "documentation": {}
     },
     {
+        "label": "dataclass_collate",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
         "label": "default_image_transforms",
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
@@ -681,6 +713,14 @@
     },
     {
         "label": "TALIDataset",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass_collate",
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
         "isExtraImport": true,
@@ -880,6 +920,30 @@
         "documentation": {}
     },
     {
+        "label": "get_logger",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "pretty_config",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "set_seed",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
         "label": "create_hf_model_repo_and_download_maybe",
         "importPath": "tali_wit.utils",
         "description": "tali_wit.utils",
@@ -968,6 +1032,14 @@
         "documentation": {}
     },
     {
+        "label": "TALIModel",
+        "importPath": "tali_wit.models",
+        "description": "tali_wit.models",
+        "isExtraImport": true,
+        "detail": "tali_wit.models",
+        "documentation": {}
+    },
+    {
         "label": "extract_all_possible_pairs",
         "importPath": "tali_wit.models",
         "description": "tali_wit.models",
@@ -1017,6 +1089,14 @@
     },
     {
         "label": "generate_hierarchical_data_dict",
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "isExtraImport": true,
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "get_next_on_error",
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
         "isExtraImport": true,
@@ -1096,6 +1176,15 @@
         "importPath": "torchaudio",
         "description": "torchaudio",
         "detail": "torchaudio",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
         "documentation": {}
     },
     {
@@ -1496,6 +1585,14 @@
         "documentation": {}
     },
     {
+        "label": "P",
+        "importPath": "regex",
+        "description": "regex",
+        "isExtraImport": true,
+        "detail": "regex",
+        "documentation": {}
+    },
+    {
         "label": "ConfigStore",
         "importPath": "hydra.core.config_store",
         "description": "hydra.core.config_store",
@@ -1545,6 +1642,14 @@
     },
     {
         "label": "builds",
+        "importPath": "hydra_zen",
+        "description": "hydra_zen",
+        "isExtraImport": true,
+        "detail": "hydra_zen",
+        "documentation": {}
+    },
+    {
+        "label": "instantiate",
         "importPath": "hydra_zen",
         "description": "hydra_zen",
         "isExtraImport": true,
@@ -1846,6 +1951,22 @@
         "documentation": {}
     },
     {
+        "label": "CLIPProcessor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "WhisperProcessor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
         "label": "CLIPModel",
         "importPath": "transformers",
         "description": "transformers",
@@ -1878,6 +1999,22 @@
         "documentation": {}
     },
     {
+        "label": "CLIPProcessor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "WhisperProcessor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
         "label": "WhisperProcessor",
         "importPath": "transformers",
         "description": "transformers",
@@ -1894,21 +2031,21 @@
         "documentation": {}
     },
     {
+        "label": "functools",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "functools",
+        "description": "functools",
+        "detail": "functools",
+        "documentation": {}
+    },
+    {
         "label": "logging",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "logging",
         "description": "logging",
         "detail": "logging",
-        "documentation": {}
-    },
-    {
-        "label": "time",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "time",
-        "description": "time",
-        "detail": "time",
         "documentation": {}
     },
     {
@@ -1921,12 +2058,36 @@
         "documentation": {}
     },
     {
-        "label": "functools",
+        "label": "decord",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "functools",
-        "description": "functools",
-        "detail": "functools",
+        "importPath": "decord",
+        "description": "decord",
+        "detail": "decord",
+        "documentation": {}
+    },
+    {
+        "label": "VideoReader",
+        "importPath": "decord",
+        "description": "decord",
+        "isExtraImport": true,
+        "detail": "decord",
+        "documentation": {}
+    },
+    {
+        "label": "AudioReader",
+        "importPath": "decord",
+        "description": "decord",
+        "isExtraImport": true,
+        "detail": "decord",
+        "documentation": {}
+    },
+    {
+        "label": "cpu",
+        "importPath": "decord",
+        "description": "decord",
+        "isExtraImport": true,
+        "detail": "decord",
         "documentation": {}
     },
     {
@@ -1963,12 +2124,44 @@
         "documentation": {}
     },
     {
-        "label": "neptune",
+        "label": "hydra",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "neptune",
-        "description": "neptune",
-        "detail": "neptune",
+        "importPath": "hydra",
+        "description": "hydra",
+        "detail": "hydra",
+        "documentation": {}
+    },
+    {
+        "label": "BaseConfig",
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "isExtraImport": true,
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "collect_config_store",
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "isExtraImport": true,
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "BaseConfig",
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "isExtraImport": true,
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "collect_config_store",
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "isExtraImport": true,
+        "detail": "tali_wit.config",
         "documentation": {}
     },
     {
@@ -1980,12 +2173,20 @@
         "documentation": {}
     },
     {
-        "label": "hydra",
+        "label": "get_max_supported_batch_size",
+        "importPath": "tali_wit.ctools",
+        "description": "tali_wit.ctools",
+        "isExtraImport": true,
+        "detail": "tali_wit.ctools",
+        "documentation": {}
+    },
+    {
+        "label": "neptune",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "hydra",
-        "description": "hydra",
-        "detail": "hydra",
+        "importPath": "neptune",
+        "description": "neptune",
+        "detail": "neptune",
         "documentation": {}
     },
     {
@@ -2010,22 +2211,6 @@
         "description": "omegaconf",
         "isExtraImport": true,
         "detail": "omegaconf",
-        "documentation": {}
-    },
-    {
-        "label": "BaseConfig",
-        "importPath": "tali_wit.config",
-        "description": "tali_wit.config",
-        "isExtraImport": true,
-        "detail": "tali_wit.config",
-        "documentation": {}
-    },
-    {
-        "label": "collect_config_store",
-        "importPath": "tali_wit.config",
-        "description": "tali_wit.config",
-        "isExtraImport": true,
-        "detail": "tali_wit.config",
         "documentation": {}
     },
     {
@@ -2511,7 +2696,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "TRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")",
+        "peekOfCode": "TRAIN_ITERS = \"${learner.train_iters}\"\nREPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2520,7 +2705,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "REPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(",
+        "peekOfCode": "REPO_PATH = \"${repo_path}\"\nEXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2529,7 +2714,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "EXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True",
+        "peekOfCode": "EXP_NAME = \"${exp_name}\"\nSEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2538,7 +2723,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "SEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)",
+        "peekOfCode": "SEED = \"${seed}\"\nRESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2547,7 +2732,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "RESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)",
+        "peekOfCode": "RESUME = \"${resume}\"\nLOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2556,7 +2741,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "LOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(",
+        "peekOfCode": "LOGGER_LEVEL = \"${logger_level}\"\nGPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2565,7 +2750,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "GPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(\n    torch.optim.AdamW,",
+        "peekOfCode": "GPU_MEMORY = 24  # in GB\nDUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2574,7 +2759,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "DUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(\n    torch.optim.AdamW,\n    populate_full_signature=True,",
+        "peekOfCode": "DUMMY_BATCH_MODE = \"${dummy_batch_mode}\"\nPREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2583,7 +2768,43 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "PREFETCH_FACTOR = \"${prefetch_factor}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(\n    torch.optim.AdamW,\n    populate_full_signature=True,\n    zen_partial=True,",
+        "peekOfCode": "PREFETCH_FACTOR = \"${prefetch_factor}\"\nPERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)",
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "PERSISTENT_WORKERS",
+        "kind": 5,
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "peekOfCode": "PERSISTENT_WORKERS = \"${persistent_workers}\"\nPIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(",
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "PIN_MEMORY",
+        "kind": 5,
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "peekOfCode": "PIN_MEMORY = \"${pin_memory}\"\nIMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(\n    torch.optim.AdamW,",
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "IMAGE_TEXT_MODEL_NAME",
+        "kind": 5,
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "peekOfCode": "IMAGE_TEXT_MODEL_NAME = \"${model.image_text_model_name}\"\nAUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(\n    torch.optim.AdamW,\n    populate_full_signature=True,",
+        "detail": "tali_wit.config",
+        "documentation": {}
+    },
+    {
+        "label": "AUDIO_MODEL_NAME",
+        "kind": 5,
+        "importPath": "tali_wit.config",
+        "description": "tali_wit.config",
+        "peekOfCode": "AUDIO_MODEL_NAME = \"${model.audio_model_name}\"\nhydra_logger = get_logger(\"hydra\")\nHFModelUploadConfig = builds(\n    UploadCheckpointsToHuggingFace, populate_full_signature=True\n)\nhf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)\nadamw_optimizer_config = builds(\n    torch.optim.AdamW,\n    populate_full_signature=True,\n    zen_partial=True,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2673,7 +2894,7 @@
         "kind": 5,
         "importPath": "tali_wit.config",
         "description": "tali_wit.config",
-        "peekOfCode": "wit_dataset_config = WITBase.build_config(\n    populate_full_signature=True,\n    set_name=\"train\",\n    cache_dir=pathlib.Path(DATASET_DIR) / \"wit_cache\",\n    image_size=224,\n    deterministic_sampling=False,\n    infinite_sampling=False,  # True,\n    priority_caption_language=\"en\",\n)\ndataloader_config = builds(DataLoader, dataset=None, populate_full_signature=True)",
+        "peekOfCode": "wit_dataset_config = WITBase.build_config(\n    populate_full_signature=True,\n    set_name=\"train\",\n    cache_dir=pathlib.Path(DATASET_DIR) / \"wit_cache\",\n    image_size=224,\n    deterministic_sampling=False,\n    infinite_sampling=False,  # True,\n    priority_caption_language=\"en\",\n    dummy_batch_mode=DUMMY_BATCH_MODE,\n    image_text_model_name=IMAGE_TEXT_MODEL_NAME,",
         "detail": "tali_wit.config",
         "documentation": {}
     },
@@ -2988,7 +3209,7 @@
         "kind": 2,
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
-        "peekOfCode": "def dataclass_collate(batch):\n    \"\"\"Collate data from a list of dataclass objects.\n    Args:\n        batch (list): List of dataclass objects.\n    Returns:\n        dict: Dictionary of values from the dataclass objects.\n    \"\"\"\n    batch = list(filter(lambda x: x is not None, batch))\n    batch = list(filter(lambda x: len(list(x.keys())) != 0, batch))\n    try:",
+        "peekOfCode": "def dataclass_collate(batch):\n    \"\"\"Collate data from a list of dataclass objects.\n    Args:\n        batch (list): List of dataclass objects.\n    Returns:\n        dict: Dictionary of values from the dataclass objects.\n    \"\"\"\n    batch = list(filter(lambda x: x is not None, batch))\n    batch = list(filter(lambda x: len(list(x.keys())) != 0, batch))\n    for sample in batch:",
         "detail": "tali_wit.data",
         "documentation": {}
     },
@@ -3186,7 +3407,7 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_clip, image_size, num_video_frames):\n    video_transform = Compose(\n        [\n            UniformTemporalSubsample(\n                num_samples=num_video_frames,\n                temporal_dim=1,\n            ),\n            ShortSideScale(size=image_size),",
+        "peekOfCode": "def get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n        ]",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3195,7 +3416,7 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def get_video_tensors(video_clip, image_size, num_video_frames):\n    video_transform = Compose(\n        [\n            UniformTemporalSubsample(\n                num_samples=num_video_frames,\n                temporal_dim=1,\n            ),\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n        ]",
+        "peekOfCode": "def get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n        ]\n    )\n    output_dict = ApplyTransformToKey(\"video\", video_transform)(output_dict)",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3204,7 +3425,25 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def get_image_tensor(video_clip, image_size, rng):\n    input_dict = {\n        \"video\": video_clip[\"video\"][\n            :, rng.randint(0, video_clip[\"video\"].shape[1]), :, :\n        ].unsqueeze(1)\n    }\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
+        "peekOfCode": "def get_image_tensor(video_frame, image_size, rng):\n    input_dict = {\n        \"video\": video_frame[\n            :, rng.randint(0, video_frame.shape[1]), :, :\n        ].unsqueeze(1)\n    }\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "select_video_frame_idx",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def select_video_frame_idx(total_frames, total_seconds, segment_length, rng, num_frames_to_select, key_frame_indices):\n    total_seconds_integer = int(floor(total_seconds))\n    max_starting_second = total_seconds_integer - segment_length\n    if max_starting_second < 0:\n        max_starting_second = total_seconds_integer\n    starting_second = rng.choice(list(range(0, max_starting_second)))\n    ending_second = starting_second + segment_length\n    if ending_second > total_seconds_integer:\n        ending_second = total_seconds_integer\n    starting_frame = int(starting_second * total_frames / total_seconds_integer)",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "select_audio_frame_idx",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def select_audio_frame_idx(total_frames, total_seconds, segment_length, rng, num_frames_to_select):\n    total_seconds_integer = int(floor(total_seconds))\n    max_starting_second = total_seconds_integer - segment_length\n    if max_starting_second < 0:\n        max_starting_second = total_seconds_integer\n    starting_second = rng.choice(list(range(0, max_starting_second)))\n    ending_second = starting_second + segment_length\n    if ending_second > total_seconds_integer:\n        ending_second = total_seconds_integer\n    starting_frame = int(starting_second * total_frames / total_seconds_integer)",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3222,7 +3461,7 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def extract_audio(num_audio_frames, video_clip):\n    audio_duration_target = float(num_audio_frames) / 16000.0\n    source_sample_rate = 44100\n    target_sample_rate = 16000\n    video_clip[\"audio\"] = video_clip[\"audio\"][\n        : int(floor(float(44100 * float(audio_duration_target))))\n    ]\n    resampler = T.Resample(\n        source_sample_rate, target_sample_rate, dtype=video_clip[\"audio\"].dtype\n    )",
+        "peekOfCode": "def extract_audio(num_audio_frames, audio_frames):\n    audio_duration_target = float(num_audio_frames) / 16000.0\n    source_sample_rate = 44100\n    target_sample_rate = 16000\n    audio_frames = audio_frames[0, : int(floor(44100 * audio_duration_target))]\n    resampler = T.Resample(\n        source_sample_rate, target_sample_rate, dtype=audio_frames.dtype\n    )\n    audio = resampler(audio_frames)\n    # audio_shape = audio.shape",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3254,11 +3493,20 @@
         "documentation": {}
     },
     {
+        "label": "get_next_on_error",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "def get_next_on_error(func: Callable) -> Callable:\n    @functools.wraps(func)\n    def wrapper_collect_metrics(*args, **kwargs):\n        try:\n            return func(*args, **kwargs)\n        except Exception as e:\n            logger.debug(f\"Error occurred at idx {args} {e}, getting the next item instead.\")\n            current_time = time.time()\n            random.seed(current_time)\n            random_number = random.randint(0, 10**8)",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
         "label": "logger",
         "kind": 5,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "logger = get_logger(__name__)\npytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.CRITICAL)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_clip, image_size, num_video_frames):\n    video_transform = Compose(\n        [\n            UniformTemporalSubsample(\n                num_samples=num_video_frames,\n                temporal_dim=1,",
+        "peekOfCode": "logger = get_logger(__name__)\npytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.CRITICAL)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3267,7 +3515,7 @@
         "kind": 5,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "pytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.CRITICAL)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_clip, image_size, num_video_frames):\n    video_transform = Compose(\n        [\n            UniformTemporalSubsample(\n                num_samples=num_video_frames,\n                temporal_dim=1,\n            ),",
+        "peekOfCode": "pytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.CRITICAL)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3623,6 +3871,33 @@
         "documentation": {}
     },
     {
+        "label": "test",
+        "kind": 2,
+        "importPath": "tali_wit.models_test",
+        "description": "tali_wit.models_test",
+        "peekOfCode": "def test(cfg: BaseConfig) -> None:\n    print(pretty_config(cfg, resolve=True))\n    set_seed(seed=cfg.seed)\n    model: TALIModel = instantiate(cfg.model)\n    for dataset_name, (batch_size, dataset) in cfg.dataset.items():\n        logger.info(f\"Setting up {dataset_name} train dataset\")\n        train_dataset = instantiate(\n            dataset, set_name=\"train\", infinite_sampling=True\n        )\n        logger.info(f\"Setting up {dataset_name} train dataloader\")",
+        "detail": "tali_wit.models_test",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "tali_wit.models_test",
+        "description": "tali_wit.models_test",
+        "peekOfCode": "logger = get_logger(name=__name__)\nconfig_store = collect_config_store()\n@hydra.main(config_path=None, config_name=\"config\", version_base=None)\ndef test(cfg: BaseConfig) -> None:\n    print(pretty_config(cfg, resolve=True))\n    set_seed(seed=cfg.seed)\n    model: TALIModel = instantiate(cfg.model)\n    for dataset_name, (batch_size, dataset) in cfg.dataset.items():\n        logger.info(f\"Setting up {dataset_name} train dataset\")\n        train_dataset = instantiate(",
+        "detail": "tali_wit.models_test",
+        "documentation": {}
+    },
+    {
+        "label": "config_store",
+        "kind": 5,
+        "importPath": "tali_wit.models_test",
+        "description": "tali_wit.models_test",
+        "peekOfCode": "config_store = collect_config_store()\n@hydra.main(config_path=None, config_name=\"config\", version_base=None)\ndef test(cfg: BaseConfig) -> None:\n    print(pretty_config(cfg, resolve=True))\n    set_seed(seed=cfg.seed)\n    model: TALIModel = instantiate(cfg.model)\n    for dataset_name, (batch_size, dataset) in cfg.dataset.items():\n        logger.info(f\"Setting up {dataset_name} train dataset\")\n        train_dataset = instantiate(\n            dataset, set_name=\"train\", infinite_sampling=True",
+        "detail": "tali_wit.models_test",
+        "documentation": {}
+    },
+    {
         "label": "instantiate_callbacks",
         "kind": 2,
         "importPath": "tali_wit.run",
@@ -3645,7 +3920,7 @@
         "kind": 5,
         "importPath": "tali_wit.run",
         "description": "tali_wit.run",
-        "peekOfCode": "] = \"1\"  # Makes sure that stack traces produced by hydra instantiation functions produce\n# traceback errors related to the modules they built, rather than generic instantiate related errors that\n# are generally useless for debugging\nos.environ[\n    \"TORCH_DISTRIBUTED_DEBUG\"\n] = \"DETAIL\"  # extremely useful when debugging DDP setups\n# os.environ[\"TOKENIZERS_PARALLELISM\"] = \"false\"\ninstall()  # beautiful and clean tracebacks for debugging\nfrom typing import List, Optional\nimport hydra",
+        "peekOfCode": "] = \"1\"  # Makes sure that stack traces produced by hydra instantiation functions produce\n# traceback errors related to the modules they built, rather than generic instantiate related errors that\n# are generally useless for debugging\nos.environ[\n    \"TORCH_DISTRIBUTED_DEBUG\"\n] = \"DETAIL\"  # extremely useful when debugging DDP setups\ninstall()  # beautiful and clean tracebacks for debugging\nfrom typing import List, Optional\nimport hydra\nimport torch",
         "detail": "tali_wit.run",
         "documentation": {}
     },
@@ -3654,7 +3929,7 @@
         "kind": 5,
         "importPath": "tali_wit.run",
         "description": "tali_wit.run",
-        "peekOfCode": "] = \"DETAIL\"  # extremely useful when debugging DDP setups\n# os.environ[\"TOKENIZERS_PARALLELISM\"] = \"false\"\ninstall()  # beautiful and clean tracebacks for debugging\nfrom typing import List, Optional\nimport hydra\nimport torch\nfrom hydra_zen import instantiate\nfrom omegaconf import OmegaConf\nfrom torch.utils.data import Dataset\nfrom tali_wit.boilerplate import Learner",
+        "peekOfCode": "] = \"DETAIL\"  # extremely useful when debugging DDP setups\ninstall()  # beautiful and clean tracebacks for debugging\nfrom typing import List, Optional\nimport hydra\nimport torch\nfrom hydra_zen import instantiate\nfrom omegaconf import OmegaConf\nfrom torch.utils.data import Dataset\nfrom tali_wit.boilerplate import Learner\nfrom tali_wit.callbacks import Callback",
         "detail": "tali_wit.run",
         "documentation": {}
     },
