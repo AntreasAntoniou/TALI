@@ -831,8 +831,7 @@ class TALIBase(Dataset):
             idx = idx % len(self.dataset)
 
         sample = self.dataset[idx]
-        print(idx)
-
+        
         for key, value in sample.items():
             for transform_key, transform_value in self.transforms.items():
                 if transform_key in key and key != "youtube_video_id":
