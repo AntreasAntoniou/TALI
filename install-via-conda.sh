@@ -20,15 +20,15 @@ fi
 conda create -n minimal-ml-template python=3.10 -y
 conda activate minimal-ml-template
 conda install -c conda-forge mamba -y
-mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia -y
+# mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia -y
+mamba install pytorch torchvision torchaudio cpuonly -c pytorch -y
 mamba install -c conda-forge google-cloud-sdk -y
 mamba install -c anaconda-platform kubectl -y
-mamba install -c conda-forge timm accelerate datasets transformers pytorchvideo -y
+mamba install -c conda-forge -c huggingface timm accelerate datasets transformers -y
 mamba install -c conda-forge orjson -y
-mamba install -c conda-forge -c fvcore -c iopath fvcore iopath -y
 
 echo y | pip install git+https://github.com/BayesWatch/bwatchcompute@main
-echo y | pip install hydra_zen neptune pytorchvideo
+echo y | pip install hydra_zen neptune pytorchvideo rich decord
 
 git config --global credential.helper store
 

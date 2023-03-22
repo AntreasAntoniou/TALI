@@ -40,16 +40,14 @@ from transformers import (
     CLIPProcessor,
     WhisperProcessor,
 )
-from decord import VideoReader, AudioReader
-from decord import cpu
-import decord
-
-decord.logging.set_level(decord.logging.PANIC)
+from pytorchvideo.data.encoded_video import EncodedVideo
+# from decord import VideoReader, AudioReader
+# from decord import cpu
+# import decord
+# # decord.logging.set_level(lvl=decord.logging.PANIC)
 
 logger = get_logger(__name__)
-pytorchvideo_logger = get_logger("pytorchvideo", logging_level=logging.NOTSET)
-decord_logger = get_logger("decord", logging_level=logging.NOTSET)
-os.environ["DECORD_DUPLICATE_WARNING_THRESHOLD"] = "1.0"
+# os.environ["DECORD_DUPLICATE_WARNING_THRESHOLD"] = "1.0"
 
 
 def get_video_clip(video, starting_second, ending_second):
@@ -85,6 +83,7 @@ def get_image_tensor(video_frame, image_size, rng):
 
 
 
+
 def videoclip_to_video_audio_tensors(
     video_path: pathlib.Path,
     rng: np.random.Generator,
@@ -98,84 +97,69 @@ def videoclip_to_video_audio_tensors(
     num_video_frames: int = 10,
 ):
 
-    output = {}
-    segment_length = int(float(ending_second - starting_second))
-    # print(video_path)
-    decord.bridge.set_bridge("torch")
-
+    output_dict = {}
+    
+    
+    video = None
+    audio = None
+    image = None
     if return_video:
-        video = VideoReader(video_path, ctx=cpu(0))
-        key_frame_idx = np.array(video.get_key_indices())
-        total_frames = len(video)
-
-        if len(key_frame_idx) < num_video_frames:
-            selected_frame_idx = sorted(
-                np.concatenate(
-                    [
-                        key_frame_idx,
-                        rng.choice(
-                            [i for i in range(total_frames) if i not in key_frame_idx],
-                            num_video_frames - len(key_frame_idx),
-                        ),
-                    ]
-                )
-            )
-        else:
-            selected_frame_idx = sorted(key_frame_idx[:num_video_frames])
-
-        video_frames = video.get_batch(selected_frame_idx).permute(0, 3, 1, 2)
-        output["video"] = get_video_tensors(
-            video_frames=video_frames,
+        output = EncodedVideo.from_path(video_path, decode_audio=return_audio)
+        output = output.get_clip(start_sec=starting_second, end_sec=ending_second)
+        video = output["video"]
+        audio = output["audio"]
+        
+        choose_frames = rng.choice(video.shape[1], num_video_frames + 1)
+        video = video.permute(1, 0, 2, 3)
+        image = video[choose_frames[0]]
+        video = video[sorted(choose_frames[1:])]
+        
+        video = get_video_tensors(
+            video_frames=video,
             image_size=image_size,
             num_video_frames=num_video_frames,
             rng=rng,
         )
-        if output["video"].shape[0] < num_video_frames:
-            output["video"] = torch.cat(
+        if video.shape[0] < num_video_frames:
+            video = torch.cat(
                 [
-                    output["video"],
+                    video,
                     torch.zeros(
-                        num_video_frames - output["video"].shape[0],
-                        output["video"].shape[1],
-                        output["video"].shape[2],
-                        output["video"].shape[3],
-                        output["video"].shape[4],
+                        num_video_frames - video.shape[0],
+                        video.shape[1],
+                        video.shape[2],
+                        video.shape[3],
+                        video.shape[4],
                     ),
                 ],
                 dim=0,
             )
+        output_dict["video"] = video
 
     if return_image:
-        video = VideoReader(video_path, ctx=cpu(0))
-        key_frame_idx = np.array(video.get_key_indices())
-
-        image = video[rng.choice(key_frame_idx, 1)[0]]
-        output["image"] = get_video_tensors(
-            video_frames=image.unsqueeze(0).permute(0, 3, 1, 2),
+        if image is None:
+            image = EncodedVideo.from_path(video_path, decode_audio=return_audio)
+            image = output.get_clip(start_sec=starting_second, end_sec=starting_second + 1)["video"]
+            choose_frame = sorted(rng.choice(image.shape[1], 1))
+            image = image[:, choose_frame]
+            image = get_video_tensors(
+            video_frames=image.unsqueeze(0),
             image_size=image_size,
             num_video_frames=1,
             rng=rng,
-        )[0]
+        )
+        
+        output_dict["image"] = image
 
     if return_audio:
-        audio = AudioReader(video_path)
+        if audio is None:
+            audio = EncodedVideo.from_path(video_path, decode_audio=return_audio)
+            audio = output.get_clip(start_sec=starting_second, end_sec=ending_second)["audio"].view(-1)
+        else:
+            audio = audio.view(-1)
 
-        total_frames = audio.shape[1]
-        total_seconds = audio.duration()
-
-        total_seconds_integer = int(floor(total_seconds))
-        audio_segment = int(floor(num_audio_frames / 16000.0))
-
-        max_starting_second = total_seconds_integer - audio_segment
-        starting_second = rng.choice(
-            list(range(0, max_starting_second if max_starting_second > 0 else 1))
-        )
-        audio_frames = audio[
-            starting_second * 44100 : (starting_second + audio_segment) * 44100
-        ]
-
-        output["audio"] = extract_audio(
-            num_audio_frames=num_audio_frames, audio_frames=audio_frames
+        output_dict["audio"] = extract_audio(
+            num_audio_frames=num_audio_frames, audio_frames=audio
         )
     return output
 
@@ -184,11 +168,12 @@ def extract_audio(num_audio_frames, audio_frames):
     audio_duration_target = float(num_audio_frames) / 16000.0
     source_sample_rate = 44100
     target_sample_rate = 16000
-    audio_frames = audio_frames[0, : int(floor(44100 * audio_duration_target))]
+    audio_frames = audio_frames[: int(floor(44100 * audio_duration_target))]
     resampler = T.Resample(
         source_sample_rate, target_sample_rate, dtype=audio_frames.dtype
     )
-    audio = resampler(audio_frames)
+    
+    audio = resampler(audio_frames.unsqueeze(0)).squeeze(0)
     # audio_shape = audio.shape
 
     if audio.shape[0] < num_audio_frames:
@@ -353,16 +338,13 @@ class TALIBaseTransform:
             video_starting_second = float(
                 choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
             )
-            video = VideoReader(
+            video = EncodedVideo.from_path(
                 choose_video.replace(
                     "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
                 ),
-                ctx=cpu(0),
             )
-            total_frames = len(video)
-            timestamp = video.get_frame_timestamp(total_frames - 1)
-            duration = timestamp[1]
-            total_time_in_seconds = int(floor(duration))
+            total_time_in_seconds = video.duration
+            total_time_in_seconds = int(floor(total_time_in_seconds))
             max_starting_second = (
                 total_time_in_seconds - self.config.clip_duration_in_seconds
             )
@@ -753,7 +735,7 @@ class TALIBase(Dataset):
         )
         self.infinite_sampling = infinite_sampling
         self.dataset = datasets.load_from_disk(
-            pathlib.Path(hf_tali_root_filepath) / f"{set_name}-set", keep_in_memory=True
+            pathlib.Path(hf_tali_root_filepath) / f"{set_name}-set"
         )
         self.dataset = self.dataset.with_transform(transform)
         self.dummy_batch_mode = dummy_batch_mode
@@ -831,7 +813,6 @@ class TALIBase(Dataset):
             idx = idx % len(self.dataset)
 
         sample = self.dataset[idx]
-        print(idx)
 
         for key, value in sample.items():
             for transform_key, transform_value in self.transforms.items():
@@ -929,27 +910,26 @@ if __name__ == "__main__":
             rng_seed=42,
             top_k_tali=10,
             image_size=224,
-            num_video_frames=10,
+            num_video_frames=8,
             num_audio_frames=16000 * 2,
-            clip_duration_in_seconds=10,
+            clip_duration_in_seconds=5,
             deterministic_sampling=False,
             infinite_sampling=True,
             dummy_batch_mode=False,
             image_text_model_name="openai/clip-vit-base-patch16",
             audio_model_name="openai/whisper-base",
-            use_model_preprocessing=False,
         )
         dataloader = DataLoader(
             dataset,
-            batch_size=1,
-            num_workers=16,
+            batch_size=32,
+            num_workers=12,
             shuffle=False,
             collate_fn=dataclass_collate,
             persistent_workers=True,
             prefetch_factor=2,
-            pin_memory=False,
+            pin_memory=True,
         )
-        num_samples = 10000
+        num_samples = 100
 
         with tqdm.tqdm(total=len(dataloader)) as pbar:
             for i, example in enumerate(dataloader):

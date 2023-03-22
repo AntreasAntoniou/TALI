@@ -285,6 +285,54 @@
         "documentation": {}
     },
     {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Union",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -493,6 +541,22 @@
         "documentation": {}
     },
     {
+        "label": "print",
+        "importPath": "rich",
+        "description": "rich",
+        "isExtraImport": true,
+        "detail": "rich",
+        "documentation": {}
+    },
+    {
+        "label": "print",
+        "importPath": "rich",
+        "description": "rich",
+        "isExtraImport": true,
+        "detail": "rich",
+        "documentation": {}
+    },
+    {
         "label": "random",
         "kind": 6,
         "isExtraImport": true,
@@ -516,6 +580,14 @@
         "description": "tqdm",
         "isExtraImport": true,
         "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "install",
+        "importPath": "rich.traceback",
+        "description": "rich.traceback",
+        "isExtraImport": true,
+        "detail": "rich.traceback",
         "documentation": {}
     },
     {
@@ -609,6 +681,54 @@
     },
     {
         "label": "dataclass_collate",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "AnyModalSample",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass_collate",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "default_image_transforms",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "ModalityTypes",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "get_base_modality",
+        "importPath": "tali_wit.data",
+        "description": "tali_wit.data",
+        "isExtraImport": true,
+        "detail": "tali_wit.data",
+        "documentation": {}
+    },
+    {
+        "label": "select_subtitles_between_timestamps",
         "importPath": "tali_wit.data",
         "description": "tali_wit.data",
         "isExtraImport": true,
@@ -808,6 +928,14 @@
         "documentation": {}
     },
     {
+        "label": "configurable",
+        "importPath": "tali_wit.decorators",
+        "description": "tali_wit.decorators",
+        "isExtraImport": true,
+        "detail": "tali_wit.decorators",
+        "documentation": {}
+    },
+    {
         "label": "get_logger",
         "importPath": "tali_wit.utils",
         "description": "tali_wit.utils",
@@ -873,6 +1001,30 @@
     },
     {
         "label": "load_json",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "get_logger",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "load_json",
+        "importPath": "tali_wit.utils",
+        "description": "tali_wit.utils",
+        "isExtraImport": true,
+        "detail": "tali_wit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "set_seed",
         "importPath": "tali_wit.utils",
         "description": "tali_wit.utils",
         "isExtraImport": true,
@@ -1088,6 +1240,14 @@
         "documentation": {}
     },
     {
+        "label": "TALIBase",
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "isExtraImport": true,
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
         "label": "generate_hierarchical_data_dict",
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
@@ -1144,11 +1304,35 @@
         "documentation": {}
     },
     {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
         "label": "upload",
         "importPath": "distutils.command.upload",
         "description": "distutils.command.upload",
         "isExtraImport": true,
         "detail": "distutils.command.upload",
+        "documentation": {}
+    },
+    {
+        "label": "upload",
+        "importPath": "distutils.command.upload",
+        "description": "distutils.command.upload",
+        "isExtraImport": true,
+        "detail": "distutils.command.upload",
+        "documentation": {}
+    },
+    {
+        "label": "path",
+        "importPath": "importlib.resources",
+        "description": "importlib.resources",
+        "isExtraImport": true,
+        "detail": "importlib.resources",
         "documentation": {}
     },
     {
@@ -1271,10 +1455,11 @@
         "documentation": {}
     },
     {
-        "label": "DataLoader",
+        "label": "torch.utils.data",
+        "kind": 6,
+        "isExtraImport": true,
         "importPath": "torch.utils.data",
         "description": "torch.utils.data",
-        "isExtraImport": true,
         "detail": "torch.utils.data",
         "documentation": {}
     },
@@ -1296,6 +1481,22 @@
     },
     {
         "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
         "importPath": "torch.utils.data",
         "description": "torch.utils.data",
         "isExtraImport": true,
@@ -1552,11 +1753,27 @@
         "documentation": {}
     },
     {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
         "label": "math",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "math",
         "description": "math",
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "floor",
+        "importPath": "math",
+        "description": "math",
+        "isExtraImport": true,
         "detail": "math",
         "documentation": {}
     },
@@ -1799,6 +2016,46 @@
         "documentation": {}
     },
     {
+        "label": "EncodedVideo",
+        "importPath": "pytorchvideo.data.encoded_video",
+        "description": "pytorchvideo.data.encoded_video",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.data.encoded_video",
+        "documentation": {}
+    },
+    {
+        "label": "EncodedVideo",
+        "importPath": "pytorchvideo.data.encoded_video",
+        "description": "pytorchvideo.data.encoded_video",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.data.encoded_video",
+        "documentation": {}
+    },
+    {
+        "label": "ApplyTransformToKey",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "ShortSideScale",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "UniformTemporalSubsample",
+        "importPath": "pytorchvideo.transforms",
+        "description": "pytorchvideo.transforms",
+        "isExtraImport": true,
+        "detail": "pytorchvideo.transforms",
+        "documentation": {}
+    },
+    {
         "label": "ApplyTransformToKey",
         "importPath": "pytorchvideo.transforms",
         "description": "pytorchvideo.transforms",
@@ -1927,6 +2184,22 @@
         "documentation": {}
     },
     {
+        "label": "Compose",
+        "importPath": "torchvision.transforms",
+        "description": "torchvision.transforms",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms",
+        "documentation": {}
+    },
+    {
+        "label": "CenterCropVideo",
+        "importPath": "torchvision.transforms._transforms_video",
+        "description": "torchvision.transforms._transforms_video",
+        "isExtraImport": true,
+        "detail": "torchvision.transforms._transforms_video",
+        "documentation": {}
+    },
+    {
         "label": "CenterCropVideo",
         "importPath": "torchvision.transforms._transforms_video",
         "description": "torchvision.transforms._transforms_video",
@@ -1952,6 +2225,22 @@
     },
     {
         "label": "CLIPProcessor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "CLIPProcessor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "WhisperProcessor",
         "importPath": "transformers",
         "description": "transformers",
         "isExtraImport": true,
@@ -2099,11 +2388,11 @@
         "documentation": {}
     },
     {
-        "label": "gpu",
-        "importPath": "decord",
-        "description": "decord",
+        "label": "futures",
+        "importPath": "concurrent",
+        "description": "concurrent",
         "isExtraImport": true,
-        "detail": "decord",
+        "detail": "concurrent",
         "documentation": {}
     },
     {
@@ -2115,11 +2404,46 @@
         "documentation": {}
     },
     {
-        "label": "tali_generator",
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
+        "label": "tali_cache_generator",
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
         "isExtraImport": true,
-        "detail": "tali_wit.dataset_generator",
+        "detail": "tali_wit.dataset_cache_generator",
+        "documentation": {}
+    },
+    {
+        "label": "tali_cache_generator",
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "isExtraImport": true,
+        "detail": "tali_wit.dataset_cache_generator",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "shutil",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "shutil",
+        "description": "shutil",
+        "detail": "shutil",
         "documentation": {}
     },
     {
@@ -2230,15 +2554,6 @@
         "documentation": {}
     },
     {
-        "label": "shutil",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "shutil",
-        "description": "shutil",
-        "detail": "shutil",
-        "documentation": {}
-    },
-    {
         "label": "RichHandler",
         "importPath": "rich.logging",
         "description": "rich.logging",
@@ -2343,7 +2658,7 @@
         "kind": 2,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "def update_length_options(set_name):\n    max_idx = len(dataset_dict[set_name]) - 1\n    return gr.update(minimum=0, maximum=max_idx, step=1)\ndef get_random_sample(set_name):\n    dataset = dataset_dict[set_name]\n    return random.randint(0, len(dataset) - 1)\ndef generate_caption_output(caption_dict):\n    with gr.Column() as output:\n        for language_key, language_captions in caption_dict.items():\n            with gr.Tab(language_key):",
+        "peekOfCode": "def update_length_options(set_name):\n    max_idx = len(dataset_dict[set_name]) - 1\n    return gr.update(minimum=0, maximum=max_idx, step=1)\ndef get_random_sample(set_name):\n    dataset = dataset_dict[set_name]\n    sample_index = random.randint(0, len(dataset) - 1)\n    return sample_index\ndef generate_caption_output(caption_dict):\n    with gr.Column() as output:\n        for language_key, language_captions in caption_dict.items():",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2352,7 +2667,7 @@
         "kind": 2,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "def get_random_sample(set_name):\n    dataset = dataset_dict[set_name]\n    return random.randint(0, len(dataset) - 1)\ndef generate_caption_output(caption_dict):\n    with gr.Column() as output:\n        for language_key, language_captions in caption_dict.items():\n            with gr.Tab(language_key):\n                for caption_key, caption in language_captions.items():\n                    gr.Textbox(value=caption, label=caption_key)\n    return gr.update(children=[output])",
+        "peekOfCode": "def get_random_sample(set_name):\n    dataset = dataset_dict[set_name]\n    sample_index = random.randint(0, len(dataset) - 1)\n    return sample_index\ndef generate_caption_output(caption_dict):\n    with gr.Column() as output:\n        for language_key, language_captions in caption_dict.items():\n            with gr.Tab(language_key):\n                for caption_key, caption in language_captions.items():\n                    gr.Textbox(value=caption, label=caption_key)",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2379,7 +2694,7 @@
         "kind": 2,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "def update_language_choices(set_name, sample_index):\n    languages = list(dataset_dict[set_name][int(sample_index)][\"captions\"].keys())\n    return gr.update(choices=languages, value=languages[0]), *update_captions(\n        languages[0], set_name, sample_index\n    )\ndef load_sample(set_name, sample_index):\n    # Load the dataset based on the set name (you'll need to implement this part)\n    dataset = dataset_dict[set_name]\n    # Retrieve the sample at the given index\n    sample = dataset[int(sample_index)]",
+        "peekOfCode": "def update_language_choices(set_name, sample_index):\n    print(dataset_dict[set_name][int(sample_index)])\n    languages = list(dataset_dict[set_name][int(sample_index)][\"captions\"].keys())\n    return gr.update(choices=languages, value=languages[0]), *update_captions(\n        languages[0], set_name, sample_index\n    )\ndef load_sample(set_name, sample_index):\n    # Load the dataset based on the set name (you'll need to implement this part)\n    dataset = dataset_dict[set_name]\n    # Retrieve the sample at the given index",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2388,7 +2703,7 @@
         "kind": 2,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "def load_sample(set_name, sample_index):\n    # Load the dataset based on the set name (you'll need to implement this part)\n    dataset = dataset_dict[set_name]\n    # Retrieve the sample at the given index\n    sample = dataset[int(sample_index)]\n    # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)\n    languages = list(sample[\"captions\"].keys())\n    caption = sample[\"captions\"]\n    subtitles = sample[\"youtube_description_text\"]\n    wit_image = sample[\"wikipedia_caption_image\"].permute(1, 2, 0).numpy()",
+        "peekOfCode": "def load_sample(set_name, sample_index):\n    # Load the dataset based on the set name (you'll need to implement this part)\n    dataset = dataset_dict[set_name]\n    # Retrieve the sample at the given index\n    sample = dataset[int(sample_index)]\n    # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)\n    print(sample)\n    subtitles = sample[\"youtube_description_text\"]\n    wit_image = sample[\"wikipedia_caption_image\"].squeeze().permute(1, 2, 0).numpy()\n    youtube_image = (",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2397,7 +2712,7 @@
         "kind": 2,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "def load_random_sample(set_name):\n    sample_idx = get_random_sample(set_name)\n    return gr.update(value=sample_idx), *load_sample(set_name, sample_idx)\nif __name__ == \"__main__\":\n    callback = gr.CSVLogger()\n    with gr.Blocks() as demo:\n        gr.Markdown(\n            \"\"\"\n        # TALI (Temporally and semantically Aligned Audio, Language and Images) Dataset Demo v-0.3.0 🖼️ 🔊 🎦 📝\n        ## What should I expect to see here? ",
+        "peekOfCode": "def load_random_sample(set_name):\n    sample_idx = get_random_sample(set_name)\n    return gr.update(value=sample_idx), *load_sample(set_name, sample_idx)\nif __name__ == \"__main__\":\n    callback = gr.CSVLogger()\n    with gr.Blocks(theme=gr.themes.Soft()) as demo:\n        gr.Markdown(\n            \"\"\"\n        # TALI (Temporally and semantically Aligned Audio, Language and Images) Dataset Demo v-0.3.0 🖼️ 🔊 🎦 📝\n        ## What should I expect to see here? ",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2424,7 +2739,16 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "logger = get_logger(__name__)\nfrom tali_wit.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig\ntransform = TALIBaseDemoTransform(\n    config=TALIBaseTransformConfig(\n        root_filepath=\"/data/datasets/tali-wit-2-1-buckets/\",\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,",
+        "peekOfCode": "logger = get_logger(__name__)\nfrom tali_wit.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig\ndata_root = \"/data/datasets/tali-wit-2-1-buckets/\"\ntransform = TALIBaseDemoTransform(\n    config=TALIBaseTransformConfig(\n        root_filepath=data_root,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,",
+        "detail": "notebooks.dataset_demo",
+        "documentation": {}
+    },
+    {
+        "label": "data_root",
+        "kind": 5,
+        "importPath": "notebooks.dataset_demo",
+        "description": "notebooks.dataset_demo",
+        "peekOfCode": "data_root = \"/data/datasets/tali-wit-2-1-buckets/\"\ntransform = TALIBaseDemoTransform(\n    config=TALIBaseTransformConfig(\n        root_filepath=data_root,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,\n            ModalityTypes.youtube_image.value,",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2433,7 +2757,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "transform = TALIBaseDemoTransform(\n    config=TALIBaseTransformConfig(\n        root_filepath=\"/data/datasets/tali-wit-2-1-buckets/\",\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,\n            ModalityTypes.youtube_image.value,\n            ModalityTypes.youtube_video.value,",
+        "peekOfCode": "transform = TALIBaseDemoTransform(\n    config=TALIBaseTransformConfig(\n        root_filepath=data_root,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,\n            ModalityTypes.youtube_image.value,\n            ModalityTypes.youtube_video.value,",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2442,7 +2766,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "train_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/train-set\"\n)\ntrain_dataset = train_dataset.with_transform(transform)\nval_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/val-set\"\n)\nval_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/test-set\"",
+        "peekOfCode": "train_dataset = datasets.load_from_disk(data_root + \"train-set\")\ntrain_dataset = train_dataset.with_transform(transform)\nval_dataset = datasets.load_from_disk(data_root + \"val-set\")\nval_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(data_root + \"test-set\")\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2451,7 +2775,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "train_dataset = train_dataset.with_transform(transform)\nval_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/val-set\"\n)\nval_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/test-set\"\n)\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0",
+        "peekOfCode": "train_dataset = train_dataset.with_transform(transform)\nval_dataset = datasets.load_from_disk(data_root + \"val-set\")\nval_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(data_root + \"test-set\")\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2460,7 +2784,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "val_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/val-set\"\n)\nval_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/test-set\"\n)\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict",
+        "peekOfCode": "val_dataset = datasets.load_from_disk(data_root + \"val-set\")\nval_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(data_root + \"test-set\")\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2469,7 +2793,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "val_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/test-set\"\n)\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr",
+        "peekOfCode": "val_dataset = val_dataset.with_transform(transform)\ntest_dataset = datasets.load_from_disk(data_root + \"test-set\")\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision\nimport torchaudio",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2478,7 +2802,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "test_dataset = datasets.load_from_disk(\n    \"/home/evolvingfungus/forge/workspaces/tali-2-2/test-set\"\n)\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision",
+        "peekOfCode": "test_dataset = datasets.load_from_disk(data_root + \"test-set\")\ntest_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision\nimport torchaudio\ndataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2487,7 +2811,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "test_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision\nimport torchaudio\ndataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\ndef update_length_options(set_name):",
+        "peekOfCode": "test_dataset = test_dataset.with_transform(transform)\nnum_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision\nimport torchaudio\ndataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\n# {",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2496,7 +2820,7 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "num_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision\nimport torchaudio\ndataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\ndef update_length_options(set_name):\n    max_idx = len(dataset_dict[set_name]) - 1",
+        "peekOfCode": "num_samples = 0\nfrom collections import defaultdict\nfrom distutils.command.upload import upload\nfrom importlib.resources import path\nimport gradio as gr\nimport torchvision\nimport torchaudio\ndataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\n# {\n#     'wit_idx': 502620,",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -2505,7 +2829,16 @@
         "kind": 5,
         "importPath": "notebooks.dataset_demo",
         "description": "notebooks.dataset_demo",
-        "peekOfCode": "dataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\ndef update_length_options(set_name):\n    max_idx = len(dataset_dict[set_name]) - 1\n    return gr.update(minimum=0, maximum=max_idx, step=1)\ndef get_random_sample(set_name):\n    dataset = dataset_dict[set_name]\n    return random.randint(0, len(dataset) - 1)\ndef generate_caption_output(caption_dict):\n    with gr.Column() as output:\n        for language_key, language_captions in caption_dict.items():",
+        "peekOfCode": "dataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\n# {\n#     'wit_idx': 502620,\n#     'wikipedia_caption_image': torch.Size([3, 224, 224]),\n#     'wikipedia_text': '<section_title> Station layout </section_title>',\n#     'youtube_video_id': '6e7RO-o6u6w',\n#     'youtube_content_video': torch.Size([10, 3, 224, 224]),\n#     'youtube_content_audio': torch.Size([16000]),\n#     'youtube_description_text': \"<ysub> it's open somebody's gonna be building something there so the neighborhood\n# isn't is in change i don't think shintomicho has much of a personality when they took away the kabuki theater it",
+        "detail": "notebooks.dataset_demo",
+        "documentation": {}
+    },
+    {
+        "label": "dataset_dict",
+        "kind": 5,
+        "importPath": "notebooks.dataset_demo",
+        "description": "notebooks.dataset_demo",
+        "peekOfCode": "dataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\ndef update_length_options(set_name):\n    max_idx = len(dataset_dict[set_name]) - 1\n    return gr.update(minimum=0, maximum=max_idx, step=1)\ndef get_random_sample(set_name):\n    dataset = dataset_dict[set_name]\n    sample_index = random.randint(0, len(dataset) - 1)\n    return sample_index\ndef generate_caption_output(caption_dict):\n    with gr.Column() as output:",
         "detail": "notebooks.dataset_demo",
         "documentation": {}
     },
@@ -3441,7 +3774,7 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def get_image_tensor(video_frame, image_size, rng):\n    input_dict = {\n        \"video\": video_frame[\n            :, rng.randint(0, video_frame.shape[1]), :, :\n        ].unsqueeze(1)\n    }\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
+        "peekOfCode": "def get_image_tensor(video_frame, image_size, rng):\n    input_dict = {\n        \"video\": video_frame[:, rng.randint(0, video_frame.shape[1]), :, :].unsqueeze(1)\n    }\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n        ]\n    )",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3495,7 +3828,7 @@
         "kind": 2,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "def get_next_on_error(func: Callable) -> Callable:\n    @functools.wraps(func)\n    def wrapper_collect_metrics(*args, **kwargs):\n        try:\n            return func(*args, **kwargs)\n        except Exception as e:\n            logger.debug(f\"Error occurred at idx {args} {e}, getting the next item instead.\")\n            current_time = time.time()\n            random.seed(current_time)\n            random_number = random.randint(0, 10**8)",
+        "peekOfCode": "def get_next_on_error(func: Callable) -> Callable:\n    @functools.wraps(func)\n    def wrapper_collect_metrics(*args, **kwargs):\n        try:\n            return func(*args, **kwargs)\n        except Exception as e:\n            logger.debug(\n                f\"Error occurred at idx {args} {e}, getting the next item instead.\"\n            )\n            current_time = time.time()",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3504,7 +3837,7 @@
         "kind": 5,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "logger = get_logger(__name__)\npytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.NOTSET)\ndecord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [",
+        "peekOfCode": "logger = get_logger(__name__)\npytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.NOTSET)\ndecord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\nos.environ[\"DECORD_DUPLICATE_WARNING_THRESHOLD\"] = \"1.0\"\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3513,7 +3846,7 @@
         "kind": 5,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "pytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.NOTSET)\ndecord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),",
+        "peekOfCode": "pytorchvideo_logger = get_logger(\"pytorchvideo\", logging_level=logging.NOTSET)\ndecord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\nos.environ[\"DECORD_DUPLICATE_WARNING_THRESHOLD\"] = \"1.0\"\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
@@ -3522,125 +3855,215 @@
         "kind": 5,
         "importPath": "tali_wit.data_plus",
         "description": "tali_wit.data_plus",
-        "peekOfCode": "decord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
+        "peekOfCode": "decord_logger = get_logger(\"decord\", logging_level=logging.NOTSET)\nos.environ[\"DECORD_DUPLICATE_WARNING_THRESHOLD\"] = \"1.0\"\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),",
         "detail": "tali_wit.data_plus",
         "documentation": {}
     },
     {
-        "label": "TALIDatasetGenerator",
+        "label": "os.environ[\"DECORD_DUPLICATE_WARNING_THRESHOLD\"]",
+        "kind": 5,
+        "importPath": "tali_wit.data_plus",
+        "description": "tali_wit.data_plus",
+        "peekOfCode": "os.environ[\"DECORD_DUPLICATE_WARNING_THRESHOLD\"] = \"1.0\"\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),",
+        "detail": "tali_wit.data_plus",
+        "documentation": {}
+    },
+    {
+        "label": "TALIBaseTransformConfig",
         "kind": 6,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "class TALIDatasetGenerator:\n    def __init__(\n        self,\n        set_name: str,\n        root_filepath: Union[str, pathlib.Path],\n        modality_list: List[AnyModalSample],\n    ):\n        super().__init__()\n        if isinstance(root_filepath, str):\n            root_filepath = pathlib.Path(root_filepath)",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "class TALIBaseTransformConfig:\n    root_filepath: Union[str, pathlib.Path]\n    modality_list: List[AnyModalSample]\n    rng_seed: int = 42\n    top_k_tali: int = 10\n    image_size: int = 224\n    num_video_frames: int = 30\n    num_audio_frames: int = 44100\n    clip_duration_in_seconds: float = 3\n    deterministic_sampling: bool = False",
+        "detail": "tali_wit.data_plus_av",
+        "documentation": {}
+    },
+    {
+        "label": "TALIBaseTransform",
+        "kind": 6,
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "class TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = (\n            lambda x, start, end, rng: videoclip_to_video_audio_tensors(\n                video_path=x.replace(",
+        "detail": "tali_wit.data_plus_av",
+        "documentation": {}
+    },
+    {
+        "label": "TALIBaseDemoTransform",
+        "kind": 6,
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "class TALIBaseDemoTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = (\n            lambda x, start, end, rng: videoclip_to_video_audio_tensors(\n                video_path=x.replace(",
+        "detail": "tali_wit.data_plus_av",
+        "documentation": {}
+    },
+    {
+        "label": "TALIBase",
+        "kind": 6,
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "class TALIBase(Dataset):\n    def __init__(\n        self,\n        set_name: str,\n        tali_root_filepath,\n        hf_tali_root_filepath,\n        modality_list,\n        rng_seed=42,\n        top_k_tali=10,\n        image_size=224,",
+        "detail": "tali_wit.data_plus_av",
+        "documentation": {}
+    },
+    {
+        "label": "get_video_clip",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n        ]",
+        "detail": "tali_wit.data_plus_av",
+        "documentation": {}
+    },
+    {
+        "label": "get_video_tensors",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n        ]\n    )\n    output_dict = ApplyTransformToKey(\"video\", video_transform)(output_dict)",
+        "detail": "tali_wit.data_plus_av",
+        "documentation": {}
+    },
+    {
+        "label": "get_image_tensor",
+        "kind": 2,
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def get_image_tensor(video_frame, image_size, rng):\n    input_dict = {\n        \"video\": video_frame[:, rng.randint(0, video_frame.shape[1]), :, :].unsqueeze(1)\n    }\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),\n            CenterCropVideo(crop_size=(image_size, image_size)),\n        ]\n    )",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
         "label": "videoclip_to_video_audio_tensors",
         "kind": 2,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,\n):\n    video: EncodedVideo = EncodedVideo.from_path(video_path)\n    video_duration_in_seconds = float(video.duration)",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    rng: np.random.Generator,\n    return_video: bool = True,\n    return_audio: bool = False,\n    return_image: bool = False,\n    image_size: int = 224,\n    starting_second: int = 0,\n    ending_second: int = None,\n    num_audio_frames: int = 1 * 16000,",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
-        "label": "get_wit_sample",
+        "label": "extract_audio",
         "kind": 2,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def get_wit_sample(\n    dataset: Any,\n    wit_index: int,\n):\n    wit_index = int(wit_index)\n    data_dict = get_language_specific_entries(\n        wit_idx=wit_index, wit_entry=dataset[wit_index]\n    )\n    return data_dict\ndef get_tali_sample(",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def extract_audio(num_audio_frames, audio_frames):\n    audio_duration_target = float(num_audio_frames) / 16000.0\n    source_sample_rate = 44100\n    target_sample_rate = 16000\n    audio_frames = audio_frames[: int(floor(44100 * audio_duration_target))]\n    resampler = T.Resample(\n        source_sample_rate, target_sample_rate, dtype=audio_frames.dtype\n    )\n    audio = resampler(audio_frames.unsqueeze(0)).squeeze(0)\n    # audio_shape = audio.shape",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
-        "label": "get_tali_sample",
+        "label": "get_submodality_name",
         "kind": 2,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def get_tali_sample(\n    video_id: int,\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    if isinstance(root_filepath, str):\n        root_filepath = pathlib.Path(root_filepath)\n    video_filepath = root_filepath / pathlib.Path(\n        f\"video_clip_scores.parquet/relevance/{video_id}.parquet\"\n    )\n    taliwit_table = ds.dataset(",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def get_submodality_name(item: AnyModalSample):\n    return str(item.sub_modality).replace(\"SubModalityTypes.\", \"\")\nclass TALIBaseTransform:\n    def __init__(self, config: TALIBaseTransformConfig):\n        self.config = config\n        self.modality_list = [\n            get_submodality_name(item) for item in self.config.modality_list\n        ]\n        self.image_transform = default_image_transforms(self.config.image_size)\n        self.video_transform = (",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
-        "label": "get_sample_from_video_id",
+        "label": "generate_hierarchical_data_dict",
         "kind": 2,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def get_sample_from_video_id(\n    dataset: Any,\n    video_id: str,\n    modality_list: List[ModalityTypes],\n    root_filepath: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    output_dict = {}\n    if isinstance(root_filepath, str):\n        root_filepath = pathlib.Path(root_filepath)\n    ### Fetch video data ###",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def generate_hierarchical_data_dict(data_dict: Dict[str, Any]) -> Dict[str, Any]:\n    modality_hierarchical_output_dict = {}\n    for sub_modality_name in list(data_dict.keys()):\n        modality_type = get_base_modality(sub_modality_name)\n        if modality_type is None:\n            if \"other\" not in modality_hierarchical_output_dict:\n                modality_hierarchical_output_dict[\"other\"] = {}\n            modality_hierarchical_output_dict[\"other\"][sub_modality_name] = data_dict[\n                sub_modality_name\n            ]",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
-        "label": "get_language_specific_entries",
+        "label": "get_dataset",
         "kind": 2,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def get_language_specific_entries(wit_idx: int, wit_entry: Any):\n    output_dict = {\n        \"image\": wit_entry[\"image\"],\n        \"image_url\": wit_entry[\"image_url\"],\n        \"item_idx\": wit_idx,\n        \"wit_features\": wit_entry[\"wit_features\"].copy(),\n    }\n    return output_dict\ndef get_wit_sample_idx_with_video_available(\n    root_path: pathlib.Path = pathlib.Path(\"/data/\"),",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def get_dataset(\n    set_name: str,\n    tali_root_filepath,\n    hf_tali_root_filepath,\n    modality_list,\n    rng_seed=42,\n    top_k_tali=10,\n    image_size=224,\n    num_video_frames=5,\n    num_audio_frames=16000,",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
-        "label": "get_wit_sample_idx_with_video_available",
+        "label": "get_next_on_error",
         "kind": 2,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def get_wit_sample_idx_with_video_available(\n    root_path: pathlib.Path = pathlib.Path(\"/data/\"),\n):\n    wit_idx_to_tali_wit_table_path = defaultdict(list)\n    wit_to_video_paths_table_path = (\n        root_path / \"wit_to_video_paths.parquet\" / \"relevance\"\n    )\n    # /data/wit_to_video_paths.parquet/relevance/\n    with tqdm.tqdm(total=558) as top_pbar:\n        for top_level_dir in pathlib.Path(",
-        "detail": "tali_wit.dataset_generator",
-        "documentation": {}
-    },
-    {
-        "label": "tali_generator",
-        "kind": 2,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "def tali_generator(set_name):\n    failed_samples = 0\n    dataset = TALIDatasetGenerator(\n        set_name=set_name,\n        root_filepath=\"/data/datasets/tali-wit-2-1-buckets/\",\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "def get_next_on_error(func: Callable) -> Callable:\n    @functools.wraps(func)\n    def wrapper_collect_metrics(*args, **kwargs):\n        try:\n            return func(*args, **kwargs)\n        except Exception as e:\n            logger.debug(\n                f\"Error occurred at idx {args} {e}, getting the next item instead.\"\n            )\n            current_time = time.time()",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
         "label": "logger",
         "kind": 5,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "logger = get_logger(__name__)\ntali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.data_plus_av",
+        "description": "tali_wit.data_plus_av",
+        "peekOfCode": "logger = get_logger(__name__)\n# os.environ[\"DECORD_DUPLICATE_WARNING_THRESHOLD\"] = \"1.0\"\ndef get_video_clip(video, starting_second, ending_second):\n    return video.get_clip(start_sec=starting_second, end_sec=ending_second)\ndef get_video_tensors(video_frames, image_size, num_video_frames, rng):\n    # selected_video_frame_idx = sorted(rng.choice(video_clip[\"video\"].shape[1], num_video_frames))\n    output_dict = {\"video\": video_frames.permute(1, 0, 2, 3).to(torch.float32)}\n    video_transform = Compose(\n        [\n            ShortSideScale(size=image_size),",
+        "detail": "tali_wit.data_plus_av",
         "documentation": {}
     },
     {
-        "label": "tali_schema",
-        "kind": 5,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "tali_schema = list(TALISchema.__dict__[\"__annotations__\"].items())\ntali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,",
-        "detail": "tali_wit.dataset_generator",
+        "label": "get_sample",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "def get_sample(input_dict):\n    dataset_instance = input_dict[\"dataset_instance\"]\n    set_name = input_dict[\"set_name\"]\n    idx = input_dict[\"idx\"]\n    return dataset_instance[set_name][idx]\nimport torch\ndef tali_cache_generator(\n    set_name, num_samples, root_path=\"/data/datasets/tali-wit-2-1-buckets/\", num_workers=8\n):\n    failed_samples = 0",
+        "detail": "tali_wit.dataset_cache_generator",
         "documentation": {}
     },
     {
-        "label": "tali_schema",
-        "kind": 5,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "tali_schema = pa.schema(tali_schema)\nvideo_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,",
-        "detail": "tali_wit.dataset_generator",
+        "label": "tali_cache_generator",
+        "kind": 2,
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "def tali_cache_generator(\n    set_name, num_samples, root_path=\"/data/datasets/tali-wit-2-1-buckets/\", num_workers=8\n):\n    failed_samples = 0\n    dataloader = torch.utils.data.DataLoader(dataset=dataset_dict[set_name], batch_size=1, num_workers=num_workers, pin_memory=False, shuffle=True, prefetch_factor=8)\n    sample_idx = 0\n    fn_argument_list = []\n    # with tqdm.tqdm(total=num_samples, smoothing=0.0) as pbar:\n    #     for idx in range(num_samples):\n    #         fn_argument_list.append(dict(dataset_instance=dataset_dict[set_name], set_name=set_name, idx=idx))",
+        "detail": "tali_wit.dataset_cache_generator",
         "documentation": {}
     },
     {
-        "label": "video_score_schema",
+        "label": "logger",
         "kind": 5,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "video_score_schema = list(\n    VideoCLIPScoreSchema.__dict__[\"__annotations__\"].items()\n)\nvideo_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "logger = get_logger(__name__)\nroot_path = \"/data/\"\ntrain_dataset = TALIBase(\n        set_name=\"train\",\n        tali_root_filepath=root_path,\n        hf_tali_root_filepath=root_path,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,",
+        "detail": "tali_wit.dataset_cache_generator",
         "documentation": {}
     },
     {
-        "label": "video_score_schema",
+        "label": "root_path",
         "kind": 5,
-        "importPath": "tali_wit.dataset_generator",
-        "description": "tali_wit.dataset_generator",
-        "peekOfCode": "video_score_schema = pa.schema(video_score_schema)\ndef videoclip_to_video_audio_tensors(\n    video_path: pathlib.Path,\n    return_video: bool,\n    return_audio: bool,\n    image_size: int,\n    clip_duration_in_seconds: float,\n    rng: np.random.Generator,\n):\n    video: EncodedVideo = EncodedVideo.from_path(video_path)",
-        "detail": "tali_wit.dataset_generator",
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "root_path = \"/data/\"\ntrain_dataset = TALIBase(\n        set_name=\"train\",\n        tali_root_filepath=root_path,\n        hf_tali_root_filepath=root_path,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,",
+        "detail": "tali_wit.dataset_cache_generator",
+        "documentation": {}
+    },
+    {
+        "label": "train_dataset",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "train_dataset = TALIBase(\n        set_name=\"train\",\n        tali_root_filepath=root_path,\n        hf_tali_root_filepath=root_path,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,\n            ModalityTypes.youtube_image.value,",
+        "detail": "tali_wit.dataset_cache_generator",
+        "documentation": {}
+    },
+    {
+        "label": "val_dataset",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "val_dataset = TALIBase(\n        set_name=\"val\",\n        tali_root_filepath=root_path,\n        hf_tali_root_filepath=root_path,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,\n            ModalityTypes.youtube_image.value,",
+        "detail": "tali_wit.dataset_cache_generator",
+        "documentation": {}
+    },
+    {
+        "label": "test_dataset",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "test_dataset = TALIBase(\n        set_name=\"test\",\n        tali_root_filepath=root_path,\n        hf_tali_root_filepath=root_path,\n        modality_list=[\n            ModalityTypes.wit_image.value,\n            ModalityTypes.wit_caption.value,\n            ModalityTypes.wit_title.value,\n            ModalityTypes.wit_main_body.value,\n            ModalityTypes.youtube_image.value,",
+        "detail": "tali_wit.dataset_cache_generator",
+        "documentation": {}
+    },
+    {
+        "label": "dataset_dict",
+        "kind": 5,
+        "importPath": "tali_wit.dataset_cache_generator",
+        "description": "tali_wit.dataset_cache_generator",
+        "peekOfCode": "dataset_dict = {\"train\": train_dataset, \"val\": val_dataset, \"test\": test_dataset}\ndef get_sample(input_dict):\n    dataset_instance = input_dict[\"dataset_instance\"]\n    set_name = input_dict[\"set_name\"]\n    idx = input_dict[\"idx\"]\n    return dataset_instance[set_name][idx]\nimport torch\ndef tali_cache_generator(\n    set_name, num_samples, root_path=\"/data/datasets/tali-wit-2-1-buckets/\", num_workers=8\n):",
+        "detail": "tali_wit.dataset_cache_generator",
         "documentation": {}
     },
     {
@@ -3720,7 +4143,7 @@
         "kind": 2,
         "importPath": "tali_wit.generate_dataset",
         "description": "tali_wit.generate_dataset",
-        "peekOfCode": "def train_tali_generator():\n    return tali_generator(set_name=\"train\")\ndef val_tali_generator():\n    return tali_generator(set_name=\"val\")\ndef test_tali_generator():\n    return tali_generator(set_name=\"test\")\nds = Dataset.from_generator(val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\")\nds.save_to_disk(\"/devcode/tali-2-2/val-set\")\nds = Dataset.from_generator(\n    test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"",
+        "peekOfCode": "def train_tali_generator():\n    return tali_cache_generator(set_name=\"train\")\ndef val_tali_generator():\n    return tali_cache_generator(set_name=\"val\")\ndef test_tali_generator():\n    return tali_cache_generator(set_name=\"test\")\nds = Dataset.from_generator(val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\")\nds.save_to_disk(\"/devcode/tali-2-2/val-set\")\nds = Dataset.from_generator(\n    test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"",
         "detail": "tali_wit.generate_dataset",
         "documentation": {}
     },
@@ -3729,7 +4152,7 @@
         "kind": 2,
         "importPath": "tali_wit.generate_dataset",
         "description": "tali_wit.generate_dataset",
-        "peekOfCode": "def val_tali_generator():\n    return tali_generator(set_name=\"val\")\ndef test_tali_generator():\n    return tali_generator(set_name=\"test\")\nds = Dataset.from_generator(val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\")\nds.save_to_disk(\"/devcode/tali-2-2/val-set\")\nds = Dataset.from_generator(\n    test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"\n)\nds.save_to_disk(\"/devcode/tali-2-2/test-set\")",
+        "peekOfCode": "def val_tali_generator():\n    return tali_cache_generator(set_name=\"val\")\ndef test_tali_generator():\n    return tali_cache_generator(set_name=\"test\")\nds = Dataset.from_generator(val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\")\nds.save_to_disk(\"/devcode/tali-2-2/val-set\")\nds = Dataset.from_generator(\n    test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"\n)\nds.save_to_disk(\"/devcode/tali-2-2/test-set\")",
         "detail": "tali_wit.generate_dataset",
         "documentation": {}
     },
@@ -3738,7 +4161,7 @@
         "kind": 2,
         "importPath": "tali_wit.generate_dataset",
         "description": "tali_wit.generate_dataset",
-        "peekOfCode": "def test_tali_generator():\n    return tali_generator(set_name=\"test\")\nds = Dataset.from_generator(val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\")\nds.save_to_disk(\"/devcode/tali-2-2/val-set\")\nds = Dataset.from_generator(\n    test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"\n)\nds.save_to_disk(\"/devcode/tali-2-2/test-set\")\n# ds = Dataset.from_generator(\n#     train_tali_generator, cache_dir=\"/devcode/tali-2-2/train/cache\"",
+        "peekOfCode": "def test_tali_generator():\n    return tali_cache_generator(set_name=\"test\")\nds = Dataset.from_generator(val_tali_generator, cache_dir=\"/devcode/tali-2-2/val/cache\")\nds.save_to_disk(\"/devcode/tali-2-2/val-set\")\nds = Dataset.from_generator(\n    test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"\n)\nds.save_to_disk(\"/devcode/tali-2-2/test-set\")\n# ds = Dataset.from_generator(\n#     train_tali_generator, cache_dir=\"/devcode/tali-2-2/train/cache\"",
         "detail": "tali_wit.generate_dataset",
         "documentation": {}
     },
@@ -3758,6 +4181,51 @@
         "description": "tali_wit.generate_dataset",
         "peekOfCode": "ds = Dataset.from_generator(\n    test_tali_generator, cache_dir=\"/devcode/tali-2-2/test/cache\"\n)\nds.save_to_disk(\"/devcode/tali-2-2/test-set\")\n# ds = Dataset.from_generator(\n#     train_tali_generator, cache_dir=\"/devcode/tali-2-2/train/cache\"\n# )\n# ds.save_to_disk(\"/devcode/tali-2-2/train-set\")",
         "detail": "tali_wit.generate_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "train_tali_generator",
+        "kind": 2,
+        "importPath": "tali_wit.generate_hf_cache_dataset",
+        "description": "tali_wit.generate_hf_cache_dataset",
+        "peekOfCode": "def train_tali_generator():\n    return tali_cache_generator(set_name=\"train\", num_samples=10_000_000, root_path=\"/data/\", num_workers=128)\ndef val_tali_generator():\n    return tali_cache_generator(set_name=\"val\", num_samples=10_050, root_path=\"/data/\", num_workers=128)\ndef test_tali_generator():\n    return tali_cache_generator(set_name=\"test\", num_samples=10_050, root_path=\"/data/\", num_workers=128)\nif __name__ == \"__main__\":\n    # create an argument parser that takes in the set name and number of samples\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--set_name\", type=str, required=True)",
+        "detail": "tali_wit.generate_hf_cache_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "val_tali_generator",
+        "kind": 2,
+        "importPath": "tali_wit.generate_hf_cache_dataset",
+        "description": "tali_wit.generate_hf_cache_dataset",
+        "peekOfCode": "def val_tali_generator():\n    return tali_cache_generator(set_name=\"val\", num_samples=10_050, root_path=\"/data/\", num_workers=128)\ndef test_tali_generator():\n    return tali_cache_generator(set_name=\"test\", num_samples=10_050, root_path=\"/data/\", num_workers=128)\nif __name__ == \"__main__\":\n    # create an argument parser that takes in the set name and number of samples\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--set_name\", type=str, required=True)\n    args = parser.parse_args()\n    dataset_generator = {\"train\": train_tali_generator, \"val\": val_tali_generator, \"test\": test_tali_generator}",
+        "detail": "tali_wit.generate_hf_cache_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "test_tali_generator",
+        "kind": 2,
+        "importPath": "tali_wit.generate_hf_cache_dataset",
+        "description": "tali_wit.generate_hf_cache_dataset",
+        "peekOfCode": "def test_tali_generator():\n    return tali_cache_generator(set_name=\"test\", num_samples=10_050, root_path=\"/data/\", num_workers=128)\nif __name__ == \"__main__\":\n    # create an argument parser that takes in the set name and number of samples\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--set_name\", type=str, required=True)\n    args = parser.parse_args()\n    dataset_generator = {\"train\": train_tali_generator, \"val\": val_tali_generator, \"test\": test_tali_generator}\n    # for item in dataset_generator[args.set_name]():\n    #     pass",
+        "detail": "tali_wit.generate_hf_cache_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "os.environ[\"FFREPORT\"]",
+        "kind": 5,
+        "importPath": "tali_wit.generate_hf_cache_dataset",
+        "description": "tali_wit.generate_hf_cache_dataset",
+        "peekOfCode": "os.environ[\"FFREPORT\"] = \"loglevel=error\"\nos.environ[\"OPENCV_FFMPEG_CAPTURE_OPTIONS\"] = \"loglevel;error\"\n# null_device = open(os.devnull, 'w')\n# sys.stderr = null_device\nimport pathlib\nimport shutil\nimport datasets\nfrom tali_wit.dataset_cache_generator import tali_cache_generator\nfrom rich import print\nfrom rich.traceback import install",
+        "detail": "tali_wit.generate_hf_cache_dataset",
+        "documentation": {}
+    },
+    {
+        "label": "os.environ[\"OPENCV_FFMPEG_CAPTURE_OPTIONS\"]",
+        "kind": 5,
+        "importPath": "tali_wit.generate_hf_cache_dataset",
+        "description": "tali_wit.generate_hf_cache_dataset",
+        "peekOfCode": "os.environ[\"OPENCV_FFMPEG_CAPTURE_OPTIONS\"] = \"loglevel;error\"\n# null_device = open(os.devnull, 'w')\n# sys.stderr = null_device\nimport pathlib\nimport shutil\nimport datasets\nfrom tali_wit.dataset_cache_generator import tali_cache_generator\nfrom rich import print\nfrom rich.traceback import install\ninstall()",
+        "detail": "tali_wit.generate_hf_cache_dataset",
         "documentation": {}
     },
     {

@@ -195,7 +195,8 @@ def dataclass_collate(batch):
     for sample in batch:
         for key in list(sample.keys()):
             # print(f"key {key} value {sample[key].shape if hasattr(sample[key], 'shape') else sample[key]}")
-            if "text" in key and len(sample[key]) < 77:
+            
+            if "text" in key and len(sample[key]) < 77 and isinstance(sample[key], torch.Tensor):
                 sample[key] = torch.cat([sample[key], 49407 * torch.ones(77 - len(sample[key])).long()])
 
     try:
