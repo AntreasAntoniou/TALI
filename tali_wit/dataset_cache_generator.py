@@ -154,6 +154,7 @@ def tali_cache_generator(
                 try:
                     # for key, value in item.items():
                     #     print(f"{key}: {value.shape if hasattr(value, 'shape') else value}")
+                    # print(f"{list(batch.keys())}: {batch['wit_idx']}")
                     batch_as_a_list = [{key: value[i] for key, value in batch.items()} for i in range(len(batch["wit_idx"]))]
                     for item in batch_as_a_list:
                         pbar.update(1)
