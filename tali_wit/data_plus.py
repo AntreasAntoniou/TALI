@@ -44,6 +44,7 @@ from transformers import (
 logger = get_logger(__name__)
 pytorchvideo_logger = get_logger("pytorchvideo", logging_level=logging.NOTSET)
 decord_logger = get_logger("decord", logging_level=logging.NOTSET)
+os.environ["DECORD_DUPLICATE_WARNING_THRESHOLD"] = "1.0"
 
 
 def get_video_clip(video, starting_second, ending_second):
@@ -479,7 +480,10 @@ class TALIBaseDemoTransform:
         self.video_transform = (
             lambda x, start, end, rng: videoclip_to_video_audio_tensors(
                 video_path=x.replace(
-                    "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+                    "/data/datasets/tali-wit-2-1-buckets",
+                    self.config.root_filepath.as_posix()
+                    if isinstance(self.config.root_filepath, pathlib.Path)
+                    else self.config.root_filepath,
                 ),
                 image_size=self.config.image_size,
                 starting_second=start,
@@ -628,7 +632,9 @@ class TALIBaseDemoTransform:
                         subtitle_dict=load_json(
                             input_dict["youtube_subtitle_text"].replace(
                                 "/data/datasets/tali-wit-2-1-buckets/",
-                                self.config.root_filepath,
+                                self.config.root_filepath.as_posix()
+                                if isinstance(self.config.root_filepath, pathlib.Path)
+                                else self.config.root_filepath,
                             )
                         ),
                         starting_timestamp=video_starting_second + clip_starting_second,
@@ -725,8 +731,9 @@ class TALIBase(Dataset):
         deterministic_sampling=True,
         dummy_batch_mode: bool = False,
         infinite_sampling: bool = False,
-        image_text_model_name: str = "facebook/bart-large-mnli",
-        audio_model_name: str = "facebook/bart-large-mnli",
+        image_text_model_name: str = "openai/clip-vit-base-patch16",
+        audio_model_name: str = "openai/whisper-base",
+        use_model_preprocessing: bool = True,
     ):
         super().__init__()
         transform = TALIBaseTransform(
@@ -754,9 +761,13 @@ class TALIBase(Dataset):
         self.num_samples = 10**8 if infinite_sampling else len(self.dataset)
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
-        self.transforms = self.build_transforms()
+        self.use_model_preprocessing = use_model_preprocessing
+        if self.use_model_preprocessing:
+            self.transforms = self.build_model_transforms()
+        else:
+            self.transforms = self.build_basic_transforms()
 
-    def build_transforms(self):
+    def build_model_transforms(self):
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
         )
@@ -772,7 +783,7 @@ class TALIBase(Dataset):
             "audio": lambda x: torch.cat(
                 [
                     self.audio_processor(
-                        item,
+                        item.view(-1),
                         sampling_rate=16000,
                         return_tensors="pt",
                     ).input_features
@@ -790,6 +801,25 @@ class TALIBase(Dataset):
             ),
         }
 
+    def build_basic_transforms(self):
+        # self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
+        return {
+            "image": lambda x: torch.tensor(x * 255).to(torch.uint8),
+            "text": lambda x: x,
+            "audio": lambda x: x.view(-1),
+            # "audio": lambda x: torch.cat(
+            #     [
+            #         self.audio_processor(
+            #             item.view(-1),
+            #             sampling_rate=16000,
+            #             return_tensors="pt",
+            #         ).input_features
+            #         for item in x.unbind(0)
+            #     ]
+            # ),
+            "video": lambda x: [(item * 255).to(torch.uint8) for item in x],
+        }
+
     @get_next_on_error
     def __getitem__(self, idx):
         if self.dummy_batch_mode and self.dummy_batch is not None:
@@ -803,6 +833,7 @@ class TALIBase(Dataset):
         for key, value in sample.items():
             for transform_key, transform_value in self.transforms.items():
                 if transform_key in key and key != "youtube_video_id":
+
                     if "audio" in key:
                         value = value.unsqueeze(0)
                     sample[key] = transform_value(value)
@@ -811,6 +842,19 @@ class TALIBase(Dataset):
                         if isinstance(sample[key], list)
                         else sample[key]
                     )
+                    # if "audio" in key:
+                    #     print(
+                    #         f"key: {key}, shape: {sample[key].shape}, {sample[key][0, 0]}"
+                    #     )
+                    # try:
+                    #     print(
+                    #         f"key: {key}, dtype: {value.dtype if hasattr(value, 'dtype') else ''} shape: {value.shape if hasattr(value, 'shape') else value} mean: {value.mean() if hasattr(value, 'mean') else ''}, std: {value.std() if hasattr(value, 'std') else ''}, min: {value.min() if hasattr(value, 'min') else ''}, max: {value.max() if hasattr(value, 'max') else ''}"
+                    #     )
+                    # except Exception as e:
+                    #     print(
+                    #         f"key: {key}, shape: {value.shape if hasattr(value, 'shape') else value}, dtype: {value.dtype if hasattr(value, 'dtype') else ''}"
+                    #     )
+
                     break
 
         if self.dummy_batch_mode:

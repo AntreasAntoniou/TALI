@@ -24,10 +24,10 @@ logger = get_logger(__name__)
 
 from tali_wit.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig
 
-
+data_root = "/data/datasets/tali-wit-2-1-buckets/"
 transform = TALIBaseDemoTransform(
     config=TALIBaseTransformConfig(
-        root_filepath="/data/datasets/tali-wit-2-1-buckets/",
+        root_filepath=data_root,
         modality_list=[
             ModalityTypes.wit_image.value,
             ModalityTypes.wit_caption.value,
@@ -42,26 +42,41 @@ transform = TALIBaseDemoTransform(
         rng_seed=42,
         top_k_tali=10,
         image_size=224,
-        num_video_frames=200,
+        num_video_frames=300,
         num_audio_frames=160000,
-        clip_duration_in_seconds=10.0,
+        clip_duration_in_seconds=20.0,
         deterministic_sampling=True,
     )
 )
-train_dataset = datasets.load_from_disk(
-    "/home/evolvingfungus/forge/workspaces/tali-2-2/train-set"
-)
+train_dataset = datasets.load_from_disk(data_root + "train-set")
 train_dataset = train_dataset.with_transform(transform)
-val_dataset = datasets.load_from_disk(
-    "/home/evolvingfungus/forge/workspaces/tali-2-2/val-set"
-)
+val_dataset = datasets.load_from_disk(data_root + "val-set")
 val_dataset = val_dataset.with_transform(transform)
-test_dataset = datasets.load_from_disk(
-    "/home/evolvingfungus/forge/workspaces/tali-2-2/test-set"
-)
+test_dataset = datasets.load_from_disk(data_root + "test-set")
 test_dataset = test_dataset.with_transform(transform)
 num_samples = 0
 
+from collections import defaultdict
+from distutils.command.upload import upload
+from importlib.resources import path
+import gradio as gr
+import torchvision
+import torchaudio
+
+dataset_dict = {"train": train_dataset, "val": val_dataset, "test": test_dataset}
+
+
+# {
+#     'wit_idx': 502620,
+#     'wikipedia_caption_image': torch.Size([3, 224, 224]),
+#     'wikipedia_text': '<section_title> Station layout </section_title>',
+#     'youtube_video_id': '6e7RO-o6u6w',
+#     'youtube_content_video': torch.Size([10, 3, 224, 224]),
+#     'youtube_content_audio': torch.Size([16000]),
+#     'youtube_description_text': "<ysub> it's open somebody's gonna be building something there so the neighborhood
+# isn't is in change i don't think shintomicho has much of a personality when they took away the kabuki theater it
+# really did change  </ysub>"
+# }
 from collections import defaultdict
 from distutils.command.upload import upload
 from importlib.resources import path
@@ -79,7 +94,8 @@ def update_length_options(set_name):
 
 def get_random_sample(set_name):
     dataset = dataset_dict[set_name]
-    return random.randint(0, len(dataset) - 1)
+    sample_index = random.randint(0, len(dataset) - 1)
+    return sample_index
 
 
 def generate_caption_output(caption_dict):
@@ -123,6 +139,7 @@ def update_captions(language, set_name, sample_index):
 
 
 def update_language_choices(set_name, sample_index):
+    print(dataset_dict[set_name][int(sample_index)])
     languages = list(dataset_dict[set_name][int(sample_index)]["captions"].keys())
     return gr.update(choices=languages, value=languages[0]), *update_captions(
         languages[0], set_name, sample_index
@@ -135,25 +152,25 @@ def load_sample(set_name, sample_index):
 
     # Retrieve the sample at the given index
     sample = dataset[int(sample_index)]
-
     # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)
-    languages = list(sample["captions"].keys())
-    caption = sample["captions"]
+    print(sample)
     subtitles = sample["youtube_description_text"]
-    wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
-    youtube_image = sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
-    video = sample["youtube_content_video"].permute(0, 2, 3, 1).numpy() * 255
+    wit_image = sample["wikipedia_caption_image"].squeeze().permute(1, 2, 0).numpy()
+    youtube_image = (
+        sample["youtube_random_video_sample_image"].squeeze().permute(1, 2, 0).numpy()
+    )
+    video = sample["youtube_content_video"].squeeze().permute(0, 2, 3, 1).numpy() * 255
     audio = sample["youtube_content_audio"]
 
     video_path = f"../demo/temp_data/video-{set_name}-{sample_index}.mp4"
     audio_path = f"../demo/temp_data/audio-{set_name}-{sample_index}.mp3"
     if not pathlib.Path(video_path).parent.exists():
         pathlib.Path(video_path).parent.mkdir(parents=True, exist_ok=True)
-
+    print(audio.shape)
     if not pathlib.Path(video_path).exists():
         torchvision.io.write_video(video_path, video, fps=20)
     if not pathlib.Path(audio_path).exists():
-        torchaudio.save(audio_path, audio.unsqueeze(0), 16000)
+        torchaudio.save(audio_path, audio.view(-1).unsqueeze(0), 16000)
     return (
         *update_language_choices(set_name=set_name, sample_index=sample_index),
         subtitles,
@@ -173,7 +190,7 @@ if __name__ == "__main__":
 
     callback = gr.CSVLogger()
 
-    with gr.Blocks() as demo:
+    with gr.Blocks(theme=gr.themes.Soft()) as demo:
         gr.Markdown(
             """
         # TALI (Temporally and semantically Aligned Audio, Language and Images) Dataset Demo v-0.3.0 🖼️ 🔊 🎦 📝
@@ -207,26 +224,29 @@ if __name__ == "__main__":
             with gr.Column():
                 input_sample_index = gr.Slider(
                     minimum=0,
-                    maximum=100,
+                    maximum=130000,
                     randomize=True,
                     step=1,
                     interactive=True,
                     label="Datapoint idx to sample",
                     info="Select the idx to sample",
                 )
+
             with gr.Column():
                 fetch_btn = gr.Button("Fetch sample")
                 fetch_random_btn = gr.Button("Fetch random sample")
 
-        input_sample_index.change(
-            update_length_options, input_set_name, input_sample_index
-        )
+        input_set_name.change(update_length_options, input_set_name, input_sample_index)
         gr.Markdown(
             """
         ### The wikipedia image is semantically aligned to the youtube components, while the youtube components are temporally aligned to each other.
         """
         )
         output_subtitle = gr.Text(label="Youtube Subtitles")
+        caption_title_and_reference_description = gr.Textbox(
+            label="caption_title_and_reference_description"
+        )
+        page_title = gr.Textbox(label="page_title")
         with gr.Row():
             with gr.Column():
                 output_wit_image = gr.Image(label="Wikipedia Image")
@@ -251,7 +271,6 @@ if __name__ == "__main__":
         )
 
         with gr.Row():
-            page_title = gr.Textbox(label="page_title")
             section_title = gr.Textbox(label="section_title")
             hierarchical_section_title = gr.Textbox(label="hierarchical_section_title")
         with gr.Row():
@@ -260,9 +279,6 @@ if __name__ == "__main__":
             )
             caption_reference_description = gr.Textbox(
                 label="caption_reference_description"
-            )
-            caption_title_and_reference_description = gr.Textbox(
-                label="caption_title_and_reference_description"
             )
         with gr.Row():
             context_section_description = gr.Textbox(
