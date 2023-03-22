@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 import datasets
 
 import numpy as np
+import torch
 import tqdm
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data import Dataset, Subset, DataLoader
@@ -15,10 +16,14 @@ from tali_wit.data import (
     ModalityTypes,
 )
 
-from tali_wit.data_plus import get_submodality_name
-
+from tali_wit.data_plus import get_next_on_error, get_submodality_name
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger, load_json, save_json
+
+from transformers import (
+    CLIPProcessor,
+    WhisperProcessor,
+)
 
 logger = get_logger(__name__)
 
@@ -35,6 +40,9 @@ class WITBase(Dataset):
         infinite_sampling: bool = False,
         priority_caption_language: Optional[str] = None,
         dummy_batch_mode: bool = False,
+        image_text_model_name: str = "openai/clip-vit-base-patch32",
+        audio_model_name: str = "openai/whisper",
+        
     ):
         super().__init__()
         self.cache_dir = cache_dir
@@ -86,19 +94,66 @@ class WITBase(Dataset):
             self.indices = load_json(self.indices_filepath)
 
         self.dataset = Subset(self.dataset, self.indices[set_name])
+        self.dummy_batch_mode = dummy_batch_mode
+        self.dummy_batch = None
 
         self.infinite_sampling = infinite_sampling
-        if infinite_sampling:
-            self.num_samples = 10**8
-        else:
-            self.num_samples = len(self.dataset)
+        self.num_samples = 10**8 if infinite_sampling else len(self.dataset)
+        self.image_text_model_name = image_text_model_name
+        self.audio_model_name = audio_model_name
+        self.transforms = self.build_transforms()
+        
+    def build_transforms(self):
+        self.image_text_processor = CLIPProcessor.from_pretrained(
+            self.image_text_model_name
+        )
+        self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
 
+        return {
+            "image": lambda x: self.image_text_processor(
+                images=x, return_tensors="pt"
+            ).pixel_values.squeeze(1),
+            "text": lambda x: self.image_text_processor(
+                text=x, return_tensors="pt", padding=True, truncation=True
+            ).input_ids.squeeze(0),
+            "audio": lambda x: torch.cat(
+                [
+                    self.audio_processor(
+                        item,
+                        sampling_rate=16000,
+                        return_tensors="pt",
+                    ).input_features
+                    for item in x.unbind(0)
+                ]
+            ),
+            "video": lambda x: torch.stack([self.image_text_processor(
+                images=image, return_tensors="pt"
+            ).pixel_values for image in x], dim=0),
+        }
+
+
+    @get_next_on_error
     def __getitem__(self, idx):
+        
+        if self.dummy_batch_mode and self.dummy_batch is not None:
+            return self.dummy_batch
+
         if self.infinite_sampling:
             idx = idx % len(self.dataset)
 
         sample = self.dataset[idx] | {"wit_idx": idx}
         sample = self.wit_transform(sample)
+        
+        for key, value in sample.items():
+            for transform_key, transform_value in self.transforms.items():
+                if transform_key in key:
+                    sample[key] = transform_value(value)
+                    break
+
+        if self.dummy_batch_mode:
+            if self.dummy_batch is None:
+                self.dummy_batch = sample
+            return self.dummy_batch
 
         return sample
 
@@ -184,18 +239,21 @@ if __name__ == "__main__":
 
     def sample():
         dataset = WITBase(
-            cache_dir="/data/datasets/tali-wit-2-1-buckets/wit_cache",
-            tali_dataset_dir="/home/evolvingfungus/forge/workspaces/tali-2-2/",
+            cache_dir="/data/wit_cache",
+            tali_dataset_dir="/data/",
             image_size=224,
             deterministic_sampling=True,
             infinite_sampling=False,  # True,
             priority_caption_language="en",
             set_name="train",
+            dummy_batch_mode=False,
+            image_text_model_name = "openai/clip-vit-base-patch16",
+            audio_model_name = "openai/whisper-base",
         )
         dataloader = DataLoader(
             dataset,
-            batch_size=128,
-            num_workers=8,
+            batch_size=32,
+            num_workers=12,
             shuffle=True,
             collate_fn=dataclass_collate,
         )

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import time
 from typing import Any, Dict
 
 import torch
@@ -74,21 +75,35 @@ class ClassificationTrainer(Trainer):
         overall_accuracy = []
         overall_accuracy_top_5 = []
         overall_output_dict = {}
+        generate_hierarchical_batch_start_time = time.time()
         batch = generate_hierarchical_data_dict(batch)
-
+        generate_hierarchical_batch_end_time = time.time()
+        logger.info(f"generate_hierarchical_batch_time: {generate_hierarchical_batch_end_time - generate_hierarchical_batch_start_time}")
+        
+        possible_pairs_start_time = time.time()
+        possible_pairs = extract_all_possible_pairs(batch)
+        possible_pairs_end_time = time.time()
+        logger.info(f"possible_pairs_time: {possible_pairs_end_time - possible_pairs_start_time}")
+        self.optimizer.zero_grad()
+            
         for (
             modality_a,
             sub_modality_a,
             modality_b,
             sub_modality_b,
-        ) in extract_all_possible_pairs(batch):
+        ) in possible_pairs:
+            fprop_start_time = time.time()
             sample = {
                 modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
                 modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
             }
-            self.optimizer.zero_grad()
+            logger.info(f"Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔")
+            logger.info(f"fprop Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔")
             output_dict = model.forward(sample, return_loss=True)
-
+            fprop_end_time = time.time()
+            
+            logger.info(f"fprop_time: {fprop_end_time - fprop_start_time}")
+            bprop_start_time = time.time()
             loss = torch.mean(
                 torch.stack(
                     [value for key, value in output_dict.items() if "_loss" in key]
@@ -117,13 +132,14 @@ class ClassificationTrainer(Trainer):
                 if "_loss" not in key and "_accuracy" not in key:
                     del output_dict[key]
             accelerator.backward(loss)
-            self.optimizer.step()
+            bprop_end_time = time.time()
+            logger.info(f"bprop_time: {bprop_end_time - bprop_start_time}")
 
             overall_output_dict |= output_dict
             overall_loss.append(loss)
             overall_accuracy.append(accuracy)
             overall_accuracy_top_5.append(accuracy_top_5)
-
+        self.optimizer.step()
         metrics = {
             "accuracy": torch.mean(torch.stack(overall_accuracy)),
             "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),

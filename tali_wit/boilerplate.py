@@ -1,6 +1,7 @@
 import itertools
 import pathlib
 from pathlib import Path
+import time
 from typing import Any, List, Union
 
 import torch
@@ -472,13 +473,21 @@ class Learner(nn.Module):
                             )
 
                     for i in range(self.train_iters):
+                        loading_start_time = time.time()
                         for multi_modal_batch in dummy_batch:
                             if multi_modal_batch is not None:
+                                loading_end_time = time.time()
+                                loading_time_in_seconds = loading_end_time - loading_start_time
+                                logger.info(f"Loading time: {loading_time_in_seconds} seconds")
+                                step_time_start = time.time()
                                 self.training_step(
                                     model=self.model,
                                     batch=multi_modal_batch,
                                     batch_idx=i,
                                 )
+                                step_time_end = time.time()
+                                logger.info(f"step time: {step_time_end - step_time_start} seconds")
+                            loading_start_time = time.time()
 
                         if self.step_idx % self.evaluate_every_n_steps == 0:
                             self._validation_loop()

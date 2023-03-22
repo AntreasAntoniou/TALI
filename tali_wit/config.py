@@ -3,6 +3,7 @@ import os
 from dataclasses import MISSING, dataclass
 import pathlib
 from typing import Any, Optional
+from regex import P
 
 import torch
 from accelerate import Accelerator
@@ -43,6 +44,11 @@ LOGGER_LEVEL = "${logger_level}"
 GPU_MEMORY = 24  # in GB
 DUMMY_BATCH_MODE = "${dummy_batch_mode}"
 PREFETCH_FACTOR = "${prefetch_factor}"
+PERSISTENT_WORKERS = "${persistent_workers}"
+PIN_MEMORY = "${pin_memory}"
+IMAGE_TEXT_MODEL_NAME = "${model.image_text_model_name}"
+AUDIO_MODEL_NAME = "${model.audio_model_name}"
+
 
 hydra_logger = get_logger("hydra")
 
@@ -90,12 +96,14 @@ tali_dataset_config = TALIBase.build_config(
     rng_seed=42,
     top_k_tali=10,
     image_size=224,
-    num_video_frames=10,
-    num_audio_frames=16000 * 5,
-    clip_duration_in_seconds=10,
+    num_video_frames=16,
+    num_audio_frames=2*16000,
+    clip_duration_in_seconds=3,
     deterministic_sampling=False,
     infinite_sampling=False,
     dummy_batch_mode=DUMMY_BATCH_MODE,
+    image_text_model_name=IMAGE_TEXT_MODEL_NAME,
+    audio_model_name=AUDIO_MODEL_NAME,
 )
 
 
@@ -107,6 +115,9 @@ wit_dataset_config = WITBase.build_config(
     deterministic_sampling=False,
     infinite_sampling=False,  # True,
     priority_caption_language="en",
+    dummy_batch_mode=DUMMY_BATCH_MODE,
+    image_text_model_name=IMAGE_TEXT_MODEL_NAME,
+    audio_model_name=AUDIO_MODEL_NAME,
 )
 
 dataloader_config = builds(DataLoader, dataset=None, populate_full_signature=True)
@@ -161,10 +172,14 @@ class BaseConfig:
     resume: bool = False
     resume_from_checkpoint: Optional[int] = None
     print_config: bool = True
+    # Dataloader config
     train_batch_size: int = 96
     eval_batch_size: int = 96
-    num_workers: int = 8
+    num_workers: int = 2
     prefetch_factor: int = 1
+    persistent_workers: bool = True
+    pin_memory: bool = True
+    
     train: bool = True
     test: bool = False
     dummy_batch_mode: bool = False
@@ -383,6 +398,48 @@ def collect_config_store():
             # ModalityTypes.youtube_description.value,
         ],
     )
+    
+    tali_dataset_omni_minus_audio_config = tali_dataset_config(
+        set_name="train",
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
+            # ModalityTypes.youtube_audio.value,
+            ModalityTypes.youtube_description.value,
+        ],
+    )
+    
+    tali_dataset_omni_minus_video_config = tali_dataset_config(
+        set_name="train",
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            # ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            ModalityTypes.youtube_description.value,
+        ],
+    )
+    
+    tali_dataset_omni_config = tali_dataset_config(
+        set_name="train",
+        modality_list=[
+            ModalityTypes.wit_image.value,
+            ModalityTypes.wit_caption.value,
+            ModalityTypes.wit_title.value,
+            ModalityTypes.wit_main_body.value,
+            ModalityTypes.youtube_video.value,
+            ModalityTypes.youtube_subtitles.value,
+            ModalityTypes.youtube_audio.value,
+            ModalityTypes.youtube_description.value,
+        ],
+    )
 
     ###################################################################################
 
@@ -576,46 +633,60 @@ def collect_config_store():
                 ),
                 tali_dataset_image_text_config,
             ),
-            "tali_dataset_image_audio": (
-                str(
+            "tali_dataset_image_text_audio":
+                (str(
                     compute_batch_size_given_gpu_memory(
-                        reference_batch_size=18, gpu_memory=GPU_MEMORY
+                        reference_batch_size=128, gpu_memory=GPU_MEMORY
                     )
                 ),
-                tali_dataset_image_audio_config,
-            ),
-            "tali_dataset_image_video": (
-                str(
+                tali_dataset_omni_minus_video_config),
+            "tali_dataset_image_text_video":
+                (str(
                     compute_batch_size_given_gpu_memory(
-                        reference_batch_size=12, gpu_memory=GPU_MEMORY
+                        reference_batch_size=128, gpu_memory=GPU_MEMORY
                     )
                 ),
-                tali_dataset_image_video_config,
-            ),
-            "tali_dataset_text_audio": (
-                str(
-                    compute_batch_size_given_gpu_memory(
-                        reference_batch_size=18, gpu_memory=GPU_MEMORY
-                    )
-                ),
-                tali_dataset_text_audio_config,
-            ),
-            "tali_dataset_text_video": (
-                str(
-                    compute_batch_size_given_gpu_memory(
-                        reference_batch_size=12, gpu_memory=GPU_MEMORY
-                    )
-                ),
-                tali_dataset_text_video_config,
-            ),
-            "tali_dataset_audio_video": (
-                str(
-                    compute_batch_size_given_gpu_memory(
-                        reference_batch_size=12, gpu_memory=GPU_MEMORY
-                    )
-                ),
-                tali_dataset_audio_video_config,
-            ),
+                tali_dataset_omni_minus_audio_config),
+            # "tali_dataset_image_audio": (
+            #     str(
+            #         compute_batch_size_given_gpu_memory(
+            #             reference_batch_size=18, gpu_memory=GPU_MEMORY
+            #         )
+            #     ),
+            #     tali_dataset_image_audio_config,
+            # ),
+            # "tali_dataset_image_video": (
+            #     str(
+            #         compute_batch_size_given_gpu_memory(
+            #             reference_batch_size=12, gpu_memory=GPU_MEMORY
+            #         )
+            #     ),
+            #     tali_dataset_image_video_config,
+            # ),
+            # "tali_dataset_text_audio": (
+            #     str(
+            #         compute_batch_size_given_gpu_memory(
+            #             reference_batch_size=18, gpu_memory=GPU_MEMORY
+            #         )
+            #     ),
+            #     tali_dataset_text_audio_config,
+            # ),
+            # "tali_dataset_text_video": (
+            #     str(
+            #         compute_batch_size_given_gpu_memory(
+            #             reference_batch_size=12, gpu_memory=GPU_MEMORY
+            #         )
+            #     ),
+            #     tali_dataset_text_video_config,
+            # ),
+            # "tali_dataset_audio_video": (
+            #     str(
+            #         compute_batch_size_given_gpu_memory(
+            #             reference_batch_size=12, gpu_memory=GPU_MEMORY
+            #         )
+            #     ),
+            #     tali_dataset_audio_video_config,
+            # ),
         },
     )
 
@@ -625,10 +696,10 @@ def collect_config_store():
         node=dataloader_config(
             batch_size=TRAIN_BATCH_SIZE,
             num_workers=NUM_WORKERS,
-            pin_memory=False,
+            pin_memory=PIN_MEMORY,
             shuffle=True,
             prefetch_factor=PREFETCH_FACTOR,
-            persistent_workers=False,
+            persistent_workers=PERSISTENT_WORKERS,
         ),
     )
 
