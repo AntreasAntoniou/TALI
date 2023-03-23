@@ -1,6 +1,9 @@
 import argparse
 import os
 import sys
+
+from responses import start
+
 os.environ["FFREPORT"] = "loglevel=error"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "loglevel;error"
 # null_device = open(os.devnull, 'w')
@@ -10,7 +13,7 @@ import pathlib
 import shutil
 import datasets
 
-from tali_wit.dataset_cache_generator import tali_cache_generator
+from tali_wit.dataset_cache_generator import TALICacheGenerator
 from rich import print
 from rich.traceback import install
 
@@ -18,30 +21,34 @@ install()
 
 datasets.enable_caching()
 
+local_path = "/data/datasets/tali-wit-2-1-buckets/"
+remote_path = "/data/"
 
-def train_tali_generator():
-    return tali_cache_generator(set_name="train", num_samples=10_000_000, root_path="/data/", num_workers=128)
-
-
-def val_tali_generator():
-    return tali_cache_generator(set_name="val", num_samples=10_050, root_path="/data/", num_workers=128)
-
-
-def test_tali_generator():
-    return tali_cache_generator(set_name="test", num_samples=10_050, root_path="/data/", num_workers=128)
-
+current_path = local_path
 
 if __name__ == "__main__":
     # create an argument parser that takes in the set name and number of samples
     parser = argparse.ArgumentParser()
-    parser.add_argument("--set_name", type=str, required=True)
+    parser.add_argument("--set_name", type=str, default="train")
+    parser.add_argument("--start_idx", type=int, default=0)
+    parser.add_argument("--end_idx", type=int, required=True)
+    parser.add_argument("--num_workers", type=int, default=16)
     args = parser.parse_args()
 
-    dataset_generator = {"train": train_tali_generator, "val": val_tali_generator, "test": test_tali_generator}
-    # for item in dataset_generator[args.set_name]():
-    #     pass
-    # create the dataset generator and save to the cache directory
-    dataset = datasets.Dataset.from_generator(dataset_generator[args.set_name], keep_in_memory=False, cache_dir=f"/home/jupyter/tali_cache/{args.set_name}/", writer_batch_size=10000)
+    dataset_cache_generator = TALICacheGenerator(
+        set_name=args.set_name,
+        root_path=current_path,
+        num_workers=args.num_workers,
+        start_idx=args.start_idx,
+        end_idx=args.end_idx,
+    )
+
+    dataset = datasets.Dataset.from_generator(
+        dataset_cache_generator,
+        keep_in_memory=False,
+        cache_dir=f"/data/tali_cache/{args.set_name}/f{args.start_idx}_t{args.end_idx}",
+        writer_batch_size=10000,
+    )
 
     # save the dataset to a file
     # dataset.save_to_disk(f"/home/jupyter/tali_cache/{args.set_name}/dataset")

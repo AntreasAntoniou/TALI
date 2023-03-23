@@ -1,5 +1,7 @@
+from functools import wraps
 import logging
 import shutil
+import signal
 
 import torch
 from omegaconf import DictConfig, OmegaConf
@@ -92,6 +94,36 @@ def get_hydra_config(logger_level: str = "INFO"):
             "subdir": "${hydra.job.num}",
         },
     )
+
+def timeout(timeout_secs: int):
+    def wrapper(func):
+        @wraps(func)
+        def time_limited(*args, **kwargs):
+            # Register an handler for the timeout
+            def handler(signum, frame):
+                raise Exception(f"Timeout for function '{func.__name__}'")
+
+            # Register the signal function handler
+            signal.signal(signal.SIGALRM, handler)
+
+            # Define a timeout for your function
+            signal.alarm(timeout_secs)
+
+            result = None
+            try:
+                result = func(*args, **kwargs)
+            except Exception as exc:
+                logging.error(f"Exploded due to time out on {args, kwargs}")
+                raise exc
+            finally:
+                # disable the signal alarm
+                signal.alarm(0)
+
+            return result
+
+        return time_limited
+
+    return wrapper
 
 
 def demo_logger():

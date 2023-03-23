@@ -35,7 +35,7 @@ from tali_wit.data import (
 )
 
 from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger, load_json, set_seed
+from tali_wit.utils import get_logger, load_json, set_seed, timeout
 from transformers import (
     CLIPProcessor,
     WhisperProcessor,
@@ -81,8 +81,6 @@ def get_image_tensor(video_frame, image_size, rng):
     )
     video_frame = ApplyTransformToKey("video", video_transform)(input_dict)
     return video_frame["video"].permute(1, 0, 2, 3) / 255.0
-
-
 
 
 def videoclip_to_video_audio_tensors(
@@ -740,7 +738,7 @@ class TALIBase(Dataset):
         super().__init__()
         transform = TALIBaseTransform(
             config=TALIBaseTransformConfig(
-                root_filepath=tali_root_filepath,
+                root_filepath=tali_root_filepath + "/",
                 modality_list=modality_list,
                 top_k_tali=top_k_tali,
                 rng_seed=rng_seed,
@@ -822,6 +820,7 @@ class TALIBase(Dataset):
             "video": lambda x: [(item * 255).to(torch.uint8) for item in x],
         }
 
+    # @timeout(10)
     @get_next_on_error
     def __getitem__(self, idx):
         if self.dummy_batch_mode and self.dummy_batch is not None:
@@ -831,7 +830,7 @@ class TALIBase(Dataset):
             idx = idx % len(self.dataset)
 
         sample = self.dataset[idx]
-        
+
         for key, value in sample.items():
             for transform_key, transform_value in self.transforms.items():
                 if transform_key in key and key != "youtube_video_id":
