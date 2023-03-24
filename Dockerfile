@@ -36,6 +36,8 @@ RUN echo y | pip install git+https://github.com/BayesWatch/bwatchcompute@main
 RUN conda init bash
 RUN conda init fish
 
+RUN apt-get install git -y
+
 RUN git lfs install
 RUN git config --global credential.helper store
 

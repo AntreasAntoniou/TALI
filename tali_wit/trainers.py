@@ -6,7 +6,7 @@ import torch
 from accelerate import Accelerator
 
 from tali_wit.callbacks import Interval
-from tali_wit.data_plus import generate_hierarchical_data_dict
+from tali_wit.data_plus import *
 from tali_wit.models import extract_all_possible_pairs
 
 from .decorators import collect_metrics
@@ -78,14 +78,18 @@ class ClassificationTrainer(Trainer):
         generate_hierarchical_batch_start_time = time.time()
         batch = generate_hierarchical_data_dict(batch)
         generate_hierarchical_batch_end_time = time.time()
-        logger.info(f"generate_hierarchical_batch_time: {generate_hierarchical_batch_end_time - generate_hierarchical_batch_start_time}")
-        
+        logger.info(
+            f"generate_hierarchical_batch_time: {generate_hierarchical_batch_end_time - generate_hierarchical_batch_start_time}"
+        )
+
         possible_pairs_start_time = time.time()
         possible_pairs = extract_all_possible_pairs(batch)
         possible_pairs_end_time = time.time()
-        logger.info(f"possible_pairs_time: {possible_pairs_end_time - possible_pairs_start_time}")
+        logger.info(
+            f"possible_pairs_time: {possible_pairs_end_time - possible_pairs_start_time}"
+        )
         self.optimizer.zero_grad()
-            
+
         for (
             modality_a,
             sub_modality_a,
@@ -97,11 +101,15 @@ class ClassificationTrainer(Trainer):
                 modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
                 modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
             }
-            logger.info(f"Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔")
-            logger.info(f"fprop Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔")
+            logger.info(
+                f"Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔"
+            )
+            logger.info(
+                f"fprop Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔"
+            )
             output_dict = model.forward(sample, return_loss=True)
             fprop_end_time = time.time()
-            
+
             logger.info(f"fprop_time: {fprop_end_time - fprop_start_time}")
             bprop_start_time = time.time()
             loss = torch.mean(

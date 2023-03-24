@@ -5,7 +5,7 @@ from typing import Any, List
 import torch
 from accelerate import Accelerator
 from torch.utils.data import DataLoader
-from tali_wit.data_plus import generate_hierarchical_data_dict
+from tali_wit.data_plus import *
 
 from tali_wit.models import extract_all_possible_pairs
 

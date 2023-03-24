@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 import datasets
 
 import numpy as np
+from tali_wit.data_plus import get_next_on_error
 import torch
 import tqdm
 from torch.utils.data import DataLoader, Dataset
@@ -16,7 +17,6 @@ from tali_wit.data import (
     ModalityTypes,
 )
 
-from tali_wit.data_plus import get_next_on_error, get_submodality_name
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger, load_json, save_json
 
@@ -32,7 +32,7 @@ logger = get_logger(__name__)
 class WITBase(Dataset):
     def __init__(
         self,
-        cache_dir: str,
+        wit_dataset_dir: str,
         tali_dataset_dir: str,
         image_size: int,
         set_name: str,
@@ -42,10 +42,9 @@ class WITBase(Dataset):
         dummy_batch_mode: bool = False,
         image_text_model_name: str = "openai/clip-vit-base-patch32",
         audio_model_name: str = "openai/whisper",
-        
     ):
         super().__init__()
-        self.cache_dir = cache_dir
+        self.wit_dataset_dir = wit_dataset_dir
         self.image_size = image_size
         self.wit_transform = WITBaseTransform(
             image_size=image_size,
@@ -55,9 +54,8 @@ class WITBase(Dataset):
         self.dataset = datasets.load_dataset(
             "wikimedia/wit_base",
             split="train",
-            cache_dir=cache_dir,
         )
-        self.indices_filepath = pathlib.Path(cache_dir) / "wit_indices.json"
+        self.indices_filepath = pathlib.Path(wit_dataset_dir) / "wit_indices.json"
 
         if not self.indices_filepath.exists():
             tali_val_dataset = datasets.load_from_disk(
@@ -87,7 +85,7 @@ class WITBase(Dataset):
                 "test": tali_test_indices,
             }
             save_json(
-                filepath=os.path.join(self.cache_dir, "wit_indices.json"),
+                filepath=os.path.join(self.wit_dataset_dir, "wit_indices.json"),
                 dict_to_store=self.indices,
             )
         else:
@@ -102,7 +100,7 @@ class WITBase(Dataset):
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
         self.transforms = self.build_transforms()
-        
+
     def build_transforms(self):
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
@@ -126,15 +124,20 @@ class WITBase(Dataset):
                     for item in x.unbind(0)
                 ]
             ),
-            "video": lambda x: torch.stack([self.image_text_processor(
-                images=image, return_tensors="pt"
-            ).pixel_values for image in x], dim=0),
+            "video": lambda x: torch.stack(
+                [
+                    self.image_text_processor(
+                        images=image, return_tensors="pt"
+                    ).pixel_values
+                    for image in x
+                ],
+                dim=0,
+            ),
         }
-
 
     @get_next_on_error
     def __getitem__(self, idx):
-        
+
         if self.dummy_batch_mode and self.dummy_batch is not None:
             return self.dummy_batch
 
@@ -143,7 +146,7 @@ class WITBase(Dataset):
 
         sample = self.dataset[idx] | {"wit_idx": idx}
         sample = self.wit_transform(sample)
-        
+
         for key, value in sample.items():
             for transform_key, transform_value in self.transforms.items():
                 if transform_key in key:
@@ -247,8 +250,8 @@ if __name__ == "__main__":
             priority_caption_language="en",
             set_name="train",
             dummy_batch_mode=False,
-            image_text_model_name = "openai/clip-vit-base-patch16",
-            audio_model_name = "openai/whisper-base",
+            image_text_model_name="openai/clip-vit-base-patch16",
+            audio_model_name="openai/whisper-base",
         )
         dataloader = DataLoader(
             dataset,

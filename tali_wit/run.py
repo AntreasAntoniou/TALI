@@ -107,8 +107,8 @@ def run(cfg: BaseConfig) -> None:
                 optimal_batch_size -= 16
             else:
                 optimal_batch_size //= 2
-        #o ptimal_batch_size = 16
-        
+        # o ptimal_batch_size = 16
+
         train_dataloader = instantiate(
             cfg.dataloader,
             dataset=train_dataset,
@@ -116,9 +116,9 @@ def run(cfg: BaseConfig) -> None:
             shuffle=True,
             collate_fn=dataclass_collate,
         )
-        
+
         val_dataset: Dataset = instantiate(dataset, set_name="val")
-        
+
         val_dataloader = instantiate(
             cfg.dataloader,
             dataset=val_dataset,
@@ -126,9 +126,9 @@ def run(cfg: BaseConfig) -> None:
             shuffle=False,
             collate_fn=dataclass_collate,
         )
-        
+
         test_dataset: Dataset = instantiate(dataset, set_name="test")
-        
+
         test_dataloader = instantiate(
             cfg.dataloader,
             dataset=test_dataset,
@@ -141,11 +141,6 @@ def run(cfg: BaseConfig) -> None:
         val_dataloaders.append(val_dataloader)
         test_dataloaders.append(test_dataloader)
 
-
-        
-
-        
-        
     experiment_tracker["num_parameters"] = sum(
         p.numel() for p in model.parameters() if p.requires_grad
     )

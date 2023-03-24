@@ -2,23 +2,44 @@ from typing import Any, Dict, Optional
 import torch
 import torch.nn as nn
 import accelerate
+from tali_wit.data import get_base_modality
 
-from tali_wit.data_plus import generate_hierarchical_data_dict
 from tali_wit.models import extract_all_possible_pairs
 from tali_wit.utils import get_logger
 
 logger = get_logger(__name__)
 
 
+def generate_hierarchical_data_dict(data_dict: Dict[str, Any]) -> Dict[str, Any]:
+    modality_hierarchical_output_dict = {}
+    for sub_modality_name in list(data_dict.keys()):
+        modality_type = get_base_modality(sub_modality_name)
+        if modality_type is None:
+            if "other" not in modality_hierarchical_output_dict:
+                modality_hierarchical_output_dict["other"] = {}
+            modality_hierarchical_output_dict["other"][sub_modality_name] = data_dict[
+                sub_modality_name
+            ]
+            continue
+
+        if modality_type not in modality_hierarchical_output_dict:
+            modality_hierarchical_output_dict[modality_type.value] = {}
+
+        modality_hierarchical_output_dict[modality_type.value][
+            sub_modality_name
+        ] = data_dict[sub_modality_name]
+    return modality_hierarchical_output_dict
+
+
 def dummy_fprop_bprop(
     model: nn.Module,
     batch: Dict[str, Any],
     accelerator: accelerate.Accelerator,
-    do_bprop: bool = False
+    do_bprop: bool = False,
 ) -> None:
     """
     Performs a forward and optional backward pass using the given model and batch.
-    
+
     Args:
         model (nn.Module): The model to use for the forward and backward pass.
         batch (Dict[str, Any]): The input batch.
@@ -58,11 +79,11 @@ def dummy_fprop_bprop(
 def set_batch_size(batch: Dict[str, Any], batch_size: int) -> Dict[str, Any]:
     """
     Sets the batch size for a given input batch.
-    
+
     Args:
         batch (Dict[str, Any]): The input batch.
         batch_size (int): The desired batch size.
-        
+
     Returns:
         Dict[str, Any]: The input batch with the specified batch size.
     """
@@ -82,13 +103,13 @@ def get_max_supported_batch_size(
 ) -> int:
     """
     Finds the maximum supported batch size for the given model and batch.
-    
+
     Args:
         model (nn.Module): The model to test.
         batch (Dict[str, Any]): The input batch.
         accelerator (Optional[accelerate.Accelerator], optional): The accelerator for model and batch preparation. Defaults to None.
         train_mode (bool, optional): If True, use training mode. Defaults to False.
-    
+
     Returns:
         int: The maximum supported batch size.
     """
@@ -127,4 +148,3 @@ def get_max_supported_batch_size(
 
         # Double the batch size for the next iteration 📈
         batch_size = batch_size * 2
-

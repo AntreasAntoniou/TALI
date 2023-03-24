@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from tali_wit.boilerplate import Learner
 from tali_wit.callbacks import UploadCheckpointsToHuggingFace
 from tali_wit.data import ModalityTypes
-from tali_wit.data_plus import TALIBase
+from tali_wit.data_plus import *
 from tali_wit.utils import get_hydra_config, get_logger
 from tali_wit.wit import WITBase
 
@@ -30,7 +30,8 @@ CHECKPOINT_DIR = "${hf_cache_dir}"
 NUM_WORKERS = "${num_workers}"
 HF_USERNAME = "${hf_username}"
 CODE_DIR = "${code_dir}"
-DATASET_DIR = "${data_dir}"
+TALI_DATASET_DIR = "${tali_dataset_dir}"
+WIT_DATASET_DIR = "${wit_dataset_dir}"
 EXPERIMENT_NAME = "${exp_name}"
 EXPERIMENTS_ROOT_DIR = "${root_experiment_dir}"
 TRAIN_BATCH_SIZE = "${train_batch_size}"
@@ -80,8 +81,7 @@ model_config = TALIModel.build_config(populate_full_signature=True)
 tali_dataset_config = TALIBase.build_config(
     populate_full_signature=True,
     set_name="train",
-    tali_root_filepath=DATASET_DIR,
-    hf_tali_root_filepath=DATASET_DIR,
+    tali_dataset_dir=TALI_DATASET_DIR,
     modality_list=[
         ModalityTypes.wit_image.value,
         ModalityTypes.wit_caption.value,
@@ -110,7 +110,8 @@ tali_dataset_config = TALIBase.build_config(
 wit_dataset_config = WITBase.build_config(
     populate_full_signature=True,
     set_name="train",
-    cache_dir=pathlib.Path(DATASET_DIR) / "wit_cache",
+    wit_dataset_dir=pathlib.Path(WIT_DATASET_DIR),
+    tali_dataset_dir=pathlib.Path(TALI_DATASET_DIR),
     image_size=224,
     deterministic_sampling=False,
     infinite_sampling=False,  # True,
@@ -193,8 +194,15 @@ class BaseConfig:
         else "/experiments"
     )
 
-    data_dir: str = (
-        os.environ["DATASET_DIR"] if "DATASET_DIR" in os.environ else "/data"
+    tali_dataset_dir: str = (
+        os.environ["TALI_DATASET_DIR"]
+        if "TALI_DATASET_DIR" in os.environ
+        else "/tali-data"
+    )
+    wit_dataset_dir: str = (
+        os.environ["WIT_DATASET_DIR"]
+        if "WIT_DATASET_DIR" in os.environ
+        else "/wit-data"
     )
 
     current_experiment_dir: str = "${root_experiment_dir}/${exp_name}"
@@ -278,7 +286,9 @@ def collect_config_store():
         ),
     )
 
-    wit_dataset_image_text_config = wit_dataset_config(tali_dataset_dir=DATASET_DIR)
+    wit_dataset_image_text_config = wit_dataset_config(
+        tali_dataset_dir=TALI_DATASET_DIR
+    )
 
     tali_dataset_image_text_config = tali_dataset_config(
         set_name="train",
