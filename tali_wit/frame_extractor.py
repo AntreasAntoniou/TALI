@@ -91,6 +91,10 @@ def duration_in_seconds(stream):
 def frame_timestamp_in_seconds(frame, stream):
     return float(frame.pts * stream.time_base)
 
+def duration_in_seconds_from_path(video_path, modality):
+    with av.open(video_path) as container:
+        stream = next(s for s in container.streams if s.type == modality)
+        return duration_in_seconds(stream)
 
 # # Open the video file
 # input_file = "path/to/your/video/file.mp4"

@@ -37,6 +37,7 @@ from tali_wit.data import (
 from tali_wit.decorators import configurable
 from tali_wit.frame_extractor import (
     FrameSelectionMethod,
+    duration_in_seconds_from_path,
     extract_frames_pyav,
     extract_frames_torchvision,
 )
@@ -45,16 +46,9 @@ from transformers import (
     CLIPProcessor,
     WhisperProcessor,
 )
-from decord import VideoReader, AudioReader
-from decord import cpu
-import decord
-
-decord.logging.set_level(decord.logging.PANIC)
 
 logger = get_logger(__name__)
 pytorchvideo_logger = get_logger("pytorchvideo", logging_level=logging.NOTSET)
-decord_logger = get_logger("decord", logging_level=logging.NOTSET)
-os.environ["DECORD_DUPLICATE_WARNING_THRESHOLD"] = "1.0"
 
 
 def get_video_clip(video, starting_second, ending_second):
@@ -331,15 +325,11 @@ class TALIBaseTransform:
             video_starting_second = float(
                 choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
             )
-            video = VideoReader(
-                choose_video.replace(
+            
+            choose_video = choose_video.replace(
                     "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
-                ),
-                ctx=cpu(0),
-            )
-            total_frames = len(video)
-            timestamp = video.get_frame_timestamp(total_frames - 1)
-            duration = timestamp[1]
+                )
+            duration = duration_in_seconds_from_path(choose_video, modality='video')
             total_time_in_seconds = int(floor(duration))
             max_starting_second = (
                 total_time_in_seconds - self.config.clip_duration_in_seconds

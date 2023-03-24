@@ -98,21 +98,22 @@ class TALICacheGenerator:
 
     def get_dataloader_based_generator(self):
         dataset = torch.utils.data.Subset(self.dataset, range(self.start_idx, self.end_idx))
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=self.num_workers, pin_memory=False, drop_last=True, prefetch_factor=2, persistent_workers=False)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=self.num_workers, pin_memory=False, drop_last=True, prefetch_factor=4, persistent_workers=False)
         sample_idx = 0
         with tqdm.tqdm(total=self.end_idx - self.start_idx, smoothing=0.0) as pbar:
             for batch in dataloader:
-                batch = [{key: value[idx] for key, value in batch.items()} for idx in range(len(batch["wit_idx"]))]
-                for idx, sample in enumerate(batch):
-                    if sample_idx >= (self.end_idx - self.start_idx):
-                        break
+                try:
+                    batch = [{key: value[idx] for key, value in batch.items()} for idx in range(len(batch["wit_idx"]))]
+                    for idx, sample in enumerate(batch):
+                        if sample_idx >= (self.end_idx - self.start_idx):
+                            break
 
-                    sample_idx += 1
-                    pbar.update(1)
-                    # print(sample)
-                    # for key, value in sample.items():
-                    #     print(key, value)
-                    yield sample
+                        sample_idx += 1
+                        pbar.update(1)
+                        yield sample
+                except Exception as e:
+                    print(e)
+                    continue
 
     
     def __call__(self) -> Any:

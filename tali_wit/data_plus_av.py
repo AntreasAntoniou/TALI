@@ -41,13 +41,9 @@ from transformers import (
     WhisperProcessor,
 )
 from pytorchvideo.data.encoded_video import EncodedVideo
-# from decord import VideoReader, AudioReader
-# from decord import cpu
-# import decord
-# # decord.logging.set_level(lvl=decord.logging.PANIC)
+
 
 logger = get_logger(__name__)
-# os.environ["DECORD_DUPLICATE_WARNING_THRESHOLD"] = "1.0"
 
 
 def get_video_clip(video, starting_second, ending_second):
