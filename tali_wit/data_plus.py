@@ -687,8 +687,7 @@ class TALIBase(Dataset):
     def __init__(
         self,
         set_name: str,
-        tali_root_filepath,
-        hf_tali_root_filepath,
+        tali_dataset_dir,
         modality_list,
         rng_seed=42,
         top_k_tali=10,
@@ -706,7 +705,7 @@ class TALIBase(Dataset):
         super().__init__()
         transform = TALIBaseTransform(
             config=TALIBaseTransformConfig(
-                root_filepath=tali_root_filepath + "/",
+                root_filepath=tali_dataset_dir + "/",
                 modality_list=modality_list,
                 top_k_tali=top_k_tali,
                 rng_seed=rng_seed,
@@ -719,7 +718,7 @@ class TALIBase(Dataset):
         )
         self.infinite_sampling = infinite_sampling
         self.dataset = datasets.load_from_disk(
-            pathlib.Path(hf_tali_root_filepath) / f"{set_name}-set", keep_in_memory=True
+            pathlib.Path(tali_dataset_dir) / f"{set_name}-set", keep_in_memory=True
         )
         self.dataset = self.dataset.with_transform(transform)
         self.dummy_batch_mode = dummy_batch_mode
