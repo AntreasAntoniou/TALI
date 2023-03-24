@@ -325,11 +325,11 @@ class TALIBaseTransform:
             video_starting_second = float(
                 choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
             )
-            
+
             choose_video = choose_video.replace(
-                    "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
-                )
-            duration = duration_in_seconds_from_path(choose_video, modality='video')
+                "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+            )
+            duration = duration_in_seconds_from_path(choose_video, modality="video")
             total_time_in_seconds = int(floor(duration))
             max_starting_second = (
                 total_time_in_seconds - self.config.clip_duration_in_seconds

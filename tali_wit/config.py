@@ -97,7 +97,7 @@ tali_dataset_config = TALIBase.build_config(
     top_k_tali=10,
     image_size=224,
     num_video_frames=16,
-    num_audio_frames=2*16000,
+    num_audio_frames=2 * 16000,
     clip_duration_in_seconds=3,
     deterministic_sampling=False,
     infinite_sampling=False,
@@ -179,7 +179,7 @@ class BaseConfig:
     prefetch_factor: int = 1
     persistent_workers: bool = True
     pin_memory: bool = True
-    
+
     train: bool = True
     test: bool = False
     dummy_batch_mode: bool = False
@@ -278,9 +278,7 @@ def collect_config_store():
         ),
     )
 
-    wit_dataset_image_text_config = wit_dataset_config(
-        tali_dataset_dir=DATASET_DIR
-    )
+    wit_dataset_image_text_config = wit_dataset_config(tali_dataset_dir=DATASET_DIR)
 
     tali_dataset_image_text_config = tali_dataset_config(
         set_name="train",
@@ -398,7 +396,7 @@ def collect_config_store():
             # ModalityTypes.youtube_description.value,
         ],
     )
-    
+
     tali_dataset_omni_minus_audio_config = tali_dataset_config(
         set_name="train",
         modality_list=[
@@ -412,7 +410,7 @@ def collect_config_store():
             ModalityTypes.youtube_description.value,
         ],
     )
-    
+
     tali_dataset_omni_minus_video_config = tali_dataset_config(
         set_name="train",
         modality_list=[
@@ -426,7 +424,7 @@ def collect_config_store():
             ModalityTypes.youtube_description.value,
         ],
     )
-    
+
     tali_dataset_omni_config = tali_dataset_config(
         set_name="train",
         modality_list=[
@@ -633,20 +631,22 @@ def collect_config_store():
                 ),
                 tali_dataset_image_text_config,
             ),
-            "tali_dataset_image_text_audio":
-                (str(
+            "tali_dataset_image_text_audio": (
+                str(
                     compute_batch_size_given_gpu_memory(
                         reference_batch_size=128, gpu_memory=GPU_MEMORY
                     )
                 ),
-                tali_dataset_omni_minus_video_config),
-            "tali_dataset_image_text_video":
-                (str(
+                tali_dataset_omni_minus_video_config,
+            ),
+            "tali_dataset_image_text_video": (
+                str(
                     compute_batch_size_given_gpu_memory(
                         reference_batch_size=128, gpu_memory=GPU_MEMORY
                     )
                 ),
-                tali_dataset_omni_minus_audio_config),
+                tali_dataset_omni_minus_audio_config,
+            ),
             # "tali_dataset_image_audio": (
             #     str(
             #         compute_batch_size_given_gpu_memory(
