@@ -48,7 +48,7 @@ if __name__ == "__main__":
         dataset_cache_generator,
         keep_in_memory=False,
         cache_dir=f"/data/tali_cache/{args.set_name}/f{args.start_idx}_t{args.end_idx}",
-        writer_batch_size=5000,
+        writer_batch_size=1000,
     )
 
     # save the dataset to a file

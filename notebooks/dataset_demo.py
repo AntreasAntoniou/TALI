@@ -42,9 +42,9 @@ transform = TALIBaseDemoTransform(
         rng_seed=42,
         top_k_tali=10,
         image_size=224,
-        num_video_frames=300,
-        num_audio_frames=160000,
-        clip_duration_in_seconds=20.0,
+        num_video_frames=100,
+        num_audio_frames=5 * 16000,
+        clip_duration_in_seconds=5.0,
         deterministic_sampling=True,
     )
 )
@@ -162,8 +162,8 @@ def load_sample(set_name, sample_index):
     video = sample["youtube_content_video"].permute(0, 2, 3, 1).numpy() * 255
     audio = sample["youtube_content_audio"]
 
-    video_path = f"../demo/temp_data/video-{set_name}-{sample_index}.mp4"
-    audio_path = f"../demo/temp_data/audio-{set_name}-{sample_index}.mp3"
+    video_path = f"../demo_cache/temp_data/video-{set_name}-{sample_index}.mp4"
+    audio_path = f"../demo_cache/temp_data/audio-{set_name}-{sample_index}.mp3"
     if not pathlib.Path(video_path).parent.exists():
         pathlib.Path(video_path).parent.mkdir(parents=True, exist_ok=True)
 
