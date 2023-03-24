@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+from numpy import False_
 
 from responses import start
 
@@ -31,7 +32,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--set_name", type=str, default="train")
     parser.add_argument("--start_idx", type=int, default=0)
-    parser.add_argument("--end_idx", type=int, required=True)
+    parser.add_argument("--end_idx", type=int, default=1000)
     parser.add_argument("--num_workers", type=int, default=16)
     args = parser.parse_args()
 
@@ -47,7 +48,7 @@ if __name__ == "__main__":
         dataset_cache_generator,
         keep_in_memory=False,
         cache_dir=f"/data/tali_cache/{args.set_name}/f{args.start_idx}_t{args.end_idx}",
-        writer_batch_size=10000,
+        writer_batch_size=5000,
     )
 
     # save the dataset to a file

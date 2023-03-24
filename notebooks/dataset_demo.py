@@ -139,7 +139,7 @@ def update_captions(language, set_name, sample_index):
 
 
 def update_language_choices(set_name, sample_index):
-    print(dataset_dict[set_name][int(sample_index)])
+    # print(dataset_dict[set_name][int(sample_index)])
     languages = list(dataset_dict[set_name][int(sample_index)]["captions"].keys())
     return gr.update(choices=languages, value=languages[0]), *update_captions(
         languages[0], set_name, sample_index
@@ -153,20 +153,20 @@ def load_sample(set_name, sample_index):
     # Retrieve the sample at the given index
     sample = dataset[int(sample_index)]
     # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)
-    print(sample)
     subtitles = sample["youtube_description_text"]
-    wit_image = sample["wikipedia_caption_image"].squeeze().permute(1, 2, 0).numpy()
-    youtube_image = (
-        sample["youtube_random_video_sample_image"].squeeze().permute(1, 2, 0).numpy()
+    print(
+        f"shapes {sample['youtube_content_video'].shape}, {sample['youtube_content_audio'].shape}, {sample['wikipedia_caption_image'].shape}, {sample['youtube_random_video_sample_image'].shape}"
     )
-    video = sample["youtube_content_video"].squeeze().permute(0, 2, 3, 1).numpy() * 255
+    wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
+    youtube_image = sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
+    video = sample["youtube_content_video"].permute(0, 2, 3, 1).numpy() * 255
     audio = sample["youtube_content_audio"]
 
     video_path = f"../demo/temp_data/video-{set_name}-{sample_index}.mp4"
     audio_path = f"../demo/temp_data/audio-{set_name}-{sample_index}.mp3"
     if not pathlib.Path(video_path).parent.exists():
         pathlib.Path(video_path).parent.mkdir(parents=True, exist_ok=True)
-    print(audio.shape)
+
     if not pathlib.Path(video_path).exists():
         torchvision.io.write_video(video_path, video, fps=20)
     if not pathlib.Path(audio_path).exists():

@@ -35,6 +35,11 @@ from tali_wit.data import (
 )
 
 from tali_wit.decorators import configurable
+from tali_wit.frame_extractor import (
+    FrameSelectionMethod,
+    extract_frames_pyav,
+    extract_frames_torchvision,
+)
 from tali_wit.utils import get_logger, load_json, set_seed, timeout
 from transformers import (
     CLIPProcessor,
@@ -56,31 +61,16 @@ def get_video_clip(video, starting_second, ending_second):
     return video.get_clip(start_sec=starting_second, end_sec=ending_second)
 
 
-def get_video_tensors(video_frames, image_size, num_video_frames, rng):
-    # selected_video_frame_idx = sorted(rng.choice(video_clip["video"].shape[1], num_video_frames))
-    output_dict = {"video": video_frames.permute(1, 0, 2, 3).to(torch.float32)}
+def get_video_tensors(video_frames, image_size):
+    video_frames = video_frames.permute(3, 0, 1, 2).to(torch.float32)
     video_transform = Compose(
         [
             ShortSideScale(size=image_size),
             CenterCropVideo(crop_size=(image_size, image_size)),
         ]
     )
-    output_dict = ApplyTransformToKey("video", video_transform)(output_dict)
+    output_dict = ApplyTransformToKey("video", video_transform)({"video": video_frames})
     return output_dict["video"].permute(1, 0, 2, 3) / 255.0
-
-
-def get_image_tensor(video_frame, image_size, rng):
-    input_dict = {
-        "video": video_frame[:, rng.randint(0, video_frame.shape[1]), :, :].unsqueeze(1)
-    }
-    video_transform = Compose(
-        [
-            ShortSideScale(size=image_size),
-            CenterCropVideo(crop_size=(image_size, image_size)),
-        ]
-    )
-    video_frame = ApplyTransformToKey("video", video_transform)(input_dict)
-    return video_frame["video"].permute(1, 0, 2, 3) / 255.0
 
 
 def videoclip_to_video_audio_tensors(
@@ -97,84 +87,74 @@ def videoclip_to_video_audio_tensors(
 ):
 
     output = {}
-    segment_length = int(float(ending_second - starting_second))
-    # print(video_path)
-    decord.bridge.set_bridge("torch")
+    video = None
+    image = None
+    audio = None
 
     if return_video:
-        video = VideoReader(video_path, ctx=cpu(0))
-        key_frame_idx = np.array(video.get_key_indices())
-        total_frames = len(video)
-
-        if len(key_frame_idx) < num_video_frames:
-            selected_frame_idx = sorted(
-                np.concatenate(
-                    [
-                        key_frame_idx,
-                        rng.choice(
-                            [i for i in range(total_frames) if i not in key_frame_idx],
-                            num_video_frames - len(key_frame_idx),
-                        ),
-                    ]
-                )
-            )
-        else:
-            selected_frame_idx = sorted(key_frame_idx[:num_video_frames])
-
-        video_frames = video.get_batch(selected_frame_idx).permute(0, 3, 1, 2)
-        output["video"] = get_video_tensors(
-            video_frames=video_frames,
-            image_size=image_size,
-            num_video_frames=num_video_frames,
+        video = extract_frames_pyav(
+            video_path=video_path,
+            starting_second=starting_second,
+            ending_second=ending_second,
+            num_frames=num_video_frames + (1 if return_image else 0),
             rng=rng,
+            modality="video",
+            frame_selection_method=FrameSelectionMethod.RANDOM,
         )
-        if output["video"].shape[0] < num_video_frames:
-            output["video"] = torch.cat(
+
+        video = get_video_tensors(video, image_size)
+
+        if return_image:
+            image = video[0]
+            video = video[1:]
+
+        if video.shape[0] < num_video_frames:
+            video = torch.cat(
                 [
-                    output["video"],
+                    video,
                     torch.zeros(
-                        num_video_frames - output["video"].shape[0],
-                        output["video"].shape[1],
-                        output["video"].shape[2],
-                        output["video"].shape[3],
-                        output["video"].shape[4],
+                        num_video_frames - video.shape[0],
+                        video.shape[1],
+                        video.shape[2],
+                        video.shape[3],
                     ),
                 ],
                 dim=0,
             )
+        output["video"] = video
 
     if return_image:
-        video = VideoReader(video_path, ctx=cpu(0))
-        key_frame_idx = np.array(video.get_key_indices())
+        if image is None:
+            image = extract_frames_pyav(
+                video_path=video_path,
+                starting_second=starting_second,
+                ending_second=ending_second,
+                num_frames=1,
+                rng=rng,
+                modality="video",
+                frame_selection_method=FrameSelectionMethod.RANDOM,
+            )
+            image = get_video_tensors(image, image_size)[0]
 
-        image = video[rng.choice(key_frame_idx, 1)[0]]
-        output["image"] = get_video_tensors(
-            video_frames=image.unsqueeze(0).permute(0, 3, 1, 2),
-            image_size=image_size,
-            num_video_frames=1,
-            rng=rng,
-        )[0]
+        output["image"] = image
 
     if return_audio:
-        audio = AudioReader(video_path)
+        audio = extract_frames_pyav(
+            video_path=video_path,
+            starting_second=starting_second,
+            ending_second=ending_second,
+            num_frames=44100 * num_audio_frames / 16000,
+            rng=rng,
+            modality="audio",
+            frame_selection_method=FrameSelectionMethod.SEQUENTIAL,
+        )[:, 0]
 
-        total_frames = audio.shape[1]
-        total_seconds = audio.duration()
+        audio = extract_audio(num_audio_frames, audio)
+        output["audio"] = audio
 
-        total_seconds_integer = int(floor(total_seconds))
-        audio_segment = int(floor(num_audio_frames / 16000.0))
+    # for key, value in output.items():
+    #     print(key, value.shape)
 
-        max_starting_second = total_seconds_integer - audio_segment
-        starting_second = rng.choice(
-            list(range(0, max_starting_second if max_starting_second > 0 else 1))
-        )
-        audio_frames = audio[
-            starting_second * 44100 : (starting_second + audio_segment) * 44100
-        ]
-
-        output["audio"] = extract_audio(
-            num_audio_frames=num_audio_frames, audio_frames=audio_frames
-        )
     return output
 
 
@@ -182,7 +162,7 @@ def extract_audio(num_audio_frames, audio_frames):
     audio_duration_target = float(num_audio_frames) / 16000.0
     source_sample_rate = 44100
     target_sample_rate = 16000
-    audio_frames = audio_frames[0, : int(floor(44100 * audio_duration_target))]
+    audio_frames = audio_frames[: int(floor(44100 * audio_duration_target))]
     resampler = T.Resample(
         source_sample_rate, target_sample_rate, dtype=audio_frames.dtype
     )
@@ -616,9 +596,7 @@ class TALIBaseDemoTransform:
             ):
                 output_dict[
                     get_submodality_name(ModalityTypes.youtube_description.value)
-                ] = (
-                    f"<ydesc> " + input_dict["youtube_description_text"] + f" </ydesc>"
-                )
+                ] = ("<ydesc> " + input_dict["youtube_description_text"] + " </ydesc>")
 
             if (
                 get_submodality_name(ModalityTypes.youtube_subtitles.value)
@@ -911,8 +889,8 @@ if __name__ == "__main__":
         # dataset = dataset.with_transform(transform)
         dataset = TALIBase(
             set_name="train",
-            tali_root_filepath="/data/",
-            hf_tali_root_filepath="/data/",
+            tali_root_filepath="/data/datasets/tali-wit-2-1-buckets/",
+            hf_tali_root_filepath="/data/datasets/tali-wit-2-1-buckets/",
             modality_list=[
                 ModalityTypes.wit_image.value,
                 ModalityTypes.wit_caption.value,
@@ -937,33 +915,34 @@ if __name__ == "__main__":
             audio_model_name="openai/whisper-base",
             use_model_preprocessing=False,
         )
-        dataloader = DataLoader(
-            dataset,
-            batch_size=1,
-            num_workers=16,
-            shuffle=False,
-            collate_fn=dataclass_collate,
-            persistent_workers=True,
-            prefetch_factor=2,
-            pin_memory=False,
-        )
+        # dataloader = DataLoader(
+        #     dataset,
+        #     batch_size=1,
+        #     num_workers=16,
+        #     shuffle=False,
+        #     collate_fn=dataclass_collate,
+        #     persistent_workers=True,
+        #     prefetch_factor=2,
+        #     pin_memory=False,
+        # )
         num_samples = 10000
 
-        with tqdm.tqdm(total=len(dataloader)) as pbar:
-            for i, example in enumerate(dataloader):
+        with tqdm.tqdm(total=len(dataset)) as pbar:
+            for i, example in enumerate(dataset):
                 # example = generate_hierarchical_data_dict(example)
                 if i == 0:
                     start_time = time.time()
+
                 # print(example)
-                # shape_dict = {}
-                # for modality, modality_value in example.items():
-                #     if isinstance(modality_value, torch.Tensor):
-                #         modality_value = modality_value.to(torch.float32)
-                #         print(
-                #             f"{modality} {modality_value.mean()} {modality_value.std()}, {modality_value.min()}, {modality_value.max()}"
-                #         )
-                #     else:
-                #         print(f"{modality} {modality_value}")
+                shape_dict = {}
+                for modality, modality_value in example.items():
+                    if isinstance(modality_value, torch.Tensor):
+                        modality_value = modality_value.to(torch.float32)
+                        print(
+                            f"{modality} {modality_value.shape} {modality_value.mean()} {modality_value.std()}, {modality_value.min()}, {modality_value.max()}"
+                        )
+                    else:
+                        print(f"{modality} {modality_value}")
                 if i == num_samples:
                     break
                 pbar.set_description(f"Processing {i}th example")
@@ -971,10 +950,10 @@ if __name__ == "__main__":
         end_time = time.time()
         print(f"Processed {num_samples} samples in {end_time - start_time} seconds")
 
-    # sample()
-    pr = cProfile.Profile()
-    pr.runcall(sample)
+    sample()
+    # pr = cProfile.Profile()
+    # pr.runcall(sample)
 
-    ps = pstats.Stats(pr).sort_stats("tottime")
-    ps.print_stats(10)
+    # ps = pstats.Stats(pr).sort_stats("tottime")
+    # ps.print_stats(10)
 # write a transform for the wit dataset, and, add an option for a youtube image sampling process
