@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 import datasets
 
 import numpy as np
-from tali_wit.data_plus import get_next_on_error
+from tali_wit.data_plus import get_next_on_error, get_submodality_name
 import torch
 import tqdm
 from torch.utils.data import DataLoader, Dataset
@@ -54,6 +54,7 @@ class WITBase(Dataset):
         self.dataset = datasets.load_dataset(
             "wikimedia/wit_base",
             split="train",
+            cache_dir=wit_dataset_dir,
         )
         self.indices_filepath = pathlib.Path(wit_dataset_dir) / "wit_indices.json"
 

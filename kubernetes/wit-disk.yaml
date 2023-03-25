@@ -5,7 +5,7 @@ metadata:
 spec:
   storageClassName: pv-wit-datasets0
   capacity:
-    storage: 13000Gi
+    storage: 1100Gi
   accessModes:
     - ReadWriteOnce
   claimRef:
@@ -15,7 +15,7 @@ spec:
     driver: pd.csi.storage.gke.io
     volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk
     fsType: ext4
-    readOnly: true
+    readOnly: false
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -29,7 +29,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 13000Gi
+      storage: 1100Gi
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -38,7 +38,7 @@ metadata:
 spec:
   storageClassName: pv-wit-datasets1
   capacity:
-    storage: 13000Gi
+    storage: 1100Gi
   accessModes:
     - ReadWriteOnce
   claimRef:
@@ -46,9 +46,9 @@ spec:
     name: pvc-wit1
   csi:
     driver: pd.csi.storage.gke.io
-    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk1
+    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk-1
     fsType: ext4
-    readOnly: true
+    readOnly: false
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -62,7 +62,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 13000Gi
+      storage: 1100Gi
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -71,7 +71,7 @@ metadata:
 spec:
   storageClassName: pv-wit-datasets2
   capacity:
-    storage: 13000Gi
+    storage: 1100Gi
   accessModes:
     - ReadWriteOnce
   claimRef:
@@ -79,9 +79,9 @@ spec:
     name: pvc-wit2
   csi:
     driver: pd.csi.storage.gke.io
-    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk2
+    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk-2
     fsType: ext4
-    readOnly: true
+    readOnly: false
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -95,7 +95,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 13000Gi
+      storage: 1100Gi
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -104,7 +104,7 @@ metadata:
 spec:
   storageClassName: pv-wit-datasets3
   capacity:
-    storage: 13000Gi
+    storage: 1100Gi
   accessModes:
     - ReadWriteOnce
   claimRef:
@@ -112,9 +112,9 @@ spec:
     name: pvc-wit3
   csi:
     driver: pd.csi.storage.gke.io
-    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk3
+    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk-3
     fsType: ext4
-    readOnly: true
+    readOnly: false
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -128,4 +128,4 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 13000Gi
+      storage: 1100Gi
