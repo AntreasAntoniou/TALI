@@ -1,4 +1,6 @@
+import asyncio
 import itertools
+import logging
 import pathlib
 from pathlib import Path
 import time
@@ -9,6 +11,7 @@ import torch.nn as nn
 from accelerate import Accelerator, DistributedDataParallelKwargs
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from tali_wit.async_ops import AsyncGeneratorWrapper
 
 from tali_wit.callbacks import Callback, CallbackHandler, Interval
 from tali_wit.decorators import configurable
@@ -22,7 +25,7 @@ from tali_wit.utils import get_logger
 logger = get_logger(__name__)
 
 # silence logger for accelerate
-accelerate_logger = get_logger("accelerate", logging_level="ERROR")
+# accelerate_logger = get_logger("accelerate", logging_level=logging.CRITICAL)
 
 
 @configurable
@@ -135,10 +138,10 @@ class Learner(nn.Module):
         )
 
         # use if you want to debug unused parameter errors in DDP
-        self.accelerator = Accelerator(
-            kwargs_handlers=[DistributedDataParallelKwargs(find_unused_parameters=True)]
-        )
+        self.accelerator = Accelerator()
+        # kwargs_handlers=[DistributedDataParallelKwargs(find_unused_parameters=True)]
 
+        self.model: nn.Module = torch.compile(self.model)
         self.model = self.accelerator.prepare(self.model)
 
         for trainer in self.trainers:
@@ -206,9 +209,9 @@ class Learner(nn.Module):
     def __str__(self):
         return self.__repr__()
 
-    def training_step(self, model, batch, batch_idx):
-        self.callback_handler.on_batch_start(model, batch, batch_idx)
-        self.callback_handler.on_training_step_start(model, batch, batch_idx)
+    def training_step(self, model, batch):
+        self.callback_handler.on_batch_start(model, batch)
+        self.callback_handler.on_training_step_start(model, batch)
         output_list = []
 
         for trainer in self.trainers:
@@ -220,14 +223,14 @@ class Learner(nn.Module):
             )
             output_list.append(cur_output_dict)
 
-        self.callback_handler.on_batch_end(model, batch, batch_idx)
-        self.callback_handler.on_training_step_end(model, batch, batch_idx)
+        self.callback_handler.on_batch_end(model, batch)
+        self.callback_handler.on_training_step_end(model, batch)
         self.global_step += 1
         return output_list
 
-    def validation_step(self, model, batch, batch_idx):
-        self.callback_handler.on_batch_start(model, batch, batch_idx)
-        self.callback_handler.on_validation_step_start(model, batch, batch_idx)
+    def validation_step(self, model, batch):
+        self.callback_handler.on_batch_start(model, batch)
+        self.callback_handler.on_validation_step_start(model, batch)
 
         for evaluator in self.evaluators:
             evaluator.validation_step(
@@ -237,12 +240,12 @@ class Learner(nn.Module):
                 accelerator=self.accelerator,
             )
 
-        self.callback_handler.on_batch_end(model, batch, batch_idx)
-        self.callback_handler.on_validation_step_end(model, batch, batch_idx)
+        self.callback_handler.on_batch_end(model, batch)
+        self.callback_handler.on_validation_step_end(model, batch)
 
-    def testing_step(self, model, batch, batch_idx):
-        self.callback_handler.on_batch_start(model, batch, batch_idx)
-        self.callback_handler.on_testing_step_start(model, batch, batch_idx)
+    def testing_step(self, model, batch):
+        self.callback_handler.on_batch_start(model, batch)
+        self.callback_handler.on_testing_step_start(model, batch)
 
         for evaluator in self.evaluators:
             evaluator.testing_step(
@@ -252,8 +255,8 @@ class Learner(nn.Module):
                 accelerator=self.accelerator,
             )
 
-        self.callback_handler.on_batch_end(model, batch, batch_idx)
-        self.callback_handler.on_testing_step_end(model, batch, batch_idx)
+        self.callback_handler.on_batch_end(model, batch)
+        self.callback_handler.on_testing_step_end(model, batch)
 
     def start_training(self, train_dataloaders: DataLoader):
         self.callback_handler.on_train_start(
@@ -367,7 +370,7 @@ class Learner(nn.Module):
         if self.dummy_batch_mode:
             self._dummy_training_loop(train_dataloaders=train_dataloaders)
         else:
-            self._training_loop(train_dataloaders=train_dataloaders)
+            asyncio.run(self._training_loop(train_dataloaders=train_dataloaders))
 
     def validate(
         self, val_dataloaders: List[DataLoader] = None, model: nn.Module = None
@@ -378,7 +381,7 @@ class Learner(nn.Module):
                 val_dataloader = self.accelerator.prepare(val_dataloader)
                 self.val_dataloaders.append(val_dataloader)
             model = self.accelerator.prepare(model)
-        self._validation_loop(val_dataloaders=val_dataloaders, model=model)
+        asyncio.run(self._validation_loop(val_dataloaders=val_dataloaders, model=model))
 
     def test(self, test_dataloaders: List[DataLoader] = None):
         if test_dataloaders is not None:
@@ -387,12 +390,14 @@ class Learner(nn.Module):
                 test_dataloader = self.accelerator.prepare(test_dataloader)
                 self.test_dataloaders.append(test_dataloader)
             model = self.accelerator.prepare(model)
-        self._testing_loop(
-            test_dataloaders=test_dataloaders,
-            model=model,
+        asyncio.run(
+            self._testing_loop(
+                test_dataloaders=test_dataloaders,
+                model=model,
+            )
         )
 
-    def _validation_loop(
+    async def _validation_loop(
         self, val_dataloaders: List[DataLoader] = None, model: nn.Module = None
     ):
         if val_dataloaders is None:
@@ -403,26 +408,30 @@ class Learner(nn.Module):
 
         if val_dataloaders is not None:
             self.start_validation(val_dataloaders=val_dataloaders)
+            val_step_idx = 0
+            print("STARTING VALIDATION LOOP")
+            async_dataloading_wrapper = AsyncGeneratorWrapper(val_dataloaders)
+            print("ASYNC DATALOADING WRAPPER CREATED")
+            await async_dataloading_wrapper.start()
+            print("ASYNC DATALOADING WRAPPER RUN")
 
-            with tqdm(total=max([len(d) for d in val_dataloaders])) as pbar_dataloaders:
-                for batch_idx, batch in enumerate(
-                    itertools.zip_longest(*val_dataloaders)
-                ):
+            with tqdm(total=len(async_dataloading_wrapper)) as pbar_dataloaders:
+                async for batch in async_dataloading_wrapper.process_queue():
+                    if batch is not None:
+                        self.validation_step(
+                            model=self.model,
+                            batch=batch,
+                        )
                     if self.limit_val_iters is not None:
-                        if batch_idx >= self.limit_val_iters:
+                        if val_step_idx >= self.limit_val_iters:
                             break
-                    for multi_modal_batch in batch:
-                        if multi_modal_batch is not None:
-                            self.validation_step(
-                                model=self.model,
-                                batch=multi_modal_batch,
-                                batch_idx=batch_idx,
-                            )
+
+                    val_step_idx += 1
                     pbar_dataloaders.update(1)
 
             self.end_validation(val_dataloaders=val_dataloaders)
 
-    def _testing_loop(
+    async def _testing_loop(
         self,
         test_dataloaders: List[DataLoader] = None,
         model: nn.Module = None,
@@ -435,26 +444,31 @@ class Learner(nn.Module):
 
         if test_dataloader is not None:
             self.start_testing(test_dataloaders=test_dataloaders)
+            test_step_idx = 0
+            print("STARTING TESTING LOOP")
+            async_dataloading_wrapper = AsyncGeneratorWrapper(test_dataloaders)
+            print("ASYNC DATALOADING WRAPPER CREATED")
+            await async_dataloading_wrapper.start()
+            print("ASYNC DATALOADING WRAPPER RUN")
 
-            with tqdm(
-                total=max([len(d) for d in test_dataloaders])
-            ) as pbar_dataloaders:
-                for batch_idx, batch in enumerate(
-                    itertools.zip_longest(*test_dataloaders)
-                ):
-                    for multi_modal_batch in batch:
-                        if multi_modal_batch is not None:
-                            self.testing_step(
-                                model=self.model,
-                                batch=multi_modal_batch,
-                                batch_idx=batch_idx,
-                            )
-                    pbar_dataloaders.update(1)
+            with tqdm(total=len(async_dataloading_wrapper)) as pbar_dataloaders:
+                async for batch in async_dataloading_wrapper.process_queue():
+                    if batch is not None:
+                        self.testing_step(
+                            model=self.model,
+                            batch=batch,
+                        )
+                    if self.limit_val_iters is not None:
+                        if test_step_idx >= self.limit_val_iters:
+                            break
+
+                    test_step_idx += 1
                     pbar_dataloaders.update(1)
 
             self.end_testing(test_dataloaders=test_dataloaders)
 
     def _dummy_training_loop(self, train_dataloaders: DataLoader = None):
+        # sourcery skip: low-code-quality
         if train_dataloaders is None:
             train_dataloaders = self.train_dataloaders
 
@@ -477,8 +491,12 @@ class Learner(nn.Module):
                         for multi_modal_batch in dummy_batch:
                             if multi_modal_batch is not None:
                                 loading_end_time = time.time()
-                                loading_time_in_seconds = loading_end_time - loading_start_time
-                                logger.info(f"Loading time: {loading_time_in_seconds} seconds")
+                                loading_time_in_seconds = (
+                                    loading_end_time - loading_start_time
+                                )
+                                logger.info(
+                                    f"Loading time: {loading_time_in_seconds} seconds"
+                                )
                                 step_time_start = time.time()
                                 self.training_step(
                                     model=self.model,
@@ -486,7 +504,9 @@ class Learner(nn.Module):
                                     batch_idx=i,
                                 )
                                 step_time_end = time.time()
-                                logger.info(f"step time: {step_time_end - step_time_start} seconds")
+                                logger.info(
+                                    f"step time: {step_time_end - step_time_start} seconds"
+                                )
                             loading_start_time = time.time()
 
                         if self.step_idx % self.evaluate_every_n_steps == 0:
@@ -511,15 +531,16 @@ class Learner(nn.Module):
 
             return self.end_training(train_dataloaders=train_dataloaders)
 
-    def _training_loop(self, train_dataloaders: DataLoader = None):
+    async def _training_loop(self, train_dataloaders: DataLoader = None):
         if train_dataloaders is None:
             train_dataloaders = self.train_dataloaders
 
         if train_dataloaders is not None:
             self.start_training(train_dataloaders=train_dataloaders)
-
+            async_dataloading_wrapper = AsyncGeneratorWrapper(train_dataloaders)
+            await async_dataloading_wrapper.start()
             if self.train_iters is None:
-                self.train_iters = len(train_dataloaders)
+                self.train_iters = len(async_dataloading_wrapper)
 
             with tqdm(initial=self.step_idx, total=self.train_iters) as pbar_steps:
                 while self.step_idx < self.train_iters:
@@ -528,18 +549,12 @@ class Learner(nn.Module):
                             return self.end_training(
                                 train_dataloaders=train_dataloaders
                             )
-
-                    for batch_idx, batch in enumerate(
-                        itertools.zip_longest(*train_dataloaders)
-                    ):
-
-                        for multi_modal_batch in batch:
-                            if multi_modal_batch is not None:
-                                self.training_step(
-                                    model=self.model,
-                                    batch=multi_modal_batch,
-                                    batch_idx=batch_idx,
-                                )
+                    async for batch in async_dataloading_wrapper.process_queue():
+                        if batch is not None:
+                            self.training_step(
+                                model=self.model,
+                                batch=batch,
+                            )
 
                         if self.step_idx % self.evaluate_every_n_steps == 0:
                             self._validation_loop()

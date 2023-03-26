@@ -194,14 +194,20 @@ def dataclass_collate(batch):
 
     for sample in batch:
         for key in list(sample.keys()):
-            # print(f"key {key} value {sample[key].shape if hasattr(sample[key], 'shape') else sample[key]}")
-            
-            if "text" in key and len(sample[key]) < 77 and isinstance(sample[key], torch.Tensor):
-                sample[key] = torch.cat([sample[key], 49407 * torch.ones(77 - len(sample[key])).long()])
+            if (
+                "text" in key
+                and len(sample[key]) < 77
+                and isinstance(sample[key], torch.Tensor)
+            ):
+                sample[key] = torch.cat(
+                    [sample[key], 49407 * torch.ones(77 - len(sample[key])).long()]
+                )
 
     try:
         if isinstance(batch[0], dict) or not hasattr(batch[0], "__dataclass_fields__"):
-            return default_collate(batch)
+            batch = default_collate(batch)
+            batch = {key: batch[key][0] for key in batch.keys()}
+            return
         else:
             batched_dict = {
                 key: default_collate([getattr(sample, key) for sample in batch])
@@ -209,6 +215,7 @@ def dataclass_collate(batch):
                 else None
                 for key in batch[0].__dict__.keys()
             }
+            batched_dict = {key: batched_dict[key][0] for key in batched_dict}
             return batch[0].__class__(**batched_dict)
     except Exception as e:
         print(

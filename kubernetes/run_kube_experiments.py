@@ -86,7 +86,7 @@ if __name__ == "__main__":
             "MODEL_DIR": os.getenv("MODEL_DIR"),
             "DOCKER_IMAGE_PATH": os.getenv("DOCKER_IMAGE_PATH"),
         },
-        num_repeat_experiment=3,
+        num_repeat_experiment=10,
         experiment_template=ExperimentTemplate.standard,
         persistent_disk_claim_names_to_mount_dict={
             "pvc-tali": "/tali-data/",

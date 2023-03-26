@@ -36,6 +36,7 @@ class WITBase(Dataset):
         tali_dataset_dir: str,
         image_size: int,
         set_name: str,
+        num_samples_per_episode: int,
         deterministic_sampling: bool = False,
         infinite_sampling: bool = False,
         priority_caption_language: Optional[str] = None,
@@ -56,6 +57,7 @@ class WITBase(Dataset):
             split="train",
             cache_dir=wit_dataset_dir,
         )
+        self.num_samples_per_episode = num_samples_per_episode
         self.indices_filepath = pathlib.Path(wit_dataset_dir) / "wit_indices.json"
 
         if not self.indices_filepath.exists():
@@ -63,13 +65,11 @@ class WITBase(Dataset):
                 pathlib.Path(tali_dataset_dir) / "val-set"
             )
             tali_val_indices = [sample["wit_idx"] for sample in tali_val_dataset]
-            # print(len(tali_val_indices))
 
             tali_test_dataset = datasets.load_from_disk(
                 pathlib.Path(tali_dataset_dir) / "test-set"
             )
             tali_test_indices = [sample["wit_idx"] for sample in tali_test_dataset]
-            # print(len(tali_test_indices))
 
             train_wit_indices = []
             with tqdm.tqdm(total=len(self.dataset)) as pbar:
@@ -77,8 +77,6 @@ class WITBase(Dataset):
                     if i not in tali_val_indices and i not in tali_test_indices:
                         train_wit_indices.append(i)
                     pbar.update(1)
-
-            # print(len(train_wit_indices))
 
             self.indices = {
                 "train": train_wit_indices,
@@ -136,11 +134,36 @@ class WITBase(Dataset):
             ),
         }
 
-    @get_next_on_error
     def __getitem__(self, idx):
+        episode_dict = {}
 
         if self.dummy_batch_mode and self.dummy_batch is not None:
             return self.dummy_batch
+
+        for i in range(idx + self.num_samples_per_episode):
+            sample = self.get_sample(idx=i)
+            for key, value in sample.items():
+                if key not in episode_dict:
+                    episode_dict[key] = [value]
+                else:
+                    episode_dict[key].append(value)
+
+        for key, value in episode_dict.items():
+            episode_dict[key] = (
+                torch.stack(value, dim=0)
+                if isinstance(value[0], torch.Tensor)
+                else value
+            )
+
+        if self.dummy_batch_mode:
+            if self.dummy_batch is None:
+                self.dummy_batch = sample
+            return self.dummy_batch
+
+        return episode_dict
+
+    @get_next_on_error
+    def get_sample(self, idx):
 
         if self.infinite_sampling:
             idx = idx % len(self.dataset)
@@ -153,11 +176,6 @@ class WITBase(Dataset):
                 if transform_key in key:
                     sample[key] = transform_value(value)
                     break
-
-        if self.dummy_batch_mode:
-            if self.dummy_batch is None:
-                self.dummy_batch = sample
-            return self.dummy_batch
 
         return sample
 

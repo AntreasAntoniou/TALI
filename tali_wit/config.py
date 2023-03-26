@@ -96,9 +96,10 @@ tali_dataset_config = TALIBase.build_config(
     rng_seed=42,
     top_k_tali=10,
     image_size=224,
-    num_video_frames=16,
+    num_samples_per_episode=32,
+    num_video_frames=10,
     num_audio_frames=2 * 16000,
-    clip_duration_in_seconds=3,
+    clip_duration_in_seconds=10,
     deterministic_sampling=False,
     infinite_sampling=False,
     dummy_batch_mode=DUMMY_BATCH_MODE,
@@ -113,6 +114,7 @@ wit_dataset_config = WITBase.build_config(
     wit_dataset_dir=pathlib.Path(WIT_DATASET_DIR),
     tali_dataset_dir=pathlib.Path(TALI_DATASET_DIR),
     image_size=224,
+    num_samples_per_episode=32,
     deterministic_sampling=False,
     infinite_sampling=False,  # True,
     priority_caption_language="en",
@@ -132,9 +134,9 @@ learner_config = learner_config(
     resume=RESUME,
     evaluate_every_n_steps=500,
     checkpoint_after_validation=True,
-    checkpoint_every_n_steps=500,
+    checkpoint_every_n_steps=100,
     train_iters=10000,
-    limit_val_iters=10,
+    limit_val_iters=100,
     dummy_batch_mode=DUMMY_BATCH_MODE,
 )
 
@@ -174,8 +176,8 @@ class BaseConfig:
     resume_from_checkpoint: Optional[int] = None
     print_config: bool = True
     # Dataloader config
-    train_batch_size: int = 96
-    eval_batch_size: int = 96
+    train_num_samples_per_episode: int = 96
+    eval_num_samples_per_episode: int = 96
     num_workers: int = 2
     prefetch_factor: int = 1
     persistent_workers: bool = True
@@ -493,11 +495,14 @@ def collect_config_store():
         group="dataset",
         name="wit_image_text_dataset",
         node={
-            str(
-                compute_batch_size_given_gpu_memory(
-                    reference_batch_size=128, gpu_memory=GPU_MEMORY
-                )
-            ): wit_dataset_image_text_config
+            "wit_dataset_image_text": (
+                str(
+                    compute_batch_size_given_gpu_memory(
+                        reference_batch_size=128, gpu_memory=GPU_MEMORY
+                    )
+                ),
+                wit_dataset_image_text_config,
+            ),
         },
     )
 
@@ -505,11 +510,14 @@ def collect_config_store():
         group="dataset",
         name="tali_image_text_dataset",
         node={
-            str(
-                compute_batch_size_given_gpu_memory(
-                    reference_batch_size=128, gpu_memory=GPU_MEMORY
-                )
-            ): tali_dataset_image_text_config
+            "tali_dataset_image_text": (
+                str(
+                    compute_batch_size_given_gpu_memory(
+                        reference_batch_size=128, gpu_memory=GPU_MEMORY
+                    )
+                ),
+                tali_dataset_image_text_config,
+            ),
         },
     )
 

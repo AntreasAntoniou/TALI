@@ -145,7 +145,7 @@ def videoclip_to_video_audio_tensors(
 
         audio = extract_audio(num_audio_frames, audio)
         output["audio"] = audio
-
+    # print("HELLLOO")
     # for key, value in output.items():
     #     print(key, value.shape)
 
@@ -349,6 +349,8 @@ class TALIBaseTransform:
                 get_submodality_name(ModalityTypes.youtube_video.value)
                 in self.modality_list
                 or get_submodality_name(ModalityTypes.youtube_audio.value)
+                in self.modality_list
+                or get_submodality_name(ModalityTypes.youtube_image.value)
                 in self.modality_list
             ):
                 youtube_media_data = self.video_transform(
@@ -675,7 +677,7 @@ def get_next_on_error(func: Callable) -> Callable:
             random.seed(current_time)
             random_number = random.randint(0, 10**8)
             args = list(args)
-            args[1] = random_number
+            args[1] = args[1] + random_number
             args = tuple(args)
             return func(*args, **kwargs)
 
@@ -689,6 +691,7 @@ class TALIBase(Dataset):
         set_name: str,
         tali_dataset_dir,
         modality_list,
+        num_samples_per_episode: int,
         rng_seed=42,
         top_k_tali=10,
         image_size=224,
@@ -705,7 +708,7 @@ class TALIBase(Dataset):
         super().__init__()
         transform = TALIBaseTransform(
             config=TALIBaseTransformConfig(
-                root_filepath=tali_dataset_dir + "/",
+                root_filepath=f"{tali_dataset_dir}/",
                 modality_list=modality_list,
                 top_k_tali=top_k_tali,
                 rng_seed=rng_seed,
@@ -724,7 +727,7 @@ class TALIBase(Dataset):
         self.dummy_batch_mode = dummy_batch_mode
 
         self.dummy_batch = None
-
+        self.num_samples_per_episode = num_samples_per_episode
         self.num_samples = 10**8 if infinite_sampling else len(self.dataset)
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
@@ -769,27 +772,35 @@ class TALIBase(Dataset):
         }
 
     def build_basic_transforms(self):
-        # self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
         return {
             "image": lambda x: (x * 255).to(torch.uint8),
             "text": lambda x: x,
             "audio": lambda x: x.view(-1),
-            # "audio": lambda x: torch.cat(
-            #     [
-            #         self.audio_processor(
-            #             item.view(-1),
-            #             sampling_rate=16000,
-            #             return_tensors="pt",
-            #         ).input_features
-            #         for item in x.unbind(0)
-            #     ]
-            # ),
             "video": lambda x: [(item * 255).to(torch.uint8) for item in x],
         }
 
-    # @timeout(10)
-    @get_next_on_error
     def __getitem__(self, idx):
+        episode_dict = {}
+
+        for i in range(idx + self.num_samples_per_episode):
+            sample = self.get_sample(idx=i)
+            for key, value in sample.items():
+                if key not in episode_dict:
+                    episode_dict[key] = [value]
+                else:
+                    episode_dict[key].append(value)
+
+        for key, value in episode_dict.items():
+            episode_dict[key] = (
+                torch.stack(value, dim=0)
+                if isinstance(value[0], torch.Tensor)
+                else value
+            )
+
+        return episode_dict
+
+    @get_next_on_error
+    def get_sample(self, idx):
         if self.dummy_batch_mode and self.dummy_batch is not None:
             return self.dummy_batch
 
@@ -810,18 +821,6 @@ class TALIBase(Dataset):
                         if isinstance(sample[key], list)
                         else sample[key]
                     )
-                    # if "audio" in key:
-                    #     print(
-                    #         f"key: {key}, shape: {sample[key].shape}, {sample[key][0, 0]}"
-                    #     )
-                    # try:
-                    #     print(
-                    #         f"key: {key}, dtype: {value.dtype if hasattr(value, 'dtype') else ''} shape: {value.shape if hasattr(value, 'shape') else value} mean: {value.mean() if hasattr(value, 'mean') else ''}, std: {value.std() if hasattr(value, 'std') else ''}, min: {value.min() if hasattr(value, 'min') else ''}, max: {value.max() if hasattr(value, 'max') else ''}"
-                    #     )
-                    # except Exception as e:
-                    #     print(
-                    #         f"key: {key}, shape: {value.shape if hasattr(value, 'shape') else value}, dtype: {value.dtype if hasattr(value, 'dtype') else ''}"
-                    #     )
 
                     break
 
@@ -834,6 +833,17 @@ class TALIBase(Dataset):
 
     def __len__(self) -> int:
         return self.num_samples
+
+
+class CustomConcatDataset(Dataset):
+    def __init__(self, datasets):
+        self.datasets = datasets
+
+    def __len__(self):
+        return sum(len(d) for d in self.datasets)
+
+    def __getitem__(self, idx):
+        return self.datasets[idx % len(self.datasets)][idx // len(self.datasets)]
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import neptune
 from rich import print
@@ -30,7 +31,7 @@ import hydra
 import torch
 from hydra_zen import instantiate
 from omegaconf import OmegaConf
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Subset
 
 from tali_wit.boilerplate import Learner
 from tali_wit.callbacks import Callback
@@ -80,6 +81,12 @@ def run(cfg: BaseConfig) -> None:
 
     model: TALIModel = instantiate(cfg.model)
 
+    if ckpt_path is not None and cfg.resume is True:
+        trainer_state = torch.load(pathlib.Path(ckpt_path) / "trainer_state.pt")
+        global_step = trainer_state["global_step"]
+    else:
+        global_step = 0
+
     train_dataloaders = []
     val_dataloaders = []
     test_dataloaders = []
@@ -87,52 +94,79 @@ def run(cfg: BaseConfig) -> None:
     for dataset_name, (batch_size, dataset) in cfg.dataset.items():
         logger.info(f"Setting up {dataset_name} train dataset")
         train_dataset: Dataset = instantiate(
-            dataset, set_name="train", infinite_sampling=True
+            dataset,
+            set_name="train",
+            infinite_sampling=True,
+            num_samples_per_episodes=cfg.train_num_samples_per_episode,
         )
+
+        if global_step > 0:
+            train_dataset = Subset(
+                train_dataset,
+                indices=range(
+                    global_step // len(cfg.dataset.items()), len(train_dataset)
+                ),
+            )
+
         logger.info(f"Setting up {dataset_name} train dataloader")
         train_dataloader = instantiate(
             cfg.dataloader,
             dataset=train_dataset,
-            batch_size=2,
+            batch_size=1,
             shuffle=True,
             collate_fn=dataclass_collate,
         )
         dummy_batch = next(iter(train_dataloader))
         logger.info(f"Finding max batch size for {dataset_name} train dataloader")
-        optimal_batch_size = get_max_supported_batch_size(
+        optimal_num_samples_per_episode = get_max_supported_batch_size(
             model=model, batch=dummy_batch, train_mode=True
         )
+
         if "audio" in dataset_name:
-            if optimal_batch_size > 16:
-                optimal_batch_size -= 16
+            if optimal_num_samples_per_episode > 16:
+                optimal_num_samples_per_episode -= 8
             else:
-                optimal_batch_size //= 2
-        # o ptimal_batch_size = 16
+                optimal_num_samples_per_episode //= 2
+
+        train_dataset: Dataset = instantiate(
+            dataset,
+            set_name="train",
+            infinite_sampling=True,
+            num_samples_per_episodes=optimal_num_samples_per_episode,
+        )
 
         train_dataloader = instantiate(
             cfg.dataloader,
             dataset=train_dataset,
-            batch_size=optimal_batch_size,
+            batch_size=1,
             shuffle=True,
             collate_fn=dataclass_collate,
         )
 
-        val_dataset: Dataset = instantiate(dataset, set_name="val")
+        val_dataset: Dataset = instantiate(
+            dataset,
+            set_name="val",
+            num_samples_per_episode=optimal_num_samples_per_episode,
+        )
 
         val_dataloader = instantiate(
             cfg.dataloader,
             dataset=val_dataset,
-            batch_size=optimal_batch_size,
+            batch_size=1,
             shuffle=False,
             collate_fn=dataclass_collate,
         )
 
-        test_dataset: Dataset = instantiate(dataset, set_name="test")
+        test_dataset: Dataset = instantiate(
+            dataset,
+            set_name="test",
+            num_samples_per_episode=optimal_num_samples_per_episode,
+        )
 
         test_dataloader = instantiate(
             cfg.dataloader,
             dataset=test_dataset,
-            batch_size=optimal_batch_size,
+            batch_size=1,
             shuffle=False,
             collate_fn=dataclass_collate,
         )

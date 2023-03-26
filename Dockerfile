@@ -42,7 +42,8 @@ RUN git lfs install
 RUN git config --global credential.helper store
 
 RUN mkdir /app/
-ADD . /app/
+ADD tali_wit/ /app/tali_wit
+ADD setup.py /app/
 
 RUN git config --global --add safe.directory /app/
 

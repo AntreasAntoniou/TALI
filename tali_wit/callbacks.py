@@ -1,3 +1,4 @@
+import logging
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -10,7 +11,7 @@ from torch.utils.data import DataLoader
 from .utils import get_logger
 
 logger = get_logger(__name__)
-hf_logger = get_logger("huggingface_hub", logging_level="ERROR")
+hf_logger = get_logger("huggingface_hub", logging_level=logging.CRITICAL)
 
 
 @dataclass
@@ -63,40 +64,28 @@ class Callback(object):
     ) -> None:
         pass
 
-    def on_batch_start(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
+    def on_batch_start(self, model: nn.Module, batch: Dict) -> None:
         pass
 
-    def on_batch_end(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
+    def on_batch_end(self, model: nn.Module, batch: Dict) -> None:
         pass
 
-    def on_training_step_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_training_step_start(self, model: nn.Module, batch: Dict) -> None:
         pass
 
-    def on_training_step_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_training_step_end(self, model: nn.Module, batch: Dict) -> None:
         pass
 
-    def on_validation_step_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_validation_step_start(self, model: nn.Module, batch: Dict) -> None:
         pass
 
-    def on_validation_step_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_validation_step_end(self, model: nn.Module, batch: Dict) -> None:
         pass
 
-    def on_testing_step_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_testing_step_start(self, model: nn.Module, batch: Dict) -> None:
         pass
 
-    def on_testing_step_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_testing_step_end(self, model: nn.Module, batch: Dict) -> None:
         pass
 
     def on_train_start(
@@ -241,49 +230,37 @@ class CallbackHandler(Callback):
                 test_dataloaders,
             )
 
-    def on_batch_start(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
+    def on_batch_start(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_batch_start(model, batch, batch_idx)
+            callback.on_batch_start(model, batch)
 
-    def on_batch_end(self, model: nn.Module, batch: Dict, batch_idx: int) -> None:
+    def on_batch_end(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_batch_end(model, batch, batch_idx)
+            callback.on_batch_end(model, batch)
 
-    def on_training_step_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_training_step_start(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_training_step_start(model, batch, batch_idx)
+            callback.on_training_step_start(model, batch)
 
-    def on_training_step_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_training_step_end(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_training_step_end(model, batch, batch_idx)
+            callback.on_training_step_end(model, batch)
 
-    def on_validation_step_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_validation_step_start(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_validation_step_start(model, batch, batch_idx)
+            callback.on_validation_step_start(model, batch)
 
-    def on_validation_step_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_validation_step_end(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_validation_step_end(model, batch, batch_idx)
+            callback.on_validation_step_end(model, batch)
 
-    def on_testing_step_start(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_testing_step_start(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_testing_step_start(model, batch, batch_idx)
+            callback.on_testing_step_start(model, batch)
 
-    def on_testing_step_end(
-        self, model: nn.Module, batch: Dict, batch_idx: int
-    ) -> None:
+    def on_testing_step_end(self, model: nn.Module, batch: Dict) -> None:
         for callback in self.callbacks:
-            callback.on_testing_step_end(model, batch, batch_idx)
+            callback.on_testing_step_end(model, batch)
 
     def on_train_start(
         self,
