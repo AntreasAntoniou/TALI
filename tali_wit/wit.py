@@ -140,9 +140,17 @@ class WITBase(Dataset):
         if self.dummy_batch_mode and self.dummy_batch is not None:
             return self.dummy_batch
 
-        for i in range(idx + self.num_samples_per_episode):
+        for i in range(idx, idx + self.num_samples_per_episode):
             sample = self.get_sample(idx=i)
             for key, value in sample.items():
+                if (
+                    "text" in key
+                    and len(value) < 77
+                    and isinstance(value, torch.Tensor)
+                ):
+                    value = torch.cat(
+                        [value, 49407 * torch.ones(77 - len(value)).long()]
+                    )
                 if key not in episode_dict:
                     episode_dict[key] = [value]
                 else:

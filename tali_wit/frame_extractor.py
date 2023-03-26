@@ -5,6 +5,9 @@ import torch
 import torchvision
 import av
 
+# from tali_wit.utils import get_#logger
+
+#logger = get_#logger(name=__name__)
 
 class FrameSelectionMethod:
     """
@@ -114,6 +117,7 @@ def extract_frames_pyav(
     frame_selection_method: str = FrameSelectionMethod.RANDOM,
     key_frames_only: bool = False,
     stereo_audio_if_available: bool = False,
+    single_image_frame: bool = False,
 ) -> torch.Tensor:
     """
     Extract frames from a video file 📹
@@ -131,6 +135,7 @@ def extract_frames_pyav(
         torch.Tensor: Extracted frames as a torch.Tensor 🧪
     """
     frame_dict = {}
+    #logger.info(f"Extracting frames from {video_path}")
     with av.open(video_path) as container:
         stream = next(s for s in container.streams if s.type == modality)
         if key_frames_only:
@@ -146,7 +151,9 @@ def extract_frames_pyav(
         # print(f"Video FPS: {video_fps}")
 
         for frame in container.decode(stream):
+            #logger.info(f"Frame timestamp: {frame}")
             frame_timestamp = frame_timestamp_in_seconds(frame, stream)
+            #logger.info(f"Frame timestamp: {frame_timestamp}")
             array_frame = torch.from_numpy(
                 frame.to_ndarray(format="rgb24" if modality == "video" else None)
             )
@@ -160,6 +167,9 @@ def extract_frames_pyav(
             if frame_timestamp > ending_second:
                 break
             frame_dict[frame_timestamp] = array_frame
+            #logger.info(f"Frame dict: {frame_dict}")
+            if single_image_frame:
+                break
 
     frame_values = (
         torch.stack(list(frame_dict.values()))

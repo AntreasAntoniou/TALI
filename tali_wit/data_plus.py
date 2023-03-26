@@ -117,6 +117,7 @@ def videoclip_to_video_audio_tensors(
 
     if return_image:
         if image is None:
+            # logger.info("Extracting image from video")
             image = extract_frames_pyav(
                 video_path=video_path,
                 starting_second=starting_second,
@@ -125,8 +126,11 @@ def videoclip_to_video_audio_tensors(
                 rng=rng,
                 modality="video",
                 frame_selection_method=FrameSelectionMethod.RANDOM,
+                single_image_frame=True,
             )
+            # logger.info("Extracted image from video")
             image = get_video_tensors(image, image_size)[0]
+            # logger.info("Got image from video")
 
         output["image"] = image
 
@@ -668,14 +672,14 @@ def get_next_on_error(func: Callable) -> Callable:
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            logger.debug(
+            logger.exception(
                 f"Error occurred at idx {args} {e}, getting the next item instead."
             )
             current_time = time.time()
             random.seed(current_time)
             random_number = random.randint(0, 10**8)
             args = list(args)
-            args[1] = args[1] + random_number
+            kwargs["idx"] =kwargs["idx"] + random_number
             args = tuple(args)
             return func(*args, **kwargs)
 
@@ -780,9 +784,17 @@ class TALIBase(Dataset):
     def __getitem__(self, idx):
         episode_dict = {}
 
-        for i in range(idx + self.num_samples_per_episode):
+        for i in range(idx, idx + self.num_samples_per_episode):
             sample = self.get_sample(idx=i)
             for key, value in sample.items():
+                if (
+                    "text" in key
+                    and len(value) < 77
+                    and isinstance(value, torch.Tensor)
+                ):
+                    value = torch.cat(
+                        [value, 49407 * torch.ones(77 - len(value)).long()]
+                    )
                 if key not in episode_dict:
                     episode_dict[key] = [value]
                 else:
@@ -813,6 +825,12 @@ class TALIBase(Dataset):
 
                     if "audio" in key:
                         value = value.unsqueeze(0)
+                    
+                    if key == "wikipedia_caption_image":
+                        if value.to(torch.float32).max() > 255:
+                            value = value.to(torch.float32) / 65535.0
+                            
+                           
                     sample[key] = transform_value(value)
                     sample[key] = (
                         torch.stack(sample[key], dim=0)
@@ -821,7 +839,7 @@ class TALIBase(Dataset):
                     )
 
                     break
-
+                    
         if self.dummy_batch_mode:
             if self.dummy_batch is None:
                 self.dummy_batch = sample
@@ -841,6 +859,7 @@ class CustomConcatDataset(Dataset):
         return sum(len(d) for d in self.datasets)
 
     def __getitem__(self, idx):
+        # logger.info(f"dataset {idx % len(self.datasets)}, sample {idx // len(self.datasets)}")
         return self.datasets[idx % len(self.datasets)][idx // len(self.datasets)]
 
 
@@ -903,23 +922,23 @@ if __name__ == "__main__":
             image_size=224,
             num_video_frames=10,
             num_audio_frames=16000 * 2,
-            clip_duration_in_seconds=10,
+            clip_duration_in_seconds=3,
             deterministic_sampling=False,
             infinite_sampling=True,
             dummy_batch_mode=False,
             image_text_model_name="openai/clip-vit-base-patch16",
             audio_model_name="openai/whisper-base",
             use_model_preprocessing=False,
-            num_samples_per_episode=32,
+            num_samples_per_episode=16,
         )
         dataloader = DataLoader(
             dataset,
             batch_size=1,
-            num_workers=16,
+            num_workers=10,
             shuffle=False,
             collate_fn=dataclass_collate,
             persistent_workers=True,
-            prefetch_factor=1,
+            prefetch_factor=4,
             pin_memory=False,
         )
         num_samples = 10000
@@ -929,7 +948,7 @@ if __name__ == "__main__":
                 # example = generate_hierarchical_data_dict(example)
                 if i == 0:
                     start_time = time.time()
-
+                time.sleep(1)
                 # print(example)
                 # shape_dict = {}
                 # for modality, modality_value in example.items():
