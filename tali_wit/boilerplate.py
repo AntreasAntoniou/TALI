@@ -206,9 +206,9 @@ class Learner(nn.Module):
     def __str__(self):
         return self.__repr__()
 
-    def training_step(self, model, batch, batch_idx):
-        self.callback_handler.on_batch_start(model, batch, batch_idx)
-        self.callback_handler.on_training_step_start(model, batch, batch_idx)
+    def training_step(self, model, batch):
+        self.callback_handler.on_batch_start(model, batch)
+        self.callback_handler.on_training_step_start(model, batch)
         output_list = []
 
         for trainer in self.trainers:
@@ -220,14 +220,14 @@ class Learner(nn.Module):
             )
             output_list.append(cur_output_dict)
 
-        self.callback_handler.on_batch_end(model, batch, batch_idx)
-        self.callback_handler.on_training_step_end(model, batch, batch_idx)
+        self.callback_handler.on_batch_end(model, batch)
+        self.callback_handler.on_training_step_end(model, batch)
         self.global_step += 1
         return output_list
 
-    def validation_step(self, model, batch, batch_idx):
-        self.callback_handler.on_batch_start(model, batch, batch_idx)
-        self.callback_handler.on_validation_step_start(model, batch, batch_idx)
+    def validation_step(self, model, batch):
+        self.callback_handler.on_batch_start(model, batch)
+        self.callback_handler.on_validation_step_start(model, batch)
 
         for evaluator in self.evaluators:
             evaluator.validation_step(
@@ -237,12 +237,12 @@ class Learner(nn.Module):
                 accelerator=self.accelerator,
             )
 
-        self.callback_handler.on_batch_end(model, batch, batch_idx)
-        self.callback_handler.on_validation_step_end(model, batch, batch_idx)
+        self.callback_handler.on_batch_end(model, batch)
+        self.callback_handler.on_validation_step_end(model, batch)
 
-    def testing_step(self, model, batch, batch_idx):
-        self.callback_handler.on_batch_start(model, batch, batch_idx)
-        self.callback_handler.on_testing_step_start(model, batch, batch_idx)
+    def testing_step(self, model, batch):
+        self.callback_handler.on_batch_start(model, batch)
+        self.callback_handler.on_testing_step_start(model, batch)
 
         for evaluator in self.evaluators:
             evaluator.testing_step(
@@ -252,8 +252,8 @@ class Learner(nn.Module):
                 accelerator=self.accelerator,
             )
 
-        self.callback_handler.on_batch_end(model, batch, batch_idx)
-        self.callback_handler.on_testing_step_end(model, batch, batch_idx)
+        self.callback_handler.on_batch_end(model, batch)
+        self.callback_handler.on_testing_step_end(model, batch)
 
     def start_training(self, train_dataloaders: DataLoader):
         self.callback_handler.on_train_start(
@@ -416,7 +416,6 @@ class Learner(nn.Module):
                             self.validation_step(
                                 model=self.model,
                                 batch=multi_modal_batch,
-                                batch_idx=batch_idx,
                             )
                     pbar_dataloaders.update(1)
 
@@ -447,7 +446,6 @@ class Learner(nn.Module):
                             self.testing_step(
                                 model=self.model,
                                 batch=multi_modal_batch,
-                                batch_idx=batch_idx,
                             )
                     pbar_dataloaders.update(1)
                     pbar_dataloaders.update(1)
@@ -487,7 +485,6 @@ class Learner(nn.Module):
                                 self.training_step(
                                     model=self.model,
                                     batch=multi_modal_batch,
-                                    batch_idx=i,
                                 )
                                 step_time_end = time.time()
                                 logger.info(
@@ -544,7 +541,6 @@ class Learner(nn.Module):
                                 self.training_step(
                                     model=self.model,
                                     batch=multi_modal_batch,
-                                    batch_idx=batch_idx,
                                 )
 
                         if self.step_idx % self.evaluate_every_n_steps == 0:

@@ -5,6 +5,7 @@ import neptune
 from rich import print
 from rich.traceback import install
 from tali_wit.data import dataclass_collate
+from tali_wit.data_plus import CustomConcatDataset
 
 from tali_wit.models import TALIModel
 from tali_wit.utils import (
@@ -87,94 +88,73 @@ def run(cfg: BaseConfig) -> None:
     else:
         global_step = 0
 
-    train_dataloaders = []
-    val_dataloaders = []
-    test_dataloaders = []
+    train_datasets = []
+    val_datasets = []
+    test_datasets = []
 
     for dataset_name, (batch_size, dataset) in cfg.dataset.items():
         logger.info(f"Setting up {dataset_name} train dataset")
+        
         train_dataset: Dataset = instantiate(
             dataset,
             set_name="train",
             infinite_sampling=True,
-            num_samples_per_episode=2,
+            num_samples_per_episode=batch_size,
         )
-
-        if global_step > 0:
-            train_dataset = Subset(
-                train_dataset,
-                indices=range(
-                    global_step // len(cfg.dataset.items()), len(train_dataset)
-                ),
-            )
-
-        logger.info(f"Setting up {dataset_name} train dataloader")
-        train_dataloader = instantiate(
+        
+        val_dataset: Dataset = instantiate(
+            dataset,
+            set_name="val",
+            infinite_sampling=False,
+            num_samples_per_episode=batch_size,
+        )
+        
+        test_dataset: Dataset = instantiate(
+            dataset,
+            set_name="test",
+            infinite_sampling=False,
+            num_samples_per_episode=batch_size,
+        )
+        
+        train_datasets.append(train_dataset)
+        val_datasets.append(val_dataset)
+        test_datasets.append(test_dataset)
+    
+    train_dataset = CustomConcatDataset(train_datasets)
+    
+    if global_step > 0:
+        train_dataset = Subset(
+            train_dataset, range(global_step, len(train_dataset))
+        )
+        
+    train_dataloader = instantiate(
             cfg.dataloader,
             dataset=train_dataset,
             batch_size=1,
             shuffle=True,
             collate_fn=dataclass_collate,
         )
-        dummy_batch = next(iter(train_dataloader))
-        logger.info(f"Finding max batch size for {dataset_name} train dataloader")
-        optimal_num_samples_per_episode = get_max_supported_batch_size(
-            model=model, batch=dummy_batch, train_mode=True
+    
+    val_dataset = CustomConcatDataset(val_datasets)
+    
+    val_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=val_dataset,
+            batch_size=1,
+            shuffle=False,
+            collate_fn=dataclass_collate,
         )
-
-        if "audio" in dataset_name:
-            if optimal_num_samples_per_episode > 16:
-                optimal_num_samples_per_episode -= 8
-            else:
-                optimal_num_samples_per_episode //= 2
-
-        # train_dataset: Dataset = instantiate(
-        #     dataset,
-        #     set_name="train",
-        #     infinite_sampling=True,
-        #     num_samples_per_episode=optimal_num_samples_per_episode,
-        # )
-
-        # train_dataloader = instantiate(
-        #     cfg.dataloader,
-        #     dataset=train_dataset,
-        #     batch_size=1,
-        #     shuffle=True,
-        #     collate_fn=dataclass_collate,
-        # )
-
-        # val_dataset: Dataset = instantiate(
-        #     dataset,
-        #     set_name="val",
-        #     num_samples_per_episode=optimal_num_samples_per_episode,
-        # )
-
-        # val_dataloader = instantiate(
-        #     cfg.dataloader,
-        #     dataset=val_dataset,
-        #     batch_size=1,
-        #     shuffle=False,
-        #     collate_fn=dataclass_collate,
-        # )
-
-        # test_dataset: Dataset = instantiate(
-        #     dataset,
-        #     set_name="test",
-        #     num_samples_per_episode=optimal_num_samples_per_episode,
-        # )
-
-        # test_dataloader = instantiate(
-        #     cfg.dataloader,
-        #     dataset=test_dataset,
-        #     batch_size=1,
-        #     shuffle=False,
-        #     collate_fn=dataclass_collate,
-        # )
-
-        # train_dataloaders.append(train_dataloader)
-        # val_dataloaders.append(val_dataloader)
-        # test_dataloaders.append(test_dataloader)
-
+    
+    test_dataset = CustomConcatDataset(val_datasets)
+    
+    test_dataloader = instantiate(
+            cfg.dataloader,
+            dataset=test_dataset,
+            batch_size=1,
+            shuffle=False,
+            collate_fn=dataclass_collate,
+        )
+    
     experiment_tracker["num_parameters"] = sum(
         p.numel() for p in model.parameters() if p.requires_grad
     )
@@ -201,8 +181,8 @@ def run(cfg: BaseConfig) -> None:
             )
         ],
         evaluators=[ClassificationEvaluator(experiment_tracker=experiment_tracker)],
-        train_dataloaders=train_dataloaders,
-        val_dataloaders=val_dataloaders,
+        train_dataloaders=[train_dataloader],
+        val_dataloaders=[val_dataloader],
         callbacks=instantiate_callbacks(cfg.callbacks),
         resume=ckpt_path,
         experiment_tracker=experiment_tracker,
@@ -212,7 +192,7 @@ def run(cfg: BaseConfig) -> None:
         learner.train()
 
     if cfg.test:
-        learner.test(test_dataloaders=test_dataloaders)
+        learner.test(test_dataloaders=[test_dataloader])
 
 
 if __name__ == "__main__":

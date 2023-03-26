@@ -496,11 +496,7 @@ def collect_config_store():
         name="wit_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                str(
-                    compute_batch_size_given_gpu_memory(
-                        reference_batch_size=128, gpu_memory=GPU_MEMORY
-                    )
-                ),
+                512,
                 wit_dataset_image_text_config,
             ),
         },
