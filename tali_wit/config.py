@@ -537,7 +537,7 @@ def collect_config_store():
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                32,
+                24,
                 tali_dataset_image_audio_config,
             ),
         },
@@ -571,11 +571,11 @@ def collect_config_store():
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                32,
+                24,
                 tali_dataset_image_audio_config,
             ),
             "tali_dataset_text_audio": (
-                32,
+                24,
                 tali_dataset_text_audio_config,
             ),
         },
@@ -594,11 +594,11 @@ def collect_config_store():
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_text_audio": (
-                32,
+                24,
                 tali_dataset_omni_minus_video_config,
             ),
             "tali_dataset_image_text_video": (
-                32,
+                24,
                 tali_dataset_omni_minus_audio_config,
             ),
             # "tali_dataset_image_audio": (

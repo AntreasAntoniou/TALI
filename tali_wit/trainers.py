@@ -78,14 +78,14 @@ class ClassificationTrainer(Trainer):
         generate_hierarchical_batch_start_time = time.time()
         batch = generate_hierarchical_data_dict(batch)
         generate_hierarchical_batch_end_time = time.time()
-        logger.info(
+        logger.debug(
             f"generate_hierarchical_batch_time: {generate_hierarchical_batch_end_time - generate_hierarchical_batch_start_time}"
         )
 
         possible_pairs_start_time = time.time()
         possible_pairs = extract_all_possible_pairs(batch)
         possible_pairs_end_time = time.time()
-        logger.info(
+        logger.debug(
             f"possible_pairs_time: {possible_pairs_end_time - possible_pairs_start_time}"
         )
         self.optimizer.zero_grad()
@@ -101,16 +101,16 @@ class ClassificationTrainer(Trainer):
                 modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
                 modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
             }
-            logger.info(
+            logger.debug(
                 f"Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔"
             )
-            logger.info(
+            logger.debug(
                 f"fprop Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔"
             )
             output_dict = model.forward(sample, return_loss=True)
             fprop_end_time = time.time()
 
-            logger.info(f"fprop_time: {fprop_end_time - fprop_start_time}")
+            logger.debug(f"fprop_time: {fprop_end_time - fprop_start_time}")
             bprop_start_time = time.time()
             loss = torch.mean(
                 torch.stack(
@@ -141,7 +141,7 @@ class ClassificationTrainer(Trainer):
                     del output_dict[key]
             accelerator.backward(loss)
             bprop_end_time = time.time()
-            logger.info(f"bprop_time: {bprop_end_time - bprop_start_time}")
+            logger.debug(f"bprop_time: {bprop_end_time - bprop_start_time}")
 
             overall_output_dict |= output_dict
             overall_loss.append(loss)
