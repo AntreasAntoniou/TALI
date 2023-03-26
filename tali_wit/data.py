@@ -207,7 +207,7 @@ def dataclass_collate(batch):
         if isinstance(batch[0], dict) or not hasattr(batch[0], "__dataclass_fields__"):
             batch = default_collate(batch)
             batch = {key: batch[key][0] for key in batch.keys()}
-            return
+            return batch
         else:
             batched_dict = {
                 key: default_collate([getattr(sample, key) for sample in batch])

@@ -12,11 +12,9 @@ import datasets
 import numpy as np
 import torch
 import tqdm
-from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     ShortSideScale,
-    UniformTemporalSubsample,
 )
 from rich import print
 from torch.utils.data import Dataset
@@ -888,8 +886,7 @@ if __name__ == "__main__":
         # dataset = dataset.with_transform(transform)
         dataset = TALIBase(
             set_name="train",
-            tali_root_filepath="/data/datasets/tali-wit-2-1-buckets/",
-            hf_tali_root_filepath="/data/datasets/tali-wit-2-1-buckets/",
+            tali_dataset_dir="/tali-data/",
             modality_list=[
                 ModalityTypes.wit_image.value,
                 ModalityTypes.wit_caption.value,
@@ -913,37 +910,38 @@ if __name__ == "__main__":
             image_text_model_name="openai/clip-vit-base-patch16",
             audio_model_name="openai/whisper-base",
             use_model_preprocessing=False,
+            num_samples_per_episode=32,
         )
-        # dataloader = DataLoader(
-        #     dataset,
-        #     batch_size=1,
-        #     num_workers=16,
-        #     shuffle=False,
-        #     collate_fn=dataclass_collate,
-        #     persistent_workers=True,
-        #     prefetch_factor=2,
-        #     pin_memory=False,
-        # )
+        dataloader = DataLoader(
+            dataset,
+            batch_size=1,
+            num_workers=16,
+            shuffle=False,
+            collate_fn=dataclass_collate,
+            persistent_workers=True,
+            prefetch_factor=1,
+            pin_memory=False,
+        )
         num_samples = 10000
 
-        with tqdm.tqdm(total=len(dataset)) as pbar:
-            for i, example in enumerate(dataset):
+        with tqdm.tqdm(total=len(dataloader)) as pbar:
+            for i, example in enumerate(dataloader):
                 # example = generate_hierarchical_data_dict(example)
                 if i == 0:
                     start_time = time.time()
 
                 # print(example)
-                shape_dict = {}
-                for modality, modality_value in example.items():
-                    if isinstance(modality_value, torch.Tensor):
-                        modality_value = modality_value.to(torch.float32)
-                        print(
-                            f"{modality} {modality_value.shape} {modality_value.mean()} {modality_value.std()}, {modality_value.min()}, {modality_value.max()}"
-                        )
-                    else:
-                        print(f"{modality} {modality_value}")
-                if i == num_samples:
-                    break
+                # shape_dict = {}
+                # for modality, modality_value in example.items():
+                #     if isinstance(modality_value, torch.Tensor):
+                #         modality_value = modality_value.to(torch.float32)
+                #         print(
+                #             f"{modality} {modality_value.shape} {modality_value.mean()} {modality_value.std()}, {modality_value.min()}, {modality_value.max()}"
+                #         )
+                #     else:
+                #         print(f"{modality} {modality_value}")
+                # if i == num_samples:
+                #     break
                 pbar.set_description(f"Processing {i}th example")
                 pbar.update(1)
         end_time = time.time()

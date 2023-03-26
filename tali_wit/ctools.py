@@ -126,6 +126,9 @@ def get_max_supported_batch_size(
     batch_size = 16
     crashed = False
 
+    for key, value in batch.items():
+        print(key, value.shape if isinstance(value, torch.Tensor) else value)
+
     # Iterate and test different batch sizes until crash 🛠️
     while not crashed:
         logger.debug(f"Trying batch size {batch_size}... 👾")

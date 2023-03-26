@@ -712,7 +712,7 @@ def collect_config_store():
         group="dataloader",
         name="default",
         node=dataloader_config(
-            batch_size=TRAIN_BATCH_SIZE,
+            batch_size=1,
             num_workers=NUM_WORKERS,
             pin_memory=PIN_MEMORY,
             shuffle=True,

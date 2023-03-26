@@ -97,7 +97,7 @@ def run(cfg: BaseConfig) -> None:
             dataset,
             set_name="train",
             infinite_sampling=True,
-            num_samples_per_episodes=cfg.train_num_samples_per_episode,
+            num_samples_per_episode=2,
         )
 
         if global_step > 0:
@@ -128,52 +128,52 @@ def run(cfg: BaseConfig) -> None:
             else:
                 optimal_num_samples_per_episode //= 2
 
-        train_dataset: Dataset = instantiate(
-            dataset,
-            set_name="train",
-            infinite_sampling=True,
-            num_samples_per_episodes=optimal_num_samples_per_episode,
-        )
+        # train_dataset: Dataset = instantiate(
+        #     dataset,
+        #     set_name="train",
+        #     infinite_sampling=True,
+        #     num_samples_per_episode=optimal_num_samples_per_episode,
+        # )
 
-        train_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=train_dataset,
-            batch_size=1,
-            shuffle=True,
-            collate_fn=dataclass_collate,
-        )
+        # train_dataloader = instantiate(
+        #     cfg.dataloader,
+        #     dataset=train_dataset,
+        #     batch_size=1,
+        #     shuffle=True,
+        #     collate_fn=dataclass_collate,
+        # )
 
-        val_dataset: Dataset = instantiate(
-            dataset,
-            set_name="val",
-            num_samples_per_episode=optimal_num_samples_per_episode,
-        )
+        # val_dataset: Dataset = instantiate(
+        #     dataset,
+        #     set_name="val",
+        #     num_samples_per_episode=optimal_num_samples_per_episode,
+        # )
 
-        val_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=val_dataset,
-            batch_size=1,
-            shuffle=False,
-            collate_fn=dataclass_collate,
-        )
+        # val_dataloader = instantiate(
+        #     cfg.dataloader,
+        #     dataset=val_dataset,
+        #     batch_size=1,
+        #     shuffle=False,
+        #     collate_fn=dataclass_collate,
+        # )
 
-        test_dataset: Dataset = instantiate(
-            dataset,
-            set_name="test",
-            num_samples_per_episode=optimal_num_samples_per_episode,
-        )
+        # test_dataset: Dataset = instantiate(
+        #     dataset,
+        #     set_name="test",
+        #     num_samples_per_episode=optimal_num_samples_per_episode,
+        # )
 
-        test_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=test_dataset,
-            batch_size=1,
-            shuffle=False,
-            collate_fn=dataclass_collate,
-        )
+        # test_dataloader = instantiate(
+        #     cfg.dataloader,
+        #     dataset=test_dataset,
+        #     batch_size=1,
+        #     shuffle=False,
+        #     collate_fn=dataclass_collate,
+        # )
 
-        train_dataloaders.append(train_dataloader)
-        val_dataloaders.append(val_dataloader)
-        test_dataloaders.append(test_dataloader)
+        # train_dataloaders.append(train_dataloader)
+        # val_dataloaders.append(val_dataloader)
+        # test_dataloaders.append(test_dataloader)
 
     experiment_tracker["num_parameters"] = sum(
         p.numel() for p in model.parameters() if p.requires_grad
