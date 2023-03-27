@@ -507,7 +507,7 @@ def collect_config_store():
         name="tali_image_text_dataset",
         node={
             "tali_dataset_image_text": (
-                512,
+                256,
                 tali_dataset_image_text_config,
             ),
         },
@@ -537,7 +537,7 @@ def collect_config_store():
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                24,
+                16,
                 tali_dataset_image_audio_config,
             ),
         },
@@ -552,7 +552,7 @@ def collect_config_store():
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
-                32,
+                16,
                 tali_dataset_image_video_config,
             ),
         },
@@ -571,11 +571,11 @@ def collect_config_store():
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                24,
+                16,
                 tali_dataset_image_audio_config,
             ),
             "tali_dataset_text_audio": (
-                24,
+                16,
                 tali_dataset_text_audio_config,
             ),
         },
