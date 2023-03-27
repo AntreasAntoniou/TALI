@@ -3,6 +3,7 @@ import pathlib
 from pathlib import Path
 import time
 from typing import Any, List, Union
+from neptune import Run
 
 import torch
 import torch.nn as nn
@@ -48,7 +49,7 @@ class Learner(nn.Module):
         print_model_parameters: bool = False,
         hf_cache_dir: str = None,
         hf_repo_path: str = None,
-        experiment_tracker: Any = None,
+        experiment_tracker: Run = None,
         dummy_batch_mode: bool = False,
     ):
         super().__init__()
@@ -582,6 +583,7 @@ class Learner(nn.Module):
                 "train": [trainer.state_dict for trainer in self.trainers],
                 "eval": [evaluator.state_dict for evaluator in self.evaluators],
             },
+            neptune_id=self.neptune_run._id if self.neptune_run else None,
         )
         torch.save(
             obj=experiment_hyperparameters,

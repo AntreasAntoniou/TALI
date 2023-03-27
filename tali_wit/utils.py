@@ -95,6 +95,7 @@ def get_hydra_config(logger_level: str = "INFO"):
         },
     )
 
+
 def timeout(timeout_secs: int):
     def wrapper(func):
         @wraps(func)
@@ -425,6 +426,7 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
             cfg.download_checkpoint_with_name is not None or cfg.download_latest
         ):
             return None, repo_url
+
         if cfg.download_checkpoint_with_name is not None:
             logger.info(
                 f"Download {cfg.download_checkpoint_with_name} checkpoint, if it exists, from the huggingface hub 👨🏻‍💻"
@@ -441,7 +443,20 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
             return path_dict["root_filepath"], repo_url
 
         elif cfg.download_latest:
-            model_dir = pathlib.Path(cfg.hf_cache_dir) / "checkpoints" / "latest"
+
+            files = hf_api.list_repo_files(
+                repo_id=hf_repo_path,
+            )
+
+            ckpt_dict = {}
+            for file in files:
+                if "checkpoints/ckpt" in file:
+                    ckpt_global_step = int(file.split("/")[-2].split("_")[-1])
+                    ckpt_dict[ckpt_global_step] = "/".join(file.split("/")[:-1])
+
+            latest_ckpt = ckpt_dict[max(ckpt_dict.keys())]
+
+            model_dir = pathlib.Path(cfg.hf_cache_dir) / latest_ckpt
             if model_dir.exists():
                 logger.info("Checkpoint exists, skipping download")
             else:
@@ -449,7 +464,7 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
                     "Download latest checkpoint, if it exists, from the huggingface hub 👨🏻‍💻"
                 )
                 path_dict = download_model_with_name(
-                    model_name="latest",
+                    model_name=latest_ckpt.split("/")[-1],
                     hf_repo_path=hf_repo_path,
                     hf_cache_dir=cfg.hf_cache_dir,
                 )

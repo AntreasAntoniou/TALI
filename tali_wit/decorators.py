@@ -3,6 +3,7 @@ from typing import Any, Callable
 
 import torch
 from hydra_zen import builds, instantiate
+import wandb
 
 
 def configurable(func: Callable) -> Callable:
@@ -21,9 +22,7 @@ def check_if_configurable(func: Callable, phase_name: str) -> bool:
 
 def collect_metrics(func: Callable) -> Callable:
     def collect_metrics(
-        metrics_dict: dict(),
-        phase_name: str,
-        experiment_tracker: Any,
+        metrics_dict: dict(), phase_name: str, experiment_tracker: Any, global_step: int
     ) -> None:
         for metric_key, computed_value in metrics_dict.items():
             if computed_value is not None:
@@ -33,6 +32,7 @@ def collect_metrics(func: Callable) -> Callable:
                     else computed_value
                 )
                 experiment_tracker[f"{phase_name}/{metric_key}"].append(value)
+                wandb.log({f"{phase_name}/{metric_key}": value}, step=global_step)
 
     @functools.wraps(func)
     def wrapper_collect_metrics(*args, **kwargs):

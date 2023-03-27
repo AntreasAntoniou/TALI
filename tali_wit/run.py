@@ -69,13 +69,6 @@ def run(cfg: BaseConfig) -> None:
 
     logger.info(f"Using checkpoint: {ckpt_path}")
 
-    config_dict = OmegaConf.to_container(cfg, resolve=True)
-    experiment_tracker = neptune.init_run(
-        source_files=["tali_wit/*.py", "kubernetes/*.py"]
-    )
-    experiment_tracker["config"] = config_dict
-    experiment_tracker["notes"] = repo_url
-
     print(pretty_config(cfg, resolve=True))
 
     set_seed(seed=cfg.seed)
@@ -85,8 +78,20 @@ def run(cfg: BaseConfig) -> None:
     if ckpt_path is not None and cfg.resume is True:
         trainer_state = torch.load(pathlib.Path(ckpt_path) / "trainer_state.pt")
         global_step = trainer_state["global_step"]
+        neptune_id = trainer_state["neptune_id"]
+        experiment_tracker = neptune.init_run(
+            source_files=["tali_wit/*.py", "kubernetes/*.py"], with_id=neptune_id
+        )
     else:
         global_step = 0
+        experiment_tracker = neptune.init_run(
+            source_files=["tali_wit/*.py", "kubernetes/*.py"]
+        )
+
+    config_dict = OmegaConf.to_container(cfg, resolve=True)
+    experiment_tracker["config"] = config_dict
+    experiment_tracker["notes"] = repo_url
+    experiment_tracker["init_global_step"] = global_step
 
     train_datasets = []
     val_datasets = []
@@ -94,67 +99,65 @@ def run(cfg: BaseConfig) -> None:
 
     for dataset_name, (batch_size, dataset) in cfg.dataset.items():
         logger.info(f"Setting up {dataset_name} train dataset")
-        
+
         train_dataset: Dataset = instantiate(
             dataset,
             set_name="train",
             infinite_sampling=True,
             num_samples_per_episode=batch_size,
         )
-        
+
         val_dataset: Dataset = instantiate(
             dataset,
             set_name="val",
             infinite_sampling=False,
             num_samples_per_episode=batch_size,
         )
-        
+
         test_dataset: Dataset = instantiate(
             dataset,
             set_name="test",
             infinite_sampling=False,
             num_samples_per_episode=batch_size,
         )
-        
+
         train_datasets.append(train_dataset)
         val_datasets.append(val_dataset)
         test_datasets.append(test_dataset)
-    
+
     train_dataset = CustomConcatDataset(train_datasets)
-    
+
     if global_step > 0:
-        train_dataset = Subset(
-            train_dataset, range(global_step, len(train_dataset))
-        )
-        
+        train_dataset = Subset(train_dataset, range(global_step, len(train_dataset)))
+
     train_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=train_dataset,
-            batch_size=1,
-            shuffle=True,
-            collate_fn=dataclass_collate,
-        )
-    
+        cfg.dataloader,
+        dataset=train_dataset,
+        batch_size=1,
+        shuffle=True,
+        collate_fn=dataclass_collate,
+    )
+
     val_dataset = CustomConcatDataset(val_datasets)
-    
+
     val_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=val_dataset,
-            batch_size=1,
-            shuffle=False,
-            collate_fn=dataclass_collate,
-        )
-    
+        cfg.dataloader,
+        dataset=val_dataset,
+        batch_size=1,
+        shuffle=False,
+        collate_fn=dataclass_collate,
+    )
+
     test_dataset = CustomConcatDataset(val_datasets)
-    
+
     test_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=test_dataset,
-            batch_size=1,
-            shuffle=False,
-            collate_fn=dataclass_collate,
-        )
-    
+        cfg.dataloader,
+        dataset=test_dataset,
+        batch_size=1,
+        shuffle=False,
+        collate_fn=dataclass_collate,
+    )
+
     experiment_tracker["num_parameters"] = sum(
         p.numel() for p in model.parameters() if p.requires_grad
     )

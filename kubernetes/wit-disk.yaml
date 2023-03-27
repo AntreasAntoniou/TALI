@@ -13,7 +13,7 @@ spec:
     name: pvc-wit0
   csi:
     driver: pd.csi.storage.gke.io
-    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk
+    volumeHandle: projects/tali-multi-modal/zones/us-central1-c/disks/wit-dataset-disk-0
     fsType: ext4
     readOnly: false
 ---
