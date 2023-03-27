@@ -594,11 +594,11 @@ def collect_config_store():
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_text_audio": (
-                24,
+                16,
                 tali_dataset_omni_minus_video_config,
             ),
             "tali_dataset_image_text_video": (
-                24,
+                16,
                 tali_dataset_omni_minus_audio_config,
             ),
             # "tali_dataset_image_audio": (
