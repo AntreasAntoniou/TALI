@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: tali-exp-1-2d
+  name: tali-exp-2-0
 spec:
   backoffLimit: 10
   template:
@@ -11,29 +11,38 @@ spec:
         - /opt/conda/envs/main/bin/accelerate-launch
         - --mixed_precision=bf16
         - /app/tali_wit/run.py
-        - exp_name=tali-2-tali_image_text_audio_base_patch16_224-wit_tali_image_text_audio_dataset-42
-        - dataset=wit_tali_image_text_audio_dataset
-        - model=tali_image_text_audio_base_patch16_224
+        - exp_name=tali-2-tali_image_text_base_patch16_224-wit_image_text_dataset-42
+        - dataset=wit_image_text_dataset
+        - model=tali_image_text_base_patch16_224
         - num_workers=12
-        - learner.train_iters=100000
         - seed=42
+        - learner.train_iters=100000
         env:
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
               key: HF_TOKEN
-              name: tali-exp-1
+              name: tali-exp-2
         - name: NEPTUNE_API_TOKEN
           valueFrom:
             secretKeyRef:
               key: NEPTUNE_API_TOKEN
-              name: tali-exp-1
+              name: tali-exp-2
+        - name: WANDB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              key: WANDB_API_KEY
+              name: tali-exp-2
         - name: NEPTUNE_PROJECT
           value: MachineLearningBrewery/tali-exp-1
         - name: NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
           value: 'TRUE'
-        - name: EXPERIMENT_NAME
+        - name: WANDB_PROJECT
           value: tali-exp-1
+        - name: WANDB_ENTITY
+          value: machinelearningbrewery
+        - name: EXPERIMENT_NAME
+          value: tali-exp-2
         - name: HF_USERNAME
           value: Antreas
         - name: TOKENIZERS_PARALLELISM
@@ -43,7 +52,7 @@ spec:
         - name: PROJECT_DIR
           value: /app/
         - name: EXPERIMENT_NAME_PREFIX
-          value: tali-exp-1
+          value: tali-exp-2
         - name: EXPERIMENTS_DIR
           value: /experiments/
         - name: EXPERIMENT_DIR
@@ -61,7 +70,7 @@ spec:
         name: job-container
         resources:
           limits:
-            nvidia.com/gpu: "1"
+            nvidia.com/gpu: 1
         volumeMounts:
         - mountPath: /dev/shm
           name: dshm
@@ -69,7 +78,7 @@ spec:
           name: pvc-tali-vol
           readOnly: true
         - mountPath: /wit-data/
-          name: pvc-wit2-vol
+          name: pvc-wit0-vol
           readOnly: false
       restartPolicy: Never
       volumes:
@@ -81,7 +90,7 @@ spec:
         persistentVolumeClaim:
           claimName: pvc-tali
           readOnly: true
-      - name: pvc-wit2-vol
+      - name: pvc-wit0-vol
         persistentVolumeClaim:
-          claimName: pvc-wit2
+          claimName: pvc-wit0
           readOnly: false

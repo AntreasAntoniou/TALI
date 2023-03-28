@@ -176,16 +176,6 @@ class Learner(nn.Module):
         elif isinstance(resume, Path):
             self.load_checkpoint(checkpoint_path=resume)
 
-        elif resume is True:
-            checkpoint_path = Path(self.checkpoints_dir / "latest")
-            if not checkpoint_path.exists():
-                logger.info(
-                    f"Checkpoint path {checkpoint_path} does not exist, "
-                    "starting from scratch :start:"
-                )
-            else:
-                self.load_checkpoint(checkpoint_path=checkpoint_path)
-
         if print_model_parameters:
             for key, value in self.named_parameters():
                 logger.info(
@@ -256,11 +246,10 @@ class Learner(nn.Module):
         self.callback_handler.on_batch_end(model, batch)
         self.callback_handler.on_testing_step_end(model, batch)
 
-    def start_training(self, train_dataloaders: DataLoader):
+    def start_training(self):
         self.callback_handler.on_train_start(
             experiment=self,
             model=self.model,
-            train_dataloaders=train_dataloaders,
         )
 
         for trainer in self.trainers:
@@ -270,17 +259,14 @@ class Learner(nn.Module):
 
         logger.info("Starting training 🏋🏽")
 
-    def end_training(self, train_dataloaders: DataLoader):
+    def end_training(self):
         self.callback_handler.on_train_end(
             experiment=self,
             model=self.model,
         )
 
         for trainer in self.trainers:
-            trainer.end_training(
-                global_step=self.global_step,
-                train_dataloaders=train_dataloaders,
-            )
+            trainer.end_training(global_step=self.global_step)
 
         for background_thread in self.background_threads:
             background_thread.join()
@@ -299,28 +285,22 @@ class Learner(nn.Module):
                 self.background_threads.remove(thread)
                 print(f"Removing thread {thread} since it is done")
 
-    def start_validation(self, val_dataloaders: List[DataLoader]):
-        self.callback_handler.on_validation_start(
-            experiment=self, model=self.model, val_dataloaders=val_dataloaders
-        )
+    def start_validation(self):
+        self.callback_handler.on_validation_start(experiment=self, model=self.model)
 
         for evaluator in self.evaluators:
             evaluator.start_validation(
                 global_step=self.global_step,
-                val_dataloaders=val_dataloaders,
             )
 
         logger.info("Starting validation 🧪")
 
-    def end_validation(self, val_dataloaders: List[DataLoader]):
-        self.callback_handler.on_validation_end(
-            experiment=self, model=self.model, val_dataloaders=val_dataloaders
-        )
+    def end_validation(self):
+        self.callback_handler.on_validation_end(experiment=self, model=self.model)
 
         for evaluator in self.evaluators:
             evaluator.end_validation(
                 global_step=self.global_step,
-                val_dataloaders=val_dataloaders,
             )
         logger.info(f"{self.checkpoint_after_validation}")
         if self.checkpoint_after_validation:
@@ -329,33 +309,26 @@ class Learner(nn.Module):
 
         logger.info("Validation finished 🎉")
 
-    def start_testing(self, test_dataloaders: List[DataLoader]):
-        self.callback_handler.on_testing_start(
-            experiment=self,
-            model=self.model,
-            test_dataloaders=test_dataloaders,
-        )
+    def start_testing(self):
+        self.callback_handler.on_testing_start(experiment=self, model=self.model)
 
         for evaluator in self.evaluators:
             evaluator.start_testing(
                 epoch_idx=self.epoch_idx,
                 step_idx=self.global_step,
                 global_step=self.global_step,
-                test_dataloaders=test_dataloaders,
             )
             logger.info("Starting testing 🧪")
 
-    def end_testing(self, test_dataloaders: List[DataLoader]):
+    def end_testing(self):
         self.callback_handler.on_testing_end(
             experiment=self,
             model=self.model,
-            test_dataloaders=test_dataloaders,
         )
 
         for evaluator in self.evaluators:
             evaluator.end_testing(
                 global_step=self.global_step,
-                test_dataloaders=test_dataloaders,
             )
 
         logger.info("Testing finished 🎉")
@@ -403,7 +376,7 @@ class Learner(nn.Module):
             model = self.model
 
         if val_dataloaders is not None:
-            self.start_validation(val_dataloaders=val_dataloaders)
+            self.start_validation()
 
             with tqdm(total=max([len(d) for d in val_dataloaders])) as pbar_dataloaders:
                 for batch_idx, batch in enumerate(
@@ -420,7 +393,7 @@ class Learner(nn.Module):
                             )
                     pbar_dataloaders.update(1)
 
-            self.end_validation(val_dataloaders=val_dataloaders)
+            self.end_validation()
 
     def _testing_loop(
         self,
@@ -434,7 +407,7 @@ class Learner(nn.Module):
             model = self.model
 
         if test_dataloader is not None:
-            self.start_testing(test_dataloaders=test_dataloaders)
+            self.start_testing()
 
             with tqdm(
                 total=max([len(d) for d in test_dataloaders])
@@ -451,7 +424,7 @@ class Learner(nn.Module):
                     pbar_dataloaders.update(1)
                     pbar_dataloaders.update(1)
 
-            self.end_testing(test_dataloaders=test_dataloaders)
+            self.end_testing()
 
     def _dummy_training_loop(self, train_dataloaders: DataLoader = None):
         if train_dataloaders is None:
@@ -467,9 +440,7 @@ class Learner(nn.Module):
                 while self.step_idx < self.train_iters:
                     if self.limit_train_iters is not None:
                         if self.step_idx >= self.limit_train_iters:
-                            return self.end_training(
-                                train_dataloaders=train_dataloaders
-                            )
+                            return self.end_training()
 
                     for i in range(self.train_iters):
                         loading_start_time = time.time()
@@ -506,21 +477,19 @@ class Learner(nn.Module):
                             )
 
                         if self.step_idx >= self.train_iters:
-                            return self.end_training(
-                                train_dataloaders=train_dataloaders
-                            )
+                            return self.end_training()
 
                         self.step_idx += 1
                         pbar_steps.update(1)
 
-            return self.end_training(train_dataloaders=train_dataloaders)
+            return self.end_training()
 
     def _training_loop(self, train_dataloaders: DataLoader = None):
         if train_dataloaders is None:
             train_dataloaders = self.train_dataloaders
 
         if train_dataloaders is not None:
-            self.start_training(train_dataloaders=train_dataloaders)
+            self.start_training()
 
             if self.train_iters is None:
                 self.train_iters = len(train_dataloaders)
@@ -529,9 +498,7 @@ class Learner(nn.Module):
                 while self.step_idx < self.train_iters:
                     if self.limit_train_iters is not None:
                         if self.step_idx >= self.limit_train_iters:
-                            return self.end_training(
-                                train_dataloaders=train_dataloaders
-                            )
+                            return self.end_training()
 
                     for batch_idx, batch in enumerate(
                         itertools.zip_longest(*train_dataloaders)
@@ -557,14 +524,12 @@ class Learner(nn.Module):
                             )
 
                         if self.step_idx >= self.train_iters:
-                            return self.end_training(
-                                train_dataloaders=train_dataloaders
-                            )
+                            return self.end_training()
 
                         self.step_idx += 1
                         pbar_steps.update(1)
 
-            return self.end_training(train_dataloaders=train_dataloaders)
+            return self.end_training()
 
     def save_checkpoint(
         self,

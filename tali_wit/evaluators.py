@@ -199,7 +199,6 @@ class ClassificationEvaluator(Evaluator):
     def start_validation(
         self,
         global_step: int,
-        val_dataloaders: List[DataLoader] = None,
     ):
         self.state_dict = {}
         return EvaluatorOutput(
@@ -213,7 +212,6 @@ class ClassificationEvaluator(Evaluator):
     def start_testing(
         self,
         global_step: int,
-        test_dataloaders: List[DataLoader] = None,
     ):
         self.state_dict = {}
         return EvaluatorOutput(
@@ -227,7 +225,6 @@ class ClassificationEvaluator(Evaluator):
     def end_validation(
         self,
         global_step: int,
-        val_dataloaders: List[DataLoader] = None,
     ):
         epoch_metrics = {}
         for key, value in self.state_dict.items():
@@ -245,7 +242,6 @@ class ClassificationEvaluator(Evaluator):
     def end_testing(
         self,
         global_step: int,
-        test_dataloaders: List[DataLoader] = None,
     ):
         epoch_metrics = {}
         for key, value in self.state_dict.items():

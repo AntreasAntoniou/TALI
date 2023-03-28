@@ -4,6 +4,7 @@ import pathlib
 import neptune
 from rich import print
 from rich.traceback import install
+import wandb
 from tali_wit.data import dataclass_collate
 from tali_wit.data_plus import CustomConcatDataset
 
@@ -78,7 +79,9 @@ def run(cfg: BaseConfig) -> None:
     if ckpt_path is not None and cfg.resume is True:
         trainer_state = torch.load(pathlib.Path(ckpt_path) / "trainer_state.pt")
         global_step = trainer_state["global_step"]
-        neptune_id = trainer_state["neptune_id"]
+        neptune_id = (
+            trainer_state["neptune_id"] if "neptune_id" in trainer_state else None
+        )
         experiment_tracker = neptune.init_run(
             source_files=["tali_wit/*.py", "kubernetes/*.py"], with_id=neptune_id
         )
@@ -88,10 +91,15 @@ def run(cfg: BaseConfig) -> None:
             source_files=["tali_wit/*.py", "kubernetes/*.py"]
         )
 
+    wandb.init()
     config_dict = OmegaConf.to_container(cfg, resolve=True)
     experiment_tracker["config"] = config_dict
     experiment_tracker["notes"] = repo_url
     experiment_tracker["init_global_step"] = global_step
+
+    wandb.config.update(config_dict)
+    wandb.config.update({"notes": repo_url})
+    wandb.config.update({"init_global_step": global_step})
 
     train_datasets = []
     val_datasets = []

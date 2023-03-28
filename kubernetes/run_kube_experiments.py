@@ -23,7 +23,7 @@ def get_scripts(exp_configs: List[ExperimentConfig]):
         current_script_text = (
             f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 "
             f"/app/tali_wit/run.py exp_name=tali-2-{exp_config.model}-{exp_config.dataset}-{exp_config.seed} "
-            f"dataset={exp_config.dataset} model={exp_config.model} num_workers={exp_config.num_workers} seed={exp_config.seed}"
+            f"dataset={exp_config.dataset} model={exp_config.model} num_workers={exp_config.num_workers} seed={exp_config.seed} learner.train_iters=100000"
         )
         script_list.append(current_script_text)
 
@@ -67,12 +67,15 @@ if __name__ == "__main__":
         secret_variables={
             "HF_TOKEN": os.getenv("EXPERIMENT_NAME_PREFIX"),
             "NEPTUNE_API_TOKEN": os.getenv("EXPERIMENT_NAME_PREFIX"),
+            "WANDB_API_KEY": os.getenv("EXPERIMENT_NAME_PREFIX"),
         },
         environment_variables={
             "NEPTUNE_PROJECT": os.getenv("NEPTUNE_PROJECT"),
             "NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE": os.getenv(
                 "NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"
             ),
+            "WANDB_PROJECT": os.getenv("WANDB_PROJECT"),
+            "WANDB_ENTITY": os.getenv("WANDB_ENTITY"),
             "EXPERIMENT_NAME": os.getenv("EXPERIMENT_NAME"),
             "HF_USERNAME": os.getenv("HF_USERNAME"),
             "TOKENIZERS_PARALLELISM": os.getenv("TOKENIZERS_PARALLELISM"),
@@ -105,5 +108,5 @@ if __name__ == "__main__":
     )
 
     exp.generate_spec_files()
-    output = exp.run_jobs()
-    print(output)
+    # output = exp.run_jobs()
+    # print(output)

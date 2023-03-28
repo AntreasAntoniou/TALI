@@ -3,7 +3,11 @@ export NEPTUNE_API_TOKEN="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLC
 export NEPTUNE_PROJECT=MachineLearningBrewery/tali-exp-1
 export NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'
 
-export EXPERIMENT_NAME=tali-exp-1
+export WANDB_API_KEY="821661c6ee1657a2717093701ab76574ae1a9be0"
+export WANDB_ENTITY=machinelearningbrewery
+export WANDB_PROJECT=tali-exp-1
+
+export EXPERIMENT_NAME=tali-exp-2
 export HF_USERNAME="Antreas"
 export HF_TOKEN=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
 
@@ -11,7 +15,7 @@ export TOKENIZERS_PARALLELISM=False
 
 export CODE_DIR=/app/
 export PROJECT_DIR=/app/
-export EXPERIMENT_NAME_PREFIX="tali-exp-1"
+export EXPERIMENT_NAME_PREFIX="tali-exp-2"
 export EXPERIMENTS_DIR=/experiments/
 export EXPERIMENT_DIR=/experiments/
 export TALI_DATASET_DIR=/tali-data/

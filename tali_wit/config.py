@@ -135,7 +135,7 @@ learner_config = learner_config(
     evaluate_every_n_steps=500,
     checkpoint_after_validation=True,
     checkpoint_every_n_steps=100,
-    train_iters=10000,
+    train_iters=100000,
     limit_val_iters=100,
     dummy_batch_mode=DUMMY_BATCH_MODE,
 )

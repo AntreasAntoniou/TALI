@@ -37,13 +37,11 @@ def collect_metrics(func: Callable) -> Callable:
     @functools.wraps(func)
     def wrapper_collect_metrics(*args, **kwargs):
         outputs = func(*args, **kwargs)
-        metrics_dict = outputs.metrics
-        phase_name = outputs.phase_name
-        run = outputs.experiment_tracker
         collect_metrics(
-            metrics_dict=metrics_dict,
-            phase_name=phase_name,
-            experiment_tracker=run,
+            metrics_dict=outputs.metrics,
+            phase_name=outputs.phase_name,
+            experiment_tracker=outputs.experiment_tracker,
+            global_step=outputs.global_step,
         )
         return outputs
 

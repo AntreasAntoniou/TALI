@@ -92,7 +92,6 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloaders: DataLoader = None,
     ) -> None:
         pass
 
@@ -100,9 +99,6 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloaders: DataLoader = None,
-        val_dataloaders: Union[List[DataLoader], DataLoader] = None,
-        test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         pass
 
@@ -110,7 +106,6 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        val_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ):
         pass
 
@@ -118,7 +113,6 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        val_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         pass
 
@@ -126,7 +120,6 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         pass
 
@@ -134,7 +127,6 @@ class Callback(object):
         self,
         experiment: Any,
         model: nn.Module,
-        test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         pass
 
@@ -266,63 +258,52 @@ class CallbackHandler(Callback):
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloaders: DataLoader = None,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_train_start(experiment, model, train_dataloaders)
+            callback.on_train_start(experiment, model)
 
     def on_train_end(
         self,
         experiment: Any,
         model: nn.Module,
-        train_dataloaders: DataLoader = None,
-        val_dataloaders: Union[List[DataLoader], DataLoader] = None,
-        test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         for callback in self.callbacks:
             callback.on_train_end(
                 experiment,
                 model,
-                train_dataloaders,
-                val_dataloaders,
-                test_dataloaders,
             )
 
     def on_validation_start(
         self,
         experiment: Any,
         model: nn.Module,
-        val_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ):
         for callback in self.callbacks:
-            callback.on_validation_start(experiment, model, val_dataloaders)
+            callback.on_validation_start(experiment, model)
 
     def on_validation_end(
         self,
         experiment: Any,
         model: nn.Module,
-        val_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_validation_end(experiment, model, val_dataloaders)
+            callback.on_validation_end(experiment, model)
 
     def on_testing_start(
         self,
         experiment: Any,
         model: nn.Module,
-        test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_testing_start(experiment, model, test_dataloaders)
+            callback.on_testing_start(experiment, model)
 
     def on_testing_end(
         self,
         experiment: Any,
         model: nn.Module,
-        test_dataloaders: Union[List[DataLoader], DataLoader] = None,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_testing_end(experiment, model, test_dataloaders)
+            callback.on_testing_end(experiment, model)
 
     def on_save_checkpoint(
         self,
@@ -362,11 +343,6 @@ class UploadCheckpointToHuggingFaceBackground(threading.Thread):
                 repo_id=f"{self.repo_owner}/{self.repo_name}",
                 folder_path=self.checkpoint_path,
                 path_in_repo=f"checkpoints/{self.checkpoint_path.name}",
-            )
-            self.hf_api.upload_folder(
-                repo_id=f"{self.repo_owner}/{self.repo_name}",
-                folder_path=self.checkpoint_path,
-                path_in_repo=f"checkpoints/latest",
             )
 
             self.done = True
