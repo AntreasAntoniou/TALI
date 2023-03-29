@@ -134,7 +134,7 @@ learner_config = learner_config(
     resume=RESUME,
     evaluate_every_n_steps=500,
     checkpoint_after_validation=True,
-    checkpoint_every_n_steps=100,
+    checkpoint_every_n_steps=50,
     train_iters=100000,
     limit_val_iters=100,
     dummy_batch_mode=DUMMY_BATCH_MODE,
@@ -496,7 +496,7 @@ def collect_config_store():
         name="wit_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                512,
+                256,
                 wit_dataset_image_text_config,
             ),
         },
@@ -507,7 +507,7 @@ def collect_config_store():
         name="tali_image_text_dataset",
         node={
             "tali_dataset_image_text": (
-                256,
+                128,
                 tali_dataset_image_text_config,
             ),
         },
@@ -518,11 +518,11 @@ def collect_config_store():
         name="wit_tali_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                512,
+                256,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                256,
+                128,
                 tali_dataset_image_text_config,
             ),
         },
@@ -533,11 +533,11 @@ def collect_config_store():
         name="wit_tali_image_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                512,
+                256,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                16,
+                8,
                 tali_dataset_image_audio_config,
             ),
         },
@@ -548,11 +548,11 @@ def collect_config_store():
         name="wit_tali_image_video_dataset",
         node={
             "wit_dataset_image_text": (
-                512,
+                256,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
-                16,
+                8,
                 tali_dataset_image_video_config,
             ),
         },
@@ -563,19 +563,19 @@ def collect_config_store():
         name="wit_tali_image_text_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                512,
+                256,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                256,
+                128,
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                16,
+                8,
                 tali_dataset_image_audio_config,
             ),
             "tali_dataset_text_audio": (
-                16,
+                8,
                 tali_dataset_text_audio_config,
             ),
         },
@@ -586,19 +586,19 @@ def collect_config_store():
         name="wit_tali_image_text_audio_video_dataset",
         node={
             "wit_dataset_image_text": (
-                512,
+                256,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                256,
+                128,
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_text_audio": (
-                16,
+                8,
                 tali_dataset_omni_minus_video_config,
             ),
             "tali_dataset_image_text_video": (
-                12,
+                6,
                 tali_dataset_omni_minus_audio_config,
             ),
             # "tali_dataset_image_audio": (

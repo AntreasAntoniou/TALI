@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: tali-exp-2-1
 spec:
-  backoffLimit: 10
+  backoffLimit: 100
   template:
     spec:
       containers:
