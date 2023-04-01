@@ -132,12 +132,13 @@ learner_config = learner_config(
     experiment_name=EXPERIMENT_NAME,
     experiment_dir=CHECKPOINT_DIR,
     resume=RESUME,
-    evaluate_every_n_steps=500,
+    evaluate_every_n_steps=1000,
     checkpoint_after_validation=True,
-    checkpoint_every_n_steps=50,
+    checkpoint_every_n_steps=500,
     train_iters=100000,
-    limit_val_iters=100,
+    limit_val_iters=250,
     dummy_batch_mode=DUMMY_BATCH_MODE,
+    print_model_parameters=False,
 )
 
 default_callbacks = dict(hf_uploader=hf_upload)
@@ -233,6 +234,17 @@ def collect_config_store():
         ),
     )
 
+    tali_vit_image_text_model_scratch_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=False),
+            text=ModalityConfig(support=True, pretrained=False),
+            audio=ModalityConfig(support=False, pretrained=False),
+            video=ModalityConfig(support=False, pretrained=False),
+        ),
+    )
+
     tali_vit_image_audio_model_config = model_config(
         image_text_model_name="openai/clip-vit-base-patch16",
         audio_model_name="openai/whisper-base",
@@ -240,6 +252,17 @@ def collect_config_store():
             image=ModalityConfig(support=True, pretrained=True),
             text=ModalityConfig(support=False, pretrained=False),
             audio=ModalityConfig(support=True, pretrained=True),
+            video=ModalityConfig(support=False, pretrained=False),
+        ),
+    )
+
+    tali_vit_image_audio_model_scratch_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=False),
+            text=ModalityConfig(support=False, pretrained=False),
+            audio=ModalityConfig(support=True, pretrained=False),
             video=ModalityConfig(support=False, pretrained=False),
         ),
     )
@@ -255,6 +278,17 @@ def collect_config_store():
         ),
     )
 
+    tali_vit_image_text_audio_model_scratch_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=False),
+            text=ModalityConfig(support=True, pretrained=False),
+            audio=ModalityConfig(support=True, pretrained=False),
+            video=ModalityConfig(support=False, pretrained=False),
+        ),
+    )
+
     tali_vit_image_text_video_model_config = model_config(
         image_text_model_name="openai/clip-vit-base-patch16",
         audio_model_name="openai/whisper-base",
@@ -263,6 +297,17 @@ def collect_config_store():
             text=ModalityConfig(support=True, pretrained=True),
             audio=ModalityConfig(support=False, pretrained=False),
             video=ModalityConfig(support=True, pretrained=True),
+        ),
+    )
+
+    tali_vit_image_text_video_model_scratch_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=False),
+            text=ModalityConfig(support=True, pretrained=False),
+            audio=ModalityConfig(support=False, pretrained=False),
+            video=ModalityConfig(support=True, pretrained=False),
         ),
     )
 
@@ -277,6 +322,17 @@ def collect_config_store():
         ),
     )
 
+    tali_vit_image_video_model_scratch_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=False),
+            text=ModalityConfig(support=False, pretrained=False),
+            audio=ModalityConfig(support=False, pretrained=False),
+            video=ModalityConfig(support=True, pretrained=False),
+        ),
+    )
+
     tali_vit_model_config = model_config(
         image_text_model_name="openai/clip-vit-base-patch16",
         audio_model_name="openai/whisper-base",
@@ -285,6 +341,17 @@ def collect_config_store():
             text=ModalityConfig(support=True, pretrained=True),
             audio=ModalityConfig(support=True, pretrained=True),
             video=ModalityConfig(support=True, pretrained=True),
+        ),
+    )
+
+    tali_vit_model_scratch_config = model_config(
+        image_text_model_name="openai/clip-vit-base-patch16",
+        audio_model_name="openai/whisper-base",
+        multi_modality_config=MultiModalityConfig(
+            image=ModalityConfig(support=True, pretrained=False),
+            text=ModalityConfig(support=True, pretrained=False),
+            audio=ModalityConfig(support=True, pretrained=False),
+            video=ModalityConfig(support=True, pretrained=False),
         ),
     )
 
@@ -461,8 +528,20 @@ def collect_config_store():
 
     config_store.store(
         group="model",
+        name="tali_omni_base_patch16_224_scratch",
+        node=tali_vit_model_scratch_config,
+    )
+
+    config_store.store(
+        group="model",
         name="tali_image_text_base_patch16_224",
         node=tali_vit_image_text_model_config,
+    )
+
+    config_store.store(
+        group="model",
+        name="tali_image_text_base_patch16_224_scratch",
+        node=tali_vit_image_text_model_scratch_config,
     )
 
     config_store.store(
@@ -473,8 +552,20 @@ def collect_config_store():
 
     config_store.store(
         group="model",
+        name="tali_image_audio_base_patch16_224_scratch",
+        node=tali_vit_image_audio_model_scratch_config,
+    )
+
+    config_store.store(
+        group="model",
         name="tali_image_video_base_patch16_224",
         node=tali_vit_image_video_model_config,
+    )
+
+    config_store.store(
+        group="model",
+        name="tali_image_video_base_patch16_224_scratch",
+        node=tali_vit_image_video_model_scratch_config,
     )
 
     config_store.store(
@@ -485,8 +576,20 @@ def collect_config_store():
 
     config_store.store(
         group="model",
+        name="tali_image_text_audio_base_patch16_224_scratch",
+        node=tali_vit_image_text_audio_model_scratch_config,
+    )
+
+    config_store.store(
+        group="model",
         name="tali_image_text_video_base_patch16_224",
         node=tali_vit_image_text_video_model_config,
+    )
+
+    config_store.store(
+        group="model",
+        name="tali_image_text_video_base_patch16_224_scratch",
+        node=tali_vit_image_text_video_model_scratch_config,
     )
 
     ###################################################################################
@@ -496,7 +599,7 @@ def collect_config_store():
         name="wit_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                256,
+                240,
                 wit_dataset_image_text_config,
             ),
         },
@@ -518,7 +621,7 @@ def collect_config_store():
         name="wit_tali_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                256,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
@@ -533,7 +636,7 @@ def collect_config_store():
         name="wit_tali_image_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                256,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
@@ -548,7 +651,7 @@ def collect_config_store():
         name="wit_tali_image_video_dataset",
         node={
             "wit_dataset_image_text": (
-                256,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
@@ -563,7 +666,7 @@ def collect_config_store():
         name="wit_tali_image_text_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                256,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
@@ -586,20 +689,16 @@ def collect_config_store():
         name="wit_tali_image_text_audio_video_dataset",
         node={
             "wit_dataset_image_text": (
-                256,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
                 128,
                 tali_dataset_image_text_config,
             ),
-            "tali_dataset_image_text_audio": (
-                8,
-                tali_dataset_omni_minus_video_config,
-            ),
-            "tali_dataset_image_text_video": (
-                6,
-                tali_dataset_omni_minus_audio_config,
+            "tali_dataset_omni": (
+                4,
+                tali_dataset_omni_config,
             ),
             # "tali_dataset_image_audio": (
             #     str(

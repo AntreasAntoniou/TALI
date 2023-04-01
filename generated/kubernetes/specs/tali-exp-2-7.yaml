@@ -1,0 +1,96 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tali-exp-2-7
+spec:
+  backoffLimit: 100
+  template:
+    spec:
+      containers:
+        - command:
+            - /opt/conda/envs/main/bin/accelerate-launch
+            - --mixed_precision=bf16
+            - /app/tali_wit/run.py
+            - exp_name=tali-2-tali_omni_base_patch16_224_scratch-wit_tali_image_text_audio_video_dataset-2306-debug-1
+            - dataset=wit_tali_image_text_audio_video_dataset
+            - model=tali_omni_base_patch16_224_scratch
+            - num_workers=12
+            - seed=2306
+            - learner.train_iters=100000
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: HF_TOKEN
+                  name: tali-exp-2
+            - name: NEPTUNE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: NEPTUNE_API_TOKEN
+                  name: tali-exp-2
+            - name: WANDB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: WANDB_API_KEY
+                  name: tali-exp-2
+            - name: NEPTUNE_PROJECT
+              value: MachineLearningBrewery/tali-exp-1
+            - name: NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
+              value: "TRUE"
+            - name: WANDB_PROJECT
+              value: tali-exp-1
+            - name: WANDB_ENTITY
+              value: machinelearningbrewery
+            - name: EXPERIMENT_NAME
+              value: tali-exp-2
+            - name: HF_USERNAME
+              value: Antreas
+            - name: TOKENIZERS_PARALLELISM
+              value: "False"
+            - name: CODE_DIR
+              value: /app/
+            - name: PROJECT_DIR
+              value: /app/
+            - name: EXPERIMENT_NAME_PREFIX
+              value: tali-exp-2
+            - name: EXPERIMENTS_DIR
+              value: /experiments/
+            - name: EXPERIMENT_DIR
+              value: /experiments/
+            - name: TALI_DATASET_DIR
+              value: /tali-data/
+            - name: WIT_DATASET_DIR
+              value: /wit-data/
+            - name: MODEL_DIR
+              value: /model/
+            - name: DOCKER_IMAGE_PATH
+              value: gcr.io/tali-multi-modal/tali:latest
+          image: gcr.io/tali-multi-modal/tali:latest
+          imagePullPolicy: Always
+          name: job-container
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - mountPath: /tali-data/
+              name: pvc-tali-vol
+              readOnly: true
+            - mountPath: /wit-data/
+              name: pvc-wit0-vol
+              readOnly: false
+      restartPolicy: Never
+      volumes:
+        - emptyDir:
+            medium: Memory
+            sizeLimit: 167Gi
+          name: dshm
+        - name: pvc-tali-vol
+          persistentVolumeClaim:
+            claimName: pvc-tali
+            readOnly: true
+        - name: pvc-wit0-vol
+          persistentVolumeClaim:
+            claimName: pvc-wit0
+            readOnly: false

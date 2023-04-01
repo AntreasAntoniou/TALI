@@ -6,6 +6,8 @@ demo/temp_data/*
 notebooks/flagged_data_points/*
 .neptune/*
 outputs/*
+wandb/*
+.vscode/*
 
 # C extensions
 *.so

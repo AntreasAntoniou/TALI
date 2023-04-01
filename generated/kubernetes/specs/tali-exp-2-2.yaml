@@ -11,11 +11,11 @@ spec:
         - /opt/conda/envs/main/bin/accelerate-launch
         - --mixed_precision=bf16
         - /app/tali_wit/run.py
-        - exp_name=tali-2-tali_image_text_audio_base_patch16_224-wit_tali_image_text_audio_dataset-42
+        - exp_name=tali-2-tali_image_text_audio_base_patch16_224-wit_tali_image_text_audio_dataset-2306
         - dataset=wit_tali_image_text_audio_dataset
         - model=tali_image_text_audio_base_patch16_224
-        - num_workers=4
-        - seed=42
+        - num_workers=12
+        - seed=2306
         - learner.train_iters=100000
         env:
         - name: HF_TOKEN

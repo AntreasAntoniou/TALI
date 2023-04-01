@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 
 from tali_wit.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig
 
-data_root = "/data/datasets/tali-wit-2-1-buckets/"
+data_root = "/data_large/datasets/tali-wit-2-1-buckets/"
 transform = TALIBaseDemoTransform(
     config=TALIBaseTransformConfig(
         root_filepath=data_root,

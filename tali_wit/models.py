@@ -235,7 +235,33 @@ def get_similarities(
 
     return similarities
 
-
+def reinit(input_module: nn.Module):
+    for name, module in input_module.named_modules():
+        if isinstance(module, torch.nn.Linear):
+            torch.nn.init.normal_(module.weight, std=0.02)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, torch.nn.Embedding):
+            torch.nn.init.normal_(module.weight, std=0.02)
+            if module.padding_idx is not None:
+                module.weight.data[module.padding_idx].zero_()
+        elif isinstance(module, torch.nn.LayerNorm):
+            torch.nn.init.ones_(module.weight)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, torch.nn.Conv2d):
+            torch.nn.init.normal_(module.weight, std=0.02)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, torch.nn.Conv1d):
+            torch.nn.init.normal_(module.weight, std=0.02)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, torch.nn.ConvTranspose1d):
+            torch.nn.init.normal_(module.weight, std=0.02)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+                
 @configurable
 class TALIModel(nn.Module):
     def __init__(
@@ -257,6 +283,20 @@ class TALIModel(nn.Module):
         self.model = nn.ModuleDict()
 
         self.clip_model = CLIPModel.from_pretrained(self.image_text_model_name)
+        logger.info(f"Attention here: {(not self.multi_modality_config.image.pretrained and self.multi_modality_config.image.support)} "
+                    f"and {(not self.multi_modality_config.text.pretrained and self.multi_modality_config.text.support)} "
+                    f"specifically {self.multi_modality_config.image.pretrained} and {self.multi_modality_config.text.pretrained} "
+                    f"and {self.multi_modality_config.image.support} and {self.multi_modality_config.text.support}")
+        if (
+            not self.multi_modality_config.image.pretrained
+            and self.multi_modality_config.image.support
+        ) or (not self.multi_modality_config.text.pretrained and self.multi_modality_config.text.support):
+            logger.info("Reinitializing the image and text models")
+            # for name, module in self.clip_model.named_modules():
+            reinit(self.clip_model)
+                
+            
+        
         self.linear_projection_dim = self.clip_model.projection_dim
 
         self.model["image"] = self.clip_model.vision_model
@@ -311,26 +351,28 @@ class TALIModel(nn.Module):
             delattr(self.model, "video")
             delattr(self, "video_linear_layer")
 
-        if (
-            not self.multi_modality_config.image.pretrained
-            and self.multi_modality_config.image.support
-        ):
-            self.model["image"].init_weights()
-        if (
-            not self.multi_modality_config.text.pretrained
-            and self.multi_modality_config.text.support
-        ):
-            self.model["text"].init_weights()
+        # if (
+        #     not self.multi_modality_config.image.pretrained
+        #     and self.multi_modality_config.image.support
+        # ):
+        #     self.model["image"].init_weights()
+        # if (
+        #     not self.multi_modality_config.text.pretrained
+        #     and self.multi_modality_config.text.support
+        # ):
+        #     self.model["text"].init_weights()
         if (
             not self.multi_modality_config.audio.pretrained
             and self.multi_modality_config.audio.support
         ):
-            self.model["audio"].init_weights()
+            reinit(self.model["audio"])
+            logger.info("Reinitializing the audio model")
         if (
             not self.multi_modality_config.video.pretrained
             and self.multi_modality_config.video.support
         ):
-            self.model["video"].init_weights()
+            reinit(self.model["video"])
+            logger.info("Reinitializing the video model")
 
     def build_logit_scales(self):
         self.logit_scales = nn.ParameterDict()

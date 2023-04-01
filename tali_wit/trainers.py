@@ -39,6 +39,14 @@ class TrainerOutput:
     experiment_tracker: Any = None
 
 
+@dataclass
+class StepOutput:
+    output_dict: Dict
+    loss: torch.Tensor
+    accuracy: torch.Tensor
+    accuracy_top_5: torch.Tensor
+
+
 class ClassificationTrainer(Trainer):
     def __init__(
         self,
@@ -60,6 +68,70 @@ class ClassificationTrainer(Trainer):
 
     def get_optimizer(self):
         return self.optimizer
+
+    def step(self, model, batch, global_step, accelerator: Accelerator):
+        try:
+            output_dict = model.forward(batch, return_loss=True)
+            loss = torch.mean(
+                torch.stack(
+                    [value for key, value in output_dict.items() if "_loss" in key]
+                )
+            )
+            accuracy = torch.mean(
+                torch.stack(
+                    [
+                        value.cpu()
+                        for key, value in output_dict.items()
+                        if "_accuracy" in key
+                    ]
+                )
+            )
+            accuracy_top_5 = torch.mean(
+                torch.stack(
+                    [
+                        value.cpu()
+                        for key, value in output_dict.items()
+                        if "_accuracy_top_5" in key
+                    ]
+                )
+            )
+            keys = list(output_dict.keys())
+
+            for key in keys:
+                if "_loss" not in key and "_accuracy" not in key:
+                    del output_dict[key]
+
+            accelerator.backward(loss)
+
+            return StepOutput(
+                output_dict=output_dict,
+                loss=loss,
+                accuracy=accuracy,
+                accuracy_top_5=accuracy_top_5,
+            )
+        except Exception as e:
+            logger.warning(e)
+            # some_key = list(batch.keys())
+            # some_sub_key = list(batch[some_key[0]].keys())
+            # some_value = batch[some_key[0]][some_sub_key[0]]
+            # if some_value.shape[0] > 1:
+            #     smaller_batch_dict = {}
+
+            #     for key, value in batch.items():
+            #         smaller_batch_dict[key] = {}
+            #         logger.info(f"{key}")
+            #         for sub_key, sub_value in value.items():
+            #             logger.info(
+            #                 f"sub_key, sub_value.shape: {sub_key}, {sub_value.shape}"
+            #             )
+            #             smaller_batch_dict[key][sub_key] = sub_value[1:]
+            #             logger.info(
+            #                 f"smaller_batch_dict[key][sub_key].shape: {smaller_batch_dict[key][sub_key].shape}"
+            #             )
+
+            #     return self.step(model, smaller_batch_dict, global_step, accelerator)
+            # else:
+            return None
 
     @collect_metrics
     def training_step(
@@ -96,64 +168,34 @@ class ClassificationTrainer(Trainer):
             modality_b,
             sub_modality_b,
         ) in possible_pairs:
-            fprop_start_time = time.time()
             sample = {
                 modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
                 modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
             }
-            logger.debug(
-                f"Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔"
-            )
-            logger.debug(
-                f"fprop Modality A: {modality_a} - {sub_modality_a}, Modality B: {modality_b} - {sub_modality_b} 📔"
-            )
-            output_dict = model.forward(sample, return_loss=True)
-            fprop_end_time = time.time()
 
-            logger.debug(f"fprop_time: {fprop_end_time - fprop_start_time}")
-            bprop_start_time = time.time()
-            loss = torch.mean(
-                torch.stack(
-                    [value for key, value in output_dict.items() if "_loss" in key]
-                )
+            step_output: StepOutput = self.step(
+                model=model,
+                batch=sample,
+                global_step=global_step,
+                accelerator=accelerator,
             )
-            accuracy = torch.mean(
-                torch.stack(
-                    [
-                        value.cpu()
-                        for key, value in output_dict.items()
-                        if "_accuracy" in key
-                    ]
-                )
-            )
-            accuracy_top_5 = torch.mean(
-                torch.stack(
-                    [
-                        value.cpu()
-                        for key, value in output_dict.items()
-                        if "_accuracy_top_5" in key
-                    ]
-                )
-            )
-            keys = list(output_dict.keys())
-            for key in keys:
-                if "_loss" not in key and "_accuracy" not in key:
-                    del output_dict[key]
-            accelerator.backward(loss)
-            bprop_end_time = time.time()
-            logger.debug(f"bprop_time: {bprop_end_time - bprop_start_time}")
+            if step_output is not None:
+                overall_output_dict |= step_output.output_dict
+                overall_loss.append(step_output.loss)
+                overall_accuracy.append(step_output.accuracy)
+                overall_accuracy_top_5.append(step_output.accuracy_top_5)
 
-            overall_output_dict |= output_dict
-            overall_loss.append(loss)
-            overall_accuracy.append(accuracy)
-            overall_accuracy_top_5.append(accuracy_top_5)
         self.optimizer.step()
-        metrics = {
-            "accuracy": torch.mean(torch.stack(overall_accuracy)),
-            "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
-            "loss": torch.mean(torch.stack(overall_loss)),
-        }
-        metrics |= overall_output_dict
+
+        if len(overall_loss) > 0:
+            metrics = {
+                "accuracy": torch.mean(torch.stack(overall_accuracy)),
+                "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
+                "loss": torch.mean(torch.stack(overall_loss)),
+            }
+            metrics |= overall_output_dict
+        else:
+            metrics = {}
 
         for key, value in metrics.items():
             self.state_dict.setdefault(key, []).append(value)
@@ -162,7 +204,9 @@ class ClassificationTrainer(Trainer):
 
         return TrainerOutput(
             phase_name="training",
-            opt_loss=torch.mean(torch.stack(overall_loss)),
+            opt_loss=torch.mean(torch.stack(overall_loss))
+            if len(overall_loss) > 0
+            else None,
             global_step=global_step,
             metrics=metrics,
             experiment_tracker=self.experiment_tracker,
