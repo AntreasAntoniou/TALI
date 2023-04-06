@@ -73,11 +73,10 @@ def videoclip_to_video_audio_tensors(
     return_image: bool = False,
     image_size: int = 224,
     starting_second: int = 0,
-    ending_second: int = None,
+    ending_second: Optional[int] = None,
     num_audio_frames: int = 1 * 16000,
     num_video_frames: int = 10,
 ):
-
     output = {}
     video = None
     image = None
@@ -388,11 +387,19 @@ class TALIBaseTransform:
                 )
 
             if (
+                get_submodality_name(ModalityTypes.youtube_title.value)
+                in self.modality_list
+            ):
+                output_dict[get_submodality_name(ModalityTypes.youtube_title.value)] = (
+                    f"<ytitle> " + input_dict["youtube_title_text"] + f" </ytitle>"
+                )
+
+            if (
                 get_submodality_name(ModalityTypes.youtube_subtitles.value)
                 in self.modality_list
             ):
                 output_dict[
-                    get_submodality_name(ModalityTypes.youtube_description.value)
+                    get_submodality_name(ModalityTypes.youtube_subtitles.value)
                 ] = (
                     "<ysub> "
                     + select_subtitles_between_timestamps(
@@ -679,7 +686,7 @@ def get_next_on_error(func: Callable) -> Callable:
             random.seed(current_time)
             random_number = random.randint(0, 10**8)
             args = list(args)
-            kwargs["idx"] =kwargs["idx"] + random_number
+            kwargs["idx"] = kwargs["idx"] + random_number
             args = tuple(args)
             return func(*args, **kwargs)
 
@@ -702,10 +709,10 @@ class TALIBase(Dataset):
         clip_duration_in_seconds=3.0,
         deterministic_sampling=True,
         dummy_batch_mode: bool = False,
-        infinite_sampling: bool = False,
         image_text_model_name: str = "openai/clip-vit-base-patch16",
         audio_model_name: str = "openai/whisper-base",
         use_model_preprocessing: bool = True,
+        total_num_samples: Optional[int] = None,
     ):
         super().__init__()
         transform = TALIBaseTransform(
@@ -721,16 +728,18 @@ class TALIBase(Dataset):
                 deterministic_sampling=deterministic_sampling,
             )
         )
-        self.infinite_sampling = infinite_sampling
         self.dataset = datasets.load_from_disk(
             pathlib.Path(tali_dataset_dir) / f"{set_name}-set", keep_in_memory=True
         )
         self.dataset = self.dataset.with_transform(transform)
+        self.num_dataset_samples = len(self.dataset)
         self.dummy_batch_mode = dummy_batch_mode
 
         self.dummy_batch = None
         self.num_samples_per_episode = num_samples_per_episode
-        self.num_samples = 10**8 if infinite_sampling else len(self.dataset)
+        self.num_samples = (
+            total_num_samples if total_num_samples is not None else len(self.dataset)
+        )
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
         self.use_model_preprocessing = use_model_preprocessing
@@ -814,23 +823,21 @@ class TALIBase(Dataset):
         if self.dummy_batch_mode and self.dummy_batch is not None:
             return self.dummy_batch
 
-        if self.infinite_sampling:
-            idx = idx % len(self.dataset)
+        if self.num_samples > self.num_dataset_samples:
+            idx = idx % self.num_dataset_samples
 
         sample = self.dataset[idx]
 
         for key, value in sample.items():
             for transform_key, transform_value in self.transforms.items():
                 if transform_key in key and key != "youtube_video_id":
-
                     if "audio" in key:
                         value = value.unsqueeze(0)
-                    
+
                     if key == "wikipedia_caption_image":
                         if value.to(torch.float32).max() > 255:
                             value = value.to(torch.float32) / 65535.0
-                            
-                           
+
                     sample[key] = transform_value(value)
                     sample[key] = (
                         torch.stack(sample[key], dim=0)
@@ -839,7 +846,7 @@ class TALIBase(Dataset):
                     )
 
                     break
-                    
+
         if self.dummy_batch_mode:
             if self.dummy_batch is None:
                 self.dummy_batch = sample
@@ -905,12 +912,13 @@ if __name__ == "__main__":
         # dataset = dataset.with_transform(transform)
         dataset = TALIBase(
             set_name="train",
-            tali_dataset_dir="/tali-data/",
+            tali_dataset_dir="/data_fast/tali-v-3-4/",
             modality_list=[
                 ModalityTypes.wit_image.value,
                 ModalityTypes.wit_caption.value,
                 ModalityTypes.wit_title.value,
                 ModalityTypes.wit_main_body.value,
+                ModalityTypes.youtube_title.value,
                 ModalityTypes.youtube_image.value,
                 ModalityTypes.youtube_video.value,
                 ModalityTypes.youtube_subtitles.value,
@@ -924,21 +932,21 @@ if __name__ == "__main__":
             num_audio_frames=16000 * 2,
             clip_duration_in_seconds=3,
             deterministic_sampling=False,
-            infinite_sampling=True,
             dummy_batch_mode=False,
             image_text_model_name="openai/clip-vit-base-patch16",
             audio_model_name="openai/whisper-base",
             use_model_preprocessing=False,
             num_samples_per_episode=16,
+            total_num_samples=1000000,
         )
         dataloader = DataLoader(
             dataset,
             batch_size=1,
-            num_workers=10,
+            num_workers=16,
             shuffle=False,
             collate_fn=dataclass_collate,
             persistent_workers=True,
-            prefetch_factor=4,
+            prefetch_factor=2,
             pin_memory=False,
         )
         num_samples = 10000
@@ -946,25 +954,16 @@ if __name__ == "__main__":
         with tqdm.tqdm(total=len(dataloader)) as pbar:
             for i, example in enumerate(dataloader):
                 # example = generate_hierarchical_data_dict(example)
-                if i == 0:
-                    start_time = time.time()
+                # if i == 0:
+                #     start_time = time.time()
                 time.sleep(1)
-                # print(example)
-                # shape_dict = {}
-                # for modality, modality_value in example.items():
-                #     if isinstance(modality_value, torch.Tensor):
-                #         modality_value = modality_value.to(torch.float32)
-                #         print(
-                #             f"{modality} {modality_value.shape} {modality_value.mean()} {modality_value.std()}, {modality_value.min()}, {modality_value.max()}"
-                #         )
-                #     else:
-                #         print(f"{modality} {modality_value}")
-                # if i == num_samples:
-                #     break
+                # print(example["youtube_title_text"])
+                print(list(example.keys()))
+
                 pbar.set_description(f"Processing {i}th example")
                 pbar.update(1)
-        end_time = time.time()
-        print(f"Processed {num_samples} samples in {end_time - start_time} seconds")
+        # end_time = time.time()
+        # print(f"Processed {num_samples} samples in {end_time - start_time} seconds")
 
     sample()
     # pr = cProfile.Profile()
