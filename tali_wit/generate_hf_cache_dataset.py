@@ -4,7 +4,8 @@ import sys
 from numpy import False_
 
 from responses import start
-os.environ["TMPDIR"]= "/data/tmp"
+
+os.environ["TMPDIR"] = "/data/tmp"
 os.environ["FFREPORT"] = "loglevel=error"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "loglevel;error"
 # null_device = open(os.devnull, 'w')
@@ -73,8 +74,10 @@ if __name__ == "__main__":
         keep_in_memory=False,
         cache_dir=f"/data/tali_cache/{args.set_name}/f{args.start_idx}_t{args.end_idx}",
         writer_batch_size=1000,
-        num_proc=1
+        num_proc=1,
     )
 
     # save the dataset to a file
-    dataset.save_to_disk(f"/data/tali_cache/{args.set_name}/f{args.start_idx}_t{args.end_idx}")
+    dataset.save_to_disk(
+        f"/data/tali_cache/{args.set_name}/f{args.start_idx}_t{args.end_idx}"
+    )

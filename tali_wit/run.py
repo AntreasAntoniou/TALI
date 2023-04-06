@@ -80,10 +80,13 @@ def run(cfg: BaseConfig) -> None:
         trainer_state = torch.load(pathlib.Path(ckpt_path) / "trainer_state.pt")
         global_step = trainer_state["global_step"]
         neptune_id = (
-            trainer_state["neptune_id"] if "neptune_id" in trainer_state else None
+            trainer_state["neptune_id"]
+            if "neptune_id" in trainer_state
+            else None
         )
         experiment_tracker = neptune.init_run(
-            source_files=["tali_wit/*.py", "kubernetes/*.py"], with_id=neptune_id
+            source_files=["tali_wit/*.py", "kubernetes/*.py"],
+            with_id=neptune_id,
         )
     else:
         global_step = 0
@@ -136,7 +139,9 @@ def run(cfg: BaseConfig) -> None:
     train_dataset = CustomConcatDataset(train_datasets)
 
     if global_step > 0:
-        train_dataset = Subset(train_dataset, range(global_step, len(train_dataset)))
+        train_dataset = Subset(
+            train_dataset, range(global_step, len(train_dataset))
+        )
 
     train_dataloader = instantiate(
         cfg.dataloader,
@@ -191,7 +196,9 @@ def run(cfg: BaseConfig) -> None:
                 experiment_tracker=experiment_tracker,
             )
         ],
-        evaluators=[ClassificationEvaluator(experiment_tracker=experiment_tracker)],
+        evaluators=[
+            ClassificationEvaluator(experiment_tracker=experiment_tracker)
+        ],
         train_dataloaders=[train_dataloader],
         val_dataloaders=[val_dataloader],
         callbacks=instantiate_callbacks(cfg.callbacks),

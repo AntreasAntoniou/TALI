@@ -40,7 +40,6 @@ class LinearRegressionModel(nn.Module):
         self.out_linear = nn.Linear(in_features=1024, out_features=1)
 
     def forward(self, x):
-
         out = F.gelu(self.in_linear(x.view(x.shape[0], -1)))
         out = F.gelu(self.middle_linear(out))
         out = self.out_linear(out)
@@ -69,8 +68,12 @@ class AsyncGeneratorWrapper:
 
     async def run(self):
         with ThreadPoolExecutor() as executor:
-            tasks = [executor.submit(self.wrapper, dl) for dl in self.data_loaders]
-            await asyncio.gather(*[asyncio.wrap_future(future) for future in tasks])
+            tasks = [
+                executor.submit(self.wrapper, dl) for dl in self.data_loaders
+            ]
+            await asyncio.gather(
+                *[asyncio.wrap_future(future) for future in tasks]
+            )
 
     async def start(self):
         return asyncio.ensure_future(self.run())
@@ -107,7 +110,9 @@ datasets = [
     SyntheticDataset(a=2, b=3, noise_std=0.1, num_samples=300),
 ]
 
-data_loaders = [DataLoader(dataset, batch_size=1, shuffle=True) for dataset in datasets]
+data_loaders = [
+    DataLoader(dataset, batch_size=1, shuffle=True) for dataset in datasets
+]
 
 # 📘 Create the AsyncGeneratorWrapper instance
 async_data_generator = AsyncGeneratorWrapper(data_loaders)

@@ -74,7 +74,11 @@ class ClassificationTrainer(Trainer):
             output_dict = model.forward(batch, return_loss=True)
             loss = torch.mean(
                 torch.stack(
-                    [value for key, value in output_dict.items() if "_loss" in key]
+                    [
+                        value
+                        for key, value in output_dict.items()
+                        if "_loss" in key
+                    ]
                 )
             )
             accuracy = torch.mean(
@@ -190,7 +194,9 @@ class ClassificationTrainer(Trainer):
         if len(overall_loss) > 0:
             metrics = {
                 "accuracy": torch.mean(torch.stack(overall_accuracy)),
-                "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
+                "accuracy_top_5": torch.mean(
+                    torch.stack(overall_accuracy_top_5)
+                ),
                 "loss": torch.mean(torch.stack(overall_loss)),
             }
             metrics |= overall_output_dict

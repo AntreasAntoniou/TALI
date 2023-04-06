@@ -61,7 +61,9 @@ def get_video_tensors(video_frames, image_size):
             CenterCropVideo(crop_size=(image_size, image_size)),
         ]
     )
-    output_dict = ApplyTransformToKey("video", video_transform)({"video": video_frames})
+    output_dict = ApplyTransformToKey("video", video_transform)(
+        {"video": video_frames}
+    )
     return output_dict["video"].permute(1, 0, 2, 3) / 255.0
 
 
@@ -205,16 +207,23 @@ class TALIBaseTransform:
         self.video_transform = (
             lambda x, start, end, rng: videoclip_to_video_audio_tensors(
                 video_path=x.replace(
-                    "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+                    "/data/datasets/tali-wit-2-1-buckets/",
+                    self.config.root_filepath,
                 ),
                 image_size=self.config.image_size,
                 starting_second=start,
                 ending_second=end,
-                return_video=get_submodality_name(ModalityTypes.youtube_video.value)
+                return_video=get_submodality_name(
+                    ModalityTypes.youtube_video.value
+                )
                 in self.modality_list,
-                return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
+                return_audio=get_submodality_name(
+                    ModalityTypes.youtube_audio.value
+                )
                 in self.modality_list,
-                return_image=get_submodality_name(ModalityTypes.youtube_image.value)
+                return_image=get_submodality_name(
+                    ModalityTypes.youtube_image.value
+                )
                 in self.modality_list,
                 num_audio_frames=self.config.num_audio_frames,
                 num_video_frames=self.config.num_video_frames,
@@ -222,7 +231,9 @@ class TALIBaseTransform:
             )
         )
 
-        self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
+        self.select_subtitles_between_timestamps = (
+            select_subtitles_between_timestamps
+        )
 
     def __call__(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
         """Transforms the input dictionary.
@@ -240,10 +251,14 @@ class TALIBaseTransform:
         """
         output_dict = []
         for i in range(len(input_dict[list(input_dict.keys())[0]])):
-            cur_dict = self.apply_transforms({k: v[i] for k, v in input_dict.items()})
+            cur_dict = self.apply_transforms(
+                {k: v[i] for k, v in input_dict.items()}
+            )
             output_dict.append(cur_dict)
 
-        output_dict = {k: [v[k] for v in output_dict] for k in output_dict[0].keys()}
+        output_dict = {
+            k: [v[k] for v in output_dict] for k in output_dict[0].keys()
+        }
 
         return output_dict
 
@@ -294,7 +309,10 @@ class TALIBaseTransform:
             ):
                 if self.config.priority_caption_language is None:
                     choose_language = rng.choice(wit_sample["language"])
-                elif self.config.priority_caption_language in wit_sample["language"]:
+                elif (
+                    self.config.priority_caption_language
+                    in wit_sample["language"]
+                ):
                     choose_language = self.config.priority_caption_language
                 else:
                     choose_language = rng.choice(wit_sample["language"])
@@ -328,9 +346,12 @@ class TALIBaseTransform:
             )
 
             choose_video = choose_video.replace(
-                "/data/datasets/tali-wit-2-1-buckets/", self.config.root_filepath
+                "/data/datasets/tali-wit-2-1-buckets/",
+                self.config.root_filepath,
             )
-            duration = duration_in_seconds_from_path(choose_video, modality="video")
+            duration = duration_in_seconds_from_path(
+                choose_video, modality="video"
+            )
             total_time_in_seconds = int(floor(duration))
             max_starting_second = (
                 total_time_in_seconds - self.config.clip_duration_in_seconds
@@ -381,17 +402,25 @@ class TALIBaseTransform:
                 in self.modality_list
             ):
                 output_dict[
-                    get_submodality_name(ModalityTypes.youtube_description.value)
+                    get_submodality_name(
+                        ModalityTypes.youtube_description.value
+                    )
                 ] = (
-                    f"<ydesc> " + input_dict["youtube_description_text"] + f" </ydesc>"
+                    f"<ydesc> "
+                    + input_dict["youtube_description_text"]
+                    + f" </ydesc>"
                 )
 
             if (
                 get_submodality_name(ModalityTypes.youtube_title.value)
                 in self.modality_list
             ):
-                output_dict[get_submodality_name(ModalityTypes.youtube_title.value)] = (
-                    f"<ytitle> " + input_dict["youtube_title_text"] + f" </ytitle>"
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_title.value)
+                ] = (
+                    f"<ytitle> "
+                    + input_dict["youtube_title_text"]
+                    + f" </ytitle>"
                 )
 
             if (
@@ -409,7 +438,8 @@ class TALIBaseTransform:
                                 self.config.root_filepath,
                             )
                         ),
-                        starting_timestamp=video_starting_second + clip_starting_second,
+                        starting_timestamp=video_starting_second
+                        + clip_starting_second,
                         ending_timestamp=video_starting_second
                         + clip_starting_second
                         + clip_ending_second,
@@ -430,16 +460,18 @@ class TALIBaseTransform:
         return f"{self.__class__.__name__}({self.config})"
 
 
-def generate_hierarchical_data_dict(data_dict: Dict[str, Any]) -> Dict[str, Any]:
+def generate_hierarchical_data_dict(
+    data_dict: Dict[str, Any]
+) -> Dict[str, Any]:
     modality_hierarchical_output_dict = {}
     for sub_modality_name in list(data_dict.keys()):
         modality_type = get_base_modality(sub_modality_name)
         if modality_type is None:
             if "other" not in modality_hierarchical_output_dict:
                 modality_hierarchical_output_dict["other"] = {}
-            modality_hierarchical_output_dict["other"][sub_modality_name] = data_dict[
+            modality_hierarchical_output_dict["other"][
                 sub_modality_name
-            ]
+            ] = data_dict[sub_modality_name]
             continue
 
         if modality_type not in modality_hierarchical_output_dict:
@@ -469,11 +501,17 @@ class TALIBaseDemoTransform:
                 image_size=self.config.image_size,
                 starting_second=start,
                 ending_second=end,
-                return_video=get_submodality_name(ModalityTypes.youtube_video.value)
+                return_video=get_submodality_name(
+                    ModalityTypes.youtube_video.value
+                )
                 in self.modality_list,
-                return_audio=get_submodality_name(ModalityTypes.youtube_audio.value)
+                return_audio=get_submodality_name(
+                    ModalityTypes.youtube_audio.value
+                )
                 in self.modality_list,
-                return_image=get_submodality_name(ModalityTypes.youtube_image.value)
+                return_image=get_submodality_name(
+                    ModalityTypes.youtube_image.value
+                )
                 in self.modality_list,
                 num_audio_frames=self.config.num_audio_frames,
                 num_video_frames=self.config.num_video_frames,
@@ -481,7 +519,9 @@ class TALIBaseDemoTransform:
             )
         )
 
-        self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
+        self.select_subtitles_between_timestamps = (
+            select_subtitles_between_timestamps
+        )
 
     def __call__(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
         """Wrapper function for the transform function.
@@ -596,15 +636,23 @@ class TALIBaseDemoTransform:
                 in self.modality_list
             ):
                 output_dict[
-                    get_submodality_name(ModalityTypes.youtube_description.value)
-                ] = ("<ydesc> " + input_dict["youtube_description_text"] + " </ydesc>")
+                    get_submodality_name(
+                        ModalityTypes.youtube_description.value
+                    )
+                ] = (
+                    "<ydesc> "
+                    + input_dict["youtube_description_text"]
+                    + " </ydesc>"
+                )
 
             if (
                 get_submodality_name(ModalityTypes.youtube_subtitles.value)
                 in self.modality_list
             ):
                 output_dict[
-                    get_submodality_name(ModalityTypes.youtube_description.value)
+                    get_submodality_name(
+                        ModalityTypes.youtube_description.value
+                    )
                 ] = (
                     "<ysub> "
                     + select_subtitles_between_timestamps(
@@ -612,11 +660,14 @@ class TALIBaseDemoTransform:
                             input_dict["youtube_subtitle_text"].replace(
                                 "/data/datasets/tali-wit-2-1-buckets/",
                                 self.config.root_filepath.as_posix()
-                                if isinstance(self.config.root_filepath, pathlib.Path)
+                                if isinstance(
+                                    self.config.root_filepath, pathlib.Path
+                                )
                                 else self.config.root_filepath,
                             )
                         ),
-                        starting_timestamp=video_starting_second + clip_starting_second,
+                        starting_timestamp=video_starting_second
+                        + clip_starting_second,
                         ending_timestamp=video_starting_second
                         + clip_starting_second
                         + clip_ending_second,
@@ -713,6 +764,8 @@ class TALIBase(Dataset):
         audio_model_name: str = "openai/whisper-base",
         use_model_preprocessing: bool = True,
         total_num_samples: Optional[int] = None,
+        cache_generated_samples_in_memory: bool = False,
+        cache_num_samples: int = 10,
     ):
         super().__init__()
         transform = TALIBaseTransform(
@@ -729,16 +782,26 @@ class TALIBase(Dataset):
             )
         )
         self.dataset = datasets.load_from_disk(
-            pathlib.Path(tali_dataset_dir) / f"{set_name}-set", keep_in_memory=True
+            pathlib.Path(tali_dataset_dir) / f"{set_name}-set",
+            keep_in_memory=True,
         )
         self.dataset = self.dataset.with_transform(transform)
         self.num_dataset_samples = len(self.dataset)
         self.dummy_batch_mode = dummy_batch_mode
+        self.cache_generated_samples_in_memory = (
+            cache_generated_samples_in_memory
+        )
+        self.cache_num_samples = cache_num_samples
+
+        if self.cache_generated_samples_in_memory:
+            self.mem_cache = []
 
         self.dummy_batch = None
         self.num_samples_per_episode = num_samples_per_episode
         self.num_samples = (
-            total_num_samples if total_num_samples is not None else len(self.dataset)
+            total_num_samples
+            if total_num_samples is not None
+            else len(self.dataset)
         )
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
@@ -752,7 +815,9 @@ class TALIBase(Dataset):
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
         )
-        self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
+        self.audio_processor = WhisperProcessor.from_pretrained(
+            self.audio_model_name
+        )
 
         return {
             "image": lambda x: self.image_text_processor(
@@ -816,6 +881,11 @@ class TALIBase(Dataset):
                 else value
             )
 
+        if self.cache_generated_samples_in_memory:
+            self.mem_cache.append(episode_dict)
+            if len(self.mem_cache) > self.cache_num_samples:
+                self.mem_cache.pop(0)
+
         return episode_dict
 
     @get_next_on_error
@@ -867,7 +937,9 @@ class CustomConcatDataset(Dataset):
 
     def __getitem__(self, idx):
         # logger.info(f"dataset {idx % len(self.datasets)}, sample {idx // len(self.datasets)}")
-        return self.datasets[idx % len(self.datasets)][idx // len(self.datasets)]
+        return self.datasets[idx % len(self.datasets)][
+            idx // len(self.datasets)
+        ]
 
 
 if __name__ == "__main__":

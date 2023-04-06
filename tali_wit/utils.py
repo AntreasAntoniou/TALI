@@ -88,7 +88,9 @@ def get_hydra_config(logger_level: str = "INFO"):
             root={"handlers": ["rich"], "level": logging.CRITICAL},
             disable_existing_loggers=False,
         ),
-        run={"dir": "${current_experiment_dir}/hydra-run/${now:%Y-%m-%d_%H-%M-%S}"},
+        run={
+            "dir": "${current_experiment_dir}/hydra-run/${now:%Y-%m-%d_%H-%M-%S}"
+        },
         sweep={
             "dir": "${current_experiment_dir}/hydra-multirun/${now:%Y-%m-%d_%H-%M-%S}",
             "subdir": "${hydra.job.num}",
@@ -179,7 +181,9 @@ from typing import Any, Dict, Union
 import orjson as json
 
 
-def save_json(filepath: Union[str, pathlib.Path], dict_to_store: Dict, overwrite=True):
+def save_json(
+    filepath: Union[str, pathlib.Path], dict_to_store: Dict, overwrite=True
+):
     """
     Saves a metrics .json file with the metrics
     :param log_dir: Directory of log
@@ -226,7 +230,6 @@ logger = get_logger(name=__name__)
 def download_model_with_name(
     hf_repo_path, hf_cache_dir, model_name, download_only_if_finished=False
 ):
-
     if not pathlib.Path(
         pathlib.Path(hf_cache_dir) / "checkpoints" / f"{model_name}"
     ).exists():
@@ -274,7 +277,9 @@ def download_model_with_name(
     )
 
     if download_only_if_finished:
-        state_dict = torch.load(trainer_path)["state_dict"]["eval"][0]["auc-macro"]
+        state_dict = torch.load(trainer_path)["state_dict"]["eval"][0][
+            "auc-macro"
+        ]
         global_step_list = list(state_dict.keys())
         if len(global_step_list) < 40:
             return False
@@ -319,7 +324,10 @@ def download_model_with_name(
         scaler_state_filepath = None
 
     target_optimizer_path = (
-        pathlib.Path(hf_cache_dir) / "checkpoints" / f"{model_name}" / "optimizer.bin"
+        pathlib.Path(hf_cache_dir)
+        / "checkpoints"
+        / f"{model_name}"
+        / "optimizer.bin"
     )
 
     shutil.copy(
@@ -353,7 +361,10 @@ def download_model_with_name(
 
     if scaler_state_filepath is not None:
         scaler_path = (
-            pathlib.Path(hf_cache_dir) / "checkpoints" / f"{model_name}" / "scaler.pt"
+            pathlib.Path(hf_cache_dir)
+            / "checkpoints"
+            / f"{model_name}"
+            / "scaler.pt"
         )
 
         shutil.copy(
@@ -362,7 +373,9 @@ def download_model_with_name(
         )
 
     return {
-        "root_filepath": pathlib.Path(hf_cache_dir) / "checkpoints" / f"{model_name}",
+        "root_filepath": pathlib.Path(hf_cache_dir)
+        / "checkpoints"
+        / f"{model_name}",
         "optimizer_filepath": target_optimizer_path,
         "model_filepath": target_model_path,
         "random_states_filepath": random_states_path,
@@ -375,7 +388,10 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
     import yaml
     from huggingface_hub import HfApi
 
-    if cfg.download_checkpoint_with_name is not None and cfg.download_latest is True:
+    if (
+        cfg.download_checkpoint_with_name is not None
+        and cfg.download_latest is True
+    ):
         raise ValueError(
             "Cannot use both continue_from_checkpoint_with_name and continue_from_latest"
         )
@@ -443,7 +459,6 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
             return path_dict["root_filepath"], repo_url
 
         elif cfg.download_latest:
-
             files = hf_api.list_repo_files(
                 repo_id=hf_repo_path,
             )
@@ -489,12 +504,16 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
                 pathlib.Path(cfg.hf_cache_dir) / "checkpoints" / "latest"
             )
 
-            if pathlib.Path(pathlib.Path(cfg.hf_cache_dir) / "checkpoints").exists():
-                pathlib.Path(pathlib.Path(cfg.hf_cache_dir) / "checkpoints").mkdir(
-                    parents=True, exist_ok=True
-                )
+            if pathlib.Path(
+                pathlib.Path(cfg.hf_cache_dir) / "checkpoints"
+            ).exists():
+                pathlib.Path(
+                    pathlib.Path(cfg.hf_cache_dir) / "checkpoints"
+                ).mkdir(parents=True, exist_ok=True)
 
-            shutil.copy(pathlib.Path(ckpt_folderpath), cfg.hf_cache_dir / "checkpoints")
+            shutil.copy(
+                pathlib.Path(ckpt_folderpath), cfg.hf_cache_dir / "checkpoints"
+            )
 
             if latest_checkpoint.exists():
                 logger.info(

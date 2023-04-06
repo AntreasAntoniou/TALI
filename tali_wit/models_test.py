@@ -1,4 +1,3 @@
-
 import os
 import hydra
 from hydra_zen import instantiate
@@ -18,7 +17,6 @@ config_store = collect_config_store()
 
 @hydra.main(config_path=None, config_name="config", version_base=None)
 def test(cfg: BaseConfig) -> None:
-    
     print(pretty_config(cfg, resolve=True))
 
     set_seed(seed=cfg.seed)
@@ -38,7 +36,9 @@ def test(cfg: BaseConfig) -> None:
             shuffle=True,
         )
         dummy_batch = next(iter(train_dataloader))
-        logger.info(f"Finding max batch size for {dataset_name} train dataloader")
+        logger.info(
+            f"Finding max batch size for {dataset_name} train dataloader"
+        )
         optimal_batch_size = get_max_supported_batch_size(
             model=model, batch=dummy_batch, train_mode=True
         )
@@ -72,4 +72,3 @@ if __name__ == "__main__":
     # 12 batch size for audio to youtube_video
     # set up a config that allows to select modality pairs + batch size and then build unique dataloaders for each pair
     # add accuracy and top-k accuracy metrics
-

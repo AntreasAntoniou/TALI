@@ -6,6 +6,7 @@ import threading
 from typing import List
 from torch.utils.data import DataLoader
 
+
 # 📘 Define the AsyncGeneratorWrapper class
 class AsyncGeneratorWrapper:
     def __init__(self, data_loaders: List[DataLoader]):
@@ -28,8 +29,12 @@ class AsyncGeneratorWrapper:
 
     async def run(self):
         with ThreadPoolExecutor() as executor:
-            tasks = [executor.submit(self.wrapper, dl) for dl in self.data_loaders]
-            await asyncio.gather(*[asyncio.wrap_future(future) for future in tasks])
+            tasks = [
+                executor.submit(self.wrapper, dl) for dl in self.data_loaders
+            ]
+            await asyncio.gather(
+                *[asyncio.wrap_future(future) for future in tasks]
+            )
 
     async def start(self):
         return asyncio.ensure_future(self.run())

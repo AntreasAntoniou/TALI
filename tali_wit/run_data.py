@@ -63,28 +63,28 @@ def run(cfg: BaseConfig) -> None:
     set_seed(seed=cfg.seed)
 
     train_datasets = []
-    
+
     for dataset_name, (batch_size, dataset) in cfg.dataset.items():
         logger.info(f"Setting up {dataset_name} train dataset")
-        
+
         train_dataset: Dataset = instantiate(
             dataset,
             set_name="train",
             infinite_sampling=True,
             num_samples_per_episode=batch_size,
         )
-        
+
         train_datasets.append(train_dataset)
-    
+
     train_dataset = CustomConcatDataset(train_datasets)
-    
+
     train_dataloader = instantiate(
-            cfg.dataloader,
-            dataset=train_dataset,
-            batch_size=1,
-            shuffle=True,
-            collate_fn=dataclass_collate,
-        )
+        cfg.dataloader,
+        dataset=train_dataset,
+        batch_size=1,
+        shuffle=True,
+        collate_fn=dataclass_collate,
+    )
 
     with tqdm.tqdm(total=len(train_dataloader)) as pbar:
         for batch in train_dataloader:

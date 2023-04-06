@@ -63,7 +63,11 @@ import gradio as gr
 import torchvision
 import torchaudio
 
-dataset_dict = {"train": train_dataset, "val": val_dataset, "test": test_dataset}
+dataset_dict = {
+    "train": train_dataset,
+    "val": val_dataset,
+    "test": test_dataset,
+}
 
 
 # {
@@ -84,7 +88,11 @@ import gradio as gr
 import torchvision
 import torchaudio
 
-dataset_dict = {"train": train_dataset, "val": val_dataset, "test": test_dataset}
+dataset_dict = {
+    "train": train_dataset,
+    "val": val_dataset,
+    "test": test_dataset,
+}
 
 
 def update_length_options(set_name):
@@ -129,7 +137,9 @@ def update_captions(language, set_name, sample_index):
     return [
         gr.update(value=caption_dict["caption_alt_text_description"]),
         gr.update(value=caption_dict["caption_reference_description"]),
-        gr.update(value=caption_dict["caption_title_and_reference_description"]),
+        gr.update(
+            value=caption_dict["caption_title_and_reference_description"]
+        ),
         gr.update(value=caption_dict["context_page_description"]),
         gr.update(value=caption_dict["context_section_description"]),
         gr.update(value=caption_dict["hierarchical_section_title"]),
@@ -140,7 +150,9 @@ def update_captions(language, set_name, sample_index):
 
 def update_language_choices(set_name, sample_index):
     # print(dataset_dict[set_name][int(sample_index)])
-    languages = list(dataset_dict[set_name][int(sample_index)]["captions"].keys())
+    languages = list(
+        dataset_dict[set_name][int(sample_index)]["captions"].keys()
+    )
     return gr.update(choices=languages, value=languages[0]), *update_captions(
         languages[0], set_name, sample_index
     )
@@ -158,7 +170,9 @@ def load_sample(set_name, sample_index):
         f"shapes {sample['youtube_content_video'].shape}, {sample['youtube_content_audio'].shape}, {sample['wikipedia_caption_image'].shape}, {sample['youtube_random_video_sample_image'].shape}"
     )
     wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
-    youtube_image = sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
+    youtube_image = (
+        sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
+    )
     video = sample["youtube_content_video"].permute(0, 2, 3, 1).numpy() * 255
     audio = sample["youtube_content_audio"]
 
@@ -187,7 +201,6 @@ def load_random_sample(set_name):
 
 
 if __name__ == "__main__":
-
     callback = gr.CSVLogger()
 
     with gr.Blocks(theme=gr.themes.Soft()) as demo:
@@ -236,7 +249,9 @@ if __name__ == "__main__":
                 fetch_btn = gr.Button("Fetch sample")
                 fetch_random_btn = gr.Button("Fetch random sample")
 
-        input_set_name.change(update_length_options, input_set_name, input_sample_index)
+        input_set_name.change(
+            update_length_options, input_set_name, input_sample_index
+        )
         gr.Markdown(
             """
         ### The wikipedia image is semantically aligned to the youtube components, while the youtube components are temporally aligned to each other.
@@ -272,7 +287,9 @@ if __name__ == "__main__":
 
         with gr.Row():
             section_title = gr.Textbox(label="section_title")
-            hierarchical_section_title = gr.Textbox(label="hierarchical_section_title")
+            hierarchical_section_title = gr.Textbox(
+                label="hierarchical_section_title"
+            )
         with gr.Row():
             caption_alt_text_description = gr.Textbox(
                 label="caption_alt_text_description"
@@ -284,7 +301,9 @@ if __name__ == "__main__":
             context_section_description = gr.Textbox(
                 label="context_section_description"
             )
-            context_page_description = gr.Textbox(label="context_page_description")
+            context_page_description = gr.Textbox(
+                label="context_page_description"
+            )
 
         output_language.change(
             update_captions,
@@ -306,7 +325,12 @@ if __name__ == "__main__":
             label="Issue description",
         )
         callback.setup(
-            [input_set_name, input_sample_index, output_language, report_textbox],
+            [
+                input_set_name,
+                input_sample_index,
+                output_language,
+                report_textbox,
+            ],
             "flagged_data_points",
         )
         report_button = gr.Button(
@@ -314,7 +338,12 @@ if __name__ == "__main__":
         )
         report_button.click(
             lambda *args: callback.flag(args),
-            [input_set_name, input_sample_index, output_language, report_textbox],
+            [
+                input_set_name,
+                input_sample_index,
+                output_language,
+                report_textbox,
+            ],
             None,
             preprocess=False,
         )

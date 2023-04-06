@@ -86,9 +86,15 @@ class TALICacheGenerator:
     def get_thread_based_generator(self):
         fn_argument_list = list(range(self.start_idx, self.end_idx))
         sample_idx = 0
-        with tqdm.tqdm(total=self.end_idx - self.start_idx, smoothing=0.0) as pbar:
-            with futures.ThreadPoolExecutor(max_workers=self.num_workers) as executor:
-                for sample in executor.map(self.dataset.__getitem__, fn_argument_list):
+        with tqdm.tqdm(
+            total=self.end_idx - self.start_idx, smoothing=0.0
+        ) as pbar:
+            with futures.ThreadPoolExecutor(
+                max_workers=self.num_workers
+            ) as executor:
+                for sample in executor.map(
+                    self.dataset.__getitem__, fn_argument_list
+                ):
                     if sample_idx >= (self.end_idx - self.start_idx):
                         break
 
@@ -97,13 +103,29 @@ class TALICacheGenerator:
                     yield sample
 
     def get_dataloader_based_generator(self):
-        dataset = torch.utils.data.Subset(self.dataset, range(self.start_idx, self.end_idx))
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=self.num_workers, pin_memory=False, drop_last=True, prefetch_factor=4, persistent_workers=False)
+        dataset = torch.utils.data.Subset(
+            self.dataset, range(self.start_idx, self.end_idx)
+        )
+        dataloader = torch.utils.data.DataLoader(
+            dataset,
+            batch_size=1,
+            shuffle=False,
+            num_workers=self.num_workers,
+            pin_memory=False,
+            drop_last=True,
+            prefetch_factor=4,
+            persistent_workers=False,
+        )
         sample_idx = 0
-        with tqdm.tqdm(total=self.end_idx - self.start_idx, smoothing=0.0) as pbar:
+        with tqdm.tqdm(
+            total=self.end_idx - self.start_idx, smoothing=0.0
+        ) as pbar:
             for batch in dataloader:
                 try:
-                    batch = [{key: value[idx] for key, value in batch.items()} for idx in range(len(batch["wit_idx"]))]
+                    batch = [
+                        {key: value[idx] for key, value in batch.items()}
+                        for idx in range(len(batch["wit_idx"]))
+                    ]
                     for idx, sample in enumerate(batch):
                         if sample_idx >= (self.end_idx - self.start_idx):
                             break
@@ -115,7 +137,5 @@ class TALICacheGenerator:
                     print(e)
                     continue
 
-    
     def __call__(self) -> Any:
         return self.get_dataloader_based_generator()
-        

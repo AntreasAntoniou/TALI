@@ -58,18 +58,24 @@ class WITBase(Dataset):
             cache_dir=wit_dataset_dir,
         )
         self.num_samples_per_episode = num_samples_per_episode
-        self.indices_filepath = pathlib.Path(wit_dataset_dir) / "wit_indices.json"
+        self.indices_filepath = (
+            pathlib.Path(wit_dataset_dir) / "wit_indices.json"
+        )
 
         if not self.indices_filepath.exists():
             tali_val_dataset = datasets.load_from_disk(
                 pathlib.Path(tali_dataset_dir) / "val-set"
             )
-            tali_val_indices = [sample["wit_idx"] for sample in tali_val_dataset]
+            tali_val_indices = [
+                sample["wit_idx"] for sample in tali_val_dataset
+            ]
 
             tali_test_dataset = datasets.load_from_disk(
                 pathlib.Path(tali_dataset_dir) / "test-set"
             )
-            tali_test_indices = [sample["wit_idx"] for sample in tali_test_dataset]
+            tali_test_indices = [
+                sample["wit_idx"] for sample in tali_test_dataset
+            ]
 
             train_wit_indices = []
             with tqdm.tqdm(total=len(self.dataset)) as pbar:
@@ -104,7 +110,9 @@ class WITBase(Dataset):
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
         )
-        self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
+        self.audio_processor = WhisperProcessor.from_pretrained(
+            self.audio_model_name
+        )
 
         return {
             "image": lambda x: self.image_text_processor(
@@ -172,7 +180,6 @@ class WITBase(Dataset):
 
     @get_next_on_error
     def get_sample(self, idx):
-
         if self.infinite_sampling:
             idx = idx % len(self.dataset)
 
@@ -250,9 +257,9 @@ class WITBaseTransform:
             ]
             if wit_sample[key][language_idx] is not None
         ]
-        output_dict[get_submodality_name(ModalityTypes.wit_caption.value)] = rng.choice(
-            wit_text
-        )
+        output_dict[
+            get_submodality_name(ModalityTypes.wit_caption.value)
+        ] = rng.choice(wit_text)
 
         return output_dict
 
