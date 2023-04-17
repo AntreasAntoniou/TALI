@@ -204,9 +204,9 @@ def get_similarities(
         * logit_scale
     }
 
-    similarities[f"{modality_b_name}_to_{modality_a_name}_similarities"] = similarities[
-        f"{modality_a_name}_to_{modality_b_name}_similarities"
-    ].T
+    similarities[
+        f"{modality_b_name}_to_{modality_a_name}_similarities"
+    ] = similarities[f"{modality_a_name}_to_{modality_b_name}_similarities"].T
 
     if return_loss:
         contrastive_losses_dict = {
@@ -215,7 +215,9 @@ def get_similarities(
         }
 
         contrastive_accuracy_dict = {
-            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(value)
+            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(
+                value
+            )
             for key, value in similarities.items()
         }
 
@@ -310,7 +312,9 @@ class TALIModel(nn.Module):
         self.model["text"] = self.clip_model.text_model
         self.text_linear_layer = self.clip_model.text_projection
 
-        self.model["audio"] = WhisperModel.from_pretrained(self.audio_model_name)
+        self.model["audio"] = WhisperModel.from_pretrained(
+            self.audio_model_name
+        )
         self.audio_output_shape = self.model["audio"].config.d_model
         self.model["audio"] = WhisperModel.from_pretrained(
             self.audio_model_name
@@ -338,7 +342,9 @@ class TALIModel(nn.Module):
             self.model["video"].d_model, self.linear_projection_dim, bias=False
         )
 
-        self.logit_init_value = float(self.clip_model.config.logit_scale_init_value)
+        self.logit_init_value = float(
+            self.clip_model.config.logit_scale_init_value
+        )
 
         if (
             not self.multi_modality_config.image.support
@@ -395,7 +401,8 @@ class TALIModel(nn.Module):
                     name = f"{modality_a}_to_{modality_b}"
                     if name not in self.logit_scales.keys():
                         self.logit_scales[name] = nn.Parameter(
-                            torch.ones(1, requires_grad=True) * self.logit_init_value
+                            torch.ones(1, requires_grad=True)
+                            * self.logit_init_value
                         )
 
     def print_model_summary(self):
@@ -437,7 +444,9 @@ class TALIModel(nn.Module):
                         sub_modality_b,
                     ) in modality_b.items():
                         pair_name = f"{modality_a_name}_to_{modality_b_name}"
-                        reverse_pair_name = f"{modality_b_name}_to_{modality_a_name}"
+                        reverse_pair_name = (
+                            f"{modality_b_name}_to_{modality_a_name}"
+                        )
                         if (
                             pair_name in processed_pairs
                             or reverse_pair_name in processed_pairs
@@ -518,10 +527,14 @@ class TALIModel(nn.Module):
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
         logger.debug("Video ---------------------------------")
-        input_shape = x.shape  # (batch_size, num_frames, channels, height, width)
+        input_shape = (
+            x.shape
+        )  # (batch_size, num_frames, channels, height, width)
 
         out = x.to(self.video_linear_layer.weight.device)
-        out = self.forward_image(out.view(-1, *out.shape[-3:]))["projection_output"]
+        out = self.forward_image(out.view(-1, *out.shape[-3:]))[
+            "projection_output"
+        ]
         out = out.view(input_shape[0], input_shape[1], -1)
         features = self.model["video"](out)
         projection_output = self.video_linear_layer(features)
