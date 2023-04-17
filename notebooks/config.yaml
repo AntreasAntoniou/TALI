@@ -1,0 +1,260 @@
+callbacks:
+  hf_uploader:
+    _target_: tali_wit.callbacks.UploadCheckpointsToHuggingFace
+    repo_name: tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306
+    repo_owner: Antreas
+code_dir: /app/
+current_experiment_dir: /experiments//tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306
+dataloader:
+  _target_: torch.utils.data.dataloader.DataLoader
+  batch_sampler: null
+  batch_size: 1
+  collate_fn: null
+  dataset: null
+  drop_last: false
+  generator: null
+  multiprocessing_context: null
+  num_workers: 12
+  persistent_workers: true
+  pin_memory: true
+  pin_memory_device: ''
+  prefetch_factor: 1
+  sampler: null
+  shuffle: true
+  timeout: 0.0
+  worker_init_fn: null
+dataset:
+  tali_dataset_image_text:
+  - 128
+  - _target_: tali_wit.data_plus.TALIBase
+    audio_model_name: openai/whisper-base
+    clip_duration_in_seconds: 10
+    deterministic_sampling: false
+    dummy_batch_mode: false
+    image_size: 224
+    image_text_model_name: openai/clip-vit-base-patch16
+    infinite_sampling: false
+    modality_list:
+    - modality: BaseModalityTypes.image
+      shape:
+      - batch_size
+      - channel
+      - height
+      - width
+      sub_modality: SubModalityTypes.wikipedia_caption_image
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.wikipedia_caption_text
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.wikipedia_title_text
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.wikipedia_main_body_text
+    - modality: BaseModalityTypes.image
+      shape:
+      - batch_size
+      - channel
+      - height
+      - width
+      sub_modality: SubModalityTypes.youtube_random_video_sample_image
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.youtube_subtitle_text
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.youtube_description_text
+    num_audio_frames: 32000
+    num_samples_per_episode: 32
+    num_video_frames: 10
+    rng_seed: 42
+    set_name: train
+    tali_dataset_dir: /tali-data/
+    top_k_tali: 10
+    use_model_preprocessing: true
+  tali_dataset_omni:
+  - 4
+  - _target_: tali_wit.data_plus.TALIBase
+    audio_model_name: openai/whisper-base
+    clip_duration_in_seconds: 10
+    deterministic_sampling: false
+    dummy_batch_mode: false
+    image_size: 224
+    image_text_model_name: openai/clip-vit-base-patch16
+    infinite_sampling: false
+    modality_list:
+    - modality: BaseModalityTypes.image
+      shape:
+      - batch_size
+      - channel
+      - height
+      - width
+      sub_modality: SubModalityTypes.wikipedia_caption_image
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.wikipedia_caption_text
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.wikipedia_title_text
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.wikipedia_main_body_text
+    - modality: BaseModalityTypes.video
+      shape:
+      - batch_size
+      - sequence_length
+      - channel
+      - height
+      - width
+      sub_modality: SubModalityTypes.youtube_content_video
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.youtube_subtitle_text
+    - modality: BaseModalityTypes.audio
+      shape:
+      - batch_size
+      - sequence_length
+      - channel
+      - audio_stream
+      sub_modality: SubModalityTypes.youtube_content_audio
+    - modality: BaseModalityTypes.text
+      shape:
+      - batch_size
+      - sequence_length
+      sub_modality: SubModalityTypes.youtube_description_text
+    num_audio_frames: 32000
+    num_samples_per_episode: 32
+    num_video_frames: 10
+    rng_seed: 42
+    set_name: train
+    tali_dataset_dir: /tali-data/
+    top_k_tali: 10
+    use_model_preprocessing: true
+  wit_dataset_image_text:
+  - 240
+  - _target_: tali_wit.wit.WITBase
+    audio_model_name: openai/whisper-base
+    deterministic_sampling: false
+    dummy_batch_mode: false
+    image_size: 224
+    image_text_model_name: openai/clip-vit-base-patch16
+    infinite_sampling: false
+    num_samples_per_episode: 32
+    priority_caption_language: en
+    set_name: train
+    tali_dataset_dir: /tali-data/
+    wit_dataset_dir: /wit-data/
+download_checkpoint_with_name: null
+download_latest: true
+dummy_batch_mode: false
+eval_num_samples_per_episode: 96
+exp_name: tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306
+freeze_backbone: false
+hf_cache_dir: /experiments//tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306/repo
+hf_repo_path: Antreas/tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306
+hf_username: Antreas
+learner:
+  _target_: tali_wit.boilerplate.Learner
+  callbacks: null
+  checkpoint_after_validation: true
+  checkpoint_every_n_steps: 500
+  dummy_batch_mode: false
+  evaluate_every_n_steps: 1000
+  evaluators: null
+  experiment_dir: /experiments//tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306/repo
+  experiment_name: tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306
+  experiment_tracker: null
+  hf_cache_dir: null
+  hf_repo_path: null
+  limit_train_iters: null
+  limit_val_iters: 250
+  model: null
+  print_model_parameters: false
+  resume: false
+  test_dataloaders: null
+  train_dataloaders: null
+  train_iters: 100000
+  trainers: null
+  val_dataloaders: null
+logger_level: INFO
+model:
+  _target_: tali_wit.models.TALIModel
+  audio_model_name: openai/whisper-base
+  image_text_model_name: openai/clip-vit-base-patch16
+  multi_modality_config:
+    audio:
+      pretrained: true
+      support: true
+    image:
+      pretrained: true
+      support: true
+    text:
+      pretrained: true
+      support: true
+    video:
+      pretrained: true
+      support: true
+num_workers: 12
+optimizer:
+  _partial_: true
+  _target_: torch.optim.adamw.AdamW
+  amsgrad: false
+  betas:
+  - 0.9
+  - 0.999
+  capturable: false
+  differentiable: false
+  eps: 1.0e-08
+  foreach: null
+  fused: null
+  lr: 1.0e-05
+  maximize: false
+  weight_decay: 0.0
+persistent_workers: true
+pin_memory: true
+prefetch_factor: 1
+print_config: true
+resume: false
+resume_from_checkpoint: null
+root_experiment_dir: /experiments/
+scheduler:
+  _partial_: true
+  _target_: timm.scheduler.cosine_lr.CosineLRScheduler
+  cycle_decay: 1.0
+  cycle_limit: 1
+  cycle_mul: 1.0
+  initialize: true
+  k_decay: 1.0
+  lr_min: 0.0
+  noise_pct: 0.67
+  noise_range_t: null
+  noise_seed: 42
+  noise_std: 1.0
+  t_in_epochs: true
+  warmup_lr_init: 0
+  warmup_prefix: false
+  warmup_t: 0
+seed: 2306
+tali_dataset_dir: /tali-data/
+test: false
+train: true
+train_num_samples_per_episode: 96
+wit_dataset_dir: /wit-data/

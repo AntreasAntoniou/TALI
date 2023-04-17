@@ -56,9 +56,7 @@ HFModelUploadConfig = builds(
     UploadCheckpointsToHuggingFace, populate_full_signature=True
 )
 
-hf_upload = HFModelUploadConfig(
-    repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME
-)
+hf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)
 
 adamw_optimizer_config = builds(
     torch.optim.AdamW,
@@ -124,9 +122,7 @@ wit_dataset_config = WITBase.build_config(
     audio_model_name=AUDIO_MODEL_NAME,
 )
 
-dataloader_config = builds(
-    DataLoader, dataset=None, populate_full_signature=True
-)
+dataloader_config = builds(DataLoader, dataset=None, populate_full_signature=True)
 
 learner_config = builds(Learner, populate_full_signature=True)
 
@@ -215,9 +211,7 @@ class BaseConfig:
     hf_repo_path: str = "${hf_username}/${exp_name}"
     hf_cache_dir: str = "${current_experiment_dir}/repo"
     code_dir: str = (
-        os.environ["CODE_DIR"]
-        if "CODE_DIR" in os.environ
-        else "${hydra:runtime.cwd}"
+        os.environ["CODE_DIR"] if "CODE_DIR" in os.environ else "${hydra:runtime.cwd}"
     )
 
 
@@ -780,9 +774,7 @@ def collect_config_store():
         node=learner_config,
     )
 
-    config_store.store(
-        group="callbacks", name="default", node=default_callbacks
-    )
+    config_store.store(group="callbacks", name="default", node=default_callbacks)
 
     config_store.store(
         group="hydra",

@@ -15,9 +15,7 @@ def test_tali_generator():
     return tali_cache_generator(set_name="test")
 
 
-ds = Dataset.from_generator(
-    val_tali_generator, cache_dir="/devcode/tali-2-2/val/cache"
-)
+ds = Dataset.from_generator(val_tali_generator, cache_dir="/devcode/tali-2-2/val/cache")
 ds.save_to_disk("/devcode/tali-2-2/val-set")
 
 ds = Dataset.from_generator(
