@@ -51,7 +51,11 @@ class ClassificationEvaluator(Evaluator):
             output_dict = model.forward(batch, return_loss=True)
             loss = torch.mean(
                 torch.stack(
-                    [value for key, value in output_dict.items() if "_loss" in key]
+                    [
+                        value
+                        for key, value in output_dict.items()
+                        if "_loss" in key
+                    ]
                 )
             )
             accuracy = torch.mean(
@@ -130,8 +134,12 @@ class ClassificationEvaluator(Evaluator):
                 sub_modality_b,
             ) in extract_all_possible_pairs(batch):
                 sample = {
-                    modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
-                    modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
+                    modality_a: {
+                        sub_modality_a: batch[modality_a][sub_modality_a]
+                    },
+                    modality_b: {
+                        sub_modality_b: batch[modality_b][sub_modality_b]
+                    },
                 }
 
                 step_output: StepOutput = self.step(
@@ -155,7 +163,9 @@ class ClassificationEvaluator(Evaluator):
             if len(overall_loss) > 0:
                 metrics = {
                     "accuracy": torch.mean(torch.stack(overall_accuracy)),
-                    "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
+                    "accuracy_top_5": torch.mean(
+                        torch.stack(overall_accuracy_top_5)
+                    ),
                     "loss": torch.mean(torch.stack(overall_loss)),
                 }
                 metrics |= overall_output_dict
@@ -195,8 +205,12 @@ class ClassificationEvaluator(Evaluator):
                 sub_modality_b,
             ) in extract_all_possible_pairs(batch):
                 sample = {
-                    modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
-                    modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
+                    modality_a: {
+                        sub_modality_a: batch[modality_a][sub_modality_a]
+                    },
+                    modality_b: {
+                        sub_modality_b: batch[modality_b][sub_modality_b]
+                    },
                 }
                 step_output: StepOutput = self.step(
                     model=model,
@@ -219,7 +233,9 @@ class ClassificationEvaluator(Evaluator):
             if len(overall_loss) > 0:
                 metrics = {
                     "accuracy": torch.mean(torch.stack(overall_accuracy)),
-                    "accuracy_top_5": torch.mean(torch.stack(overall_accuracy_top_5)),
+                    "accuracy_top_5": torch.mean(
+                        torch.stack(overall_accuracy_top_5)
+                    ),
                     "loss": torch.mean(torch.stack(overall_loss)),
                 }
                 metrics |= overall_output_dict

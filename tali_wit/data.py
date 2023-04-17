@@ -78,9 +78,9 @@ def extract_captions_from_file(filepath: str):
 def check_if_image_has_matching_info_file(image_path: str):
     if isinstance(image_path, pathlib.Path):
         image_path = str(image_path)
-    info_file_path = pathlib.Path(image_path.replace("image", "info")).with_suffix(
-        ".info"
-    )
+    info_file_path = pathlib.Path(
+        image_path.replace("image", "info")
+    ).with_suffix(".info")
     return info_file_path.exists()
 
 
@@ -204,7 +204,9 @@ def dataclass_collate(batch):
     #             )
 
     try:
-        if isinstance(batch[0], dict) or not hasattr(batch[0], "__dataclass_fields__"):
+        if isinstance(batch[0], dict) or not hasattr(
+            batch[0], "__dataclass_fields__"
+        ):
             batch = default_collate(batch)
             batch = {key: batch[key][0] for key in batch.keys()}
             return batch
@@ -271,7 +273,9 @@ class VideoCLIPScoreSchema:
     scores_sorted: pa.list_(pa.float32())
 
 
-video_score_schema = list(VideoCLIPScoreSchema.__dict__["__annotations__"].items())
+video_score_schema = list(
+    VideoCLIPScoreSchema.__dict__["__annotations__"].items()
+)
 video_score_schema = pa.schema(video_score_schema)
 
 
@@ -413,8 +417,12 @@ def videoclip_to_video_audio_tensors(
         end_sec=clip_start_sec + clip_duration_in_seconds,
     )
 
-    audio_sample_rate = floor(video_data["audio"].shape[0] / video_duration_in_seconds)
-    video_sample_rate = floor(video_data["video"].shape[1] / video_duration_in_seconds)
+    audio_sample_rate = floor(
+        video_data["audio"].shape[0] / video_duration_in_seconds
+    )
+    video_sample_rate = floor(
+        video_data["video"].shape[1] / video_duration_in_seconds
+    )
     video_tensors = None
     audio_tensors = None
     output_dict = {
@@ -523,7 +531,10 @@ def get_wit_sample(
             text_not_none.append(item)
 
     for item in [image_caption, title_short_description, title]:
-        if any(item.modality_type == modality_type for modality_type in modality_list):
+        if any(
+            item.modality_type == modality_type
+            for modality_type in modality_list
+        ):
             if item.data is None:
                 item.data = random.choice(text_not_none).data
 
@@ -555,12 +566,16 @@ def get_wit_sample(
 
     if "wikipedia_main_body_text" in output_dict:
         output_dict["wikipedia_main_body_text"].data = (
-            "<wbody> " + output_dict["wikipedia_main_body_text"].data + " </wbody>"
+            "<wbody> "
+            + output_dict["wikipedia_main_body_text"].data
+            + " </wbody>"
         )
 
     if "wikipedia_title_text" in output_dict:
         output_dict["wikipedia_title_text"].data = (
-            "<wtitle> " + output_dict["wikipedia_title_text"].data + " </wtitle>"
+            "<wtitle> "
+            + output_dict["wikipedia_title_text"].data
+            + " </wtitle>"
         )
 
     return output_dict
@@ -608,7 +623,9 @@ def get_tali_sample(
         f"video_clip_scores.parquet/relevance/{video_id}.parquet"
     )
 
-    taliwit_table = ds.dataset(video_filepath, schema=video_score_schema).to_table()
+    taliwit_table = ds.dataset(
+        video_filepath, schema=video_score_schema
+    ).to_table()
     table: VideoCLIPScoreSchema = taliwit_table.to_pandas()
 
     table_idx = table.video_id.tolist().index(video_id)
@@ -656,7 +673,9 @@ def get_tali_sample(
         )
 
         subtitles = load_json(clip_subtitles_filepath)
-        timestamp = float(pathlib.Path(selected_subclip).stem.replace("360p_", ""))
+        timestamp = float(
+            pathlib.Path(selected_subclip).stem.replace("360p_", "")
+        )
         subtitles = select_subtitles_between_timestamps(
             subtitle_dict=subtitles,
             starting_timestamp=timestamp,
@@ -826,7 +845,9 @@ def get_sample_from_video_id(
             f"video_clip_scores.parquet/relevance/{video_id}.parquet"
         )
 
-        taliwit_table = ds.dataset(video_filepath, schema=video_score_schema).to_table()
+        taliwit_table = ds.dataset(
+            video_filepath, schema=video_score_schema
+        ).to_table()
         table: VideoCLIPScoreSchema = taliwit_table.to_pandas()
 
         video_id = table.video_id[0]
@@ -901,7 +922,9 @@ def get_wit_sample_idx_with_video_available(
     )
     # /data/wit_to_video_paths.parquet/relevance/
     with tqdm.tqdm(total=558) as top_pbar:
-        for top_level_dir in pathlib.Path(wit_to_video_paths_table_path).iterdir():
+        for top_level_dir in pathlib.Path(
+            wit_to_video_paths_table_path
+        ).iterdir():
             with tqdm.tqdm(total=600) as inner_pbar:
                 for file in pathlib.Path(top_level_dir).rglob("*.parquet"):
                     if file.is_file():
@@ -911,7 +934,9 @@ def get_wit_sample_idx_with_video_available(
                             .to_pydict()
                         )
                         video_clip_score_table_path = (
-                            pathlib.Path("/data/video_clip_scores.parquet/relevance/")
+                            pathlib.Path(
+                                "/data/video_clip_scores.parquet/relevance/"
+                            )
                             / f"{table['video_id'][0]}.parquet"
                         )
                         if video_clip_score_table_path.exists():
@@ -931,7 +956,9 @@ def get_dataset_both_way_dictionaries(
         str, pathlib.Path
     ] = "/data/wit_idx_with_videos_dict.json"
 ):
-    wit_idx_with_videos_dict = load_json(filepath=wit_idx_with_videos_dict_filepath)
+    wit_idx_with_videos_dict = load_json(
+        filepath=wit_idx_with_videos_dict_filepath
+    )
 
     video_id_to_wit_idx_dict = defaultdict(str)
     with tqdm.tqdm(total=len(wit_idx_with_videos_dict)) as pbar:
@@ -1031,7 +1058,9 @@ class TALIDataset(torch.utils.data.Dataset):
 
         self.video_id_list = [key for key in self.video_id_list.keys()]
 
-        train_video_id_list = self.video_id_list[: int(len(self.video_id_list) * 0.9)]
+        train_video_id_list = self.video_id_list[
+            : int(len(self.video_id_list) * 0.9)
+        ]
 
         val_video_id_list = self.video_id_list[
             len(train_video_id_list) : len(train_video_id_list)
@@ -1123,17 +1152,22 @@ class TALIDataset(torch.utils.data.Dataset):
                 sample_frame_idx = rng.randint(
                     low=0, high=data_dict["youtube_content_video"].shape[0]
                 )
-                data_dict[ModalityTypes.youtube_image.value.sub_modality] = data_dict[
-                    "youtube_content_video"
-                ][sample_frame_idx]
+                data_dict[
+                    ModalityTypes.youtube_image.value.sub_modality
+                ] = data_dict["youtube_content_video"][sample_frame_idx]
                 if not ModalityTypes.youtube_video.value in self.modality_list:
-                    del data_dict[ModalityTypes.youtube_video.value.sub_modality]
+                    del data_dict[
+                        ModalityTypes.youtube_video.value.sub_modality
+                    ]
 
             if (
                 "youtube_content_video" in data_dict
                 and "youtube_content_audio" in data_dict
             ):
-                if data_dict["youtube_content_video"].shape[0] < self.num_video_frames:
+                if (
+                    data_dict["youtube_content_video"].shape[0]
+                    < self.num_video_frames
+                ):
                     data_dict["youtube_content_video"] = torch.cat(
                         [
                             data_dict["youtube_content_video"],
@@ -1171,7 +1205,10 @@ class TALIDataset(torch.utils.data.Dataset):
                 starting_audio_frame = int(
                     floor(
                         data_dict["youtube_content_audio"].shape[0]
-                        * (starting_video_frame / shape_dict["full_video_shape"][1])
+                        * (
+                            starting_video_frame
+                            / shape_dict["full_video_shape"][1]
+                        )
                     )
                 )
 
@@ -1179,7 +1216,10 @@ class TALIDataset(torch.utils.data.Dataset):
                     "youtube_content_audio"
                 ].view(-1)
 
-                if data_dict["youtube_content_audio"].shape[0] < self.num_audio_frames:
+                if (
+                    data_dict["youtube_content_audio"].shape[0]
+                    < self.num_audio_frames
+                ):
                     data_dict["youtube_content_audio"] = torch.cat(
                         [
                             data_dict["youtube_content_audio"],
@@ -1203,7 +1243,10 @@ class TALIDataset(torch.utils.data.Dataset):
                     ]
 
             elif "youtube_content_video" in data_dict:
-                if data_dict["youtube_content_video"].shape[0] < self.num_video_frames:
+                if (
+                    data_dict["youtube_content_video"].shape[0]
+                    < self.num_video_frames
+                ):
                     data_dict["youtube_content_video"] = torch.cat(
                         [
                             data_dict["youtube_content_video"],
@@ -1245,7 +1288,10 @@ class TALIDataset(torch.utils.data.Dataset):
                     "youtube_content_audio"
                 ].view(-1)
 
-                if data_dict["youtube_content_audio"].shape[0] < self.num_audio_frames:
+                if (
+                    data_dict["youtube_content_audio"].shape[0]
+                    < self.num_audio_frames
+                ):
                     data_dict["youtube_content_audio"] = torch.cat(
                         [
                             data_dict["youtube_content_audio"],
@@ -1284,9 +1330,11 @@ class TALIDataset(torch.utils.data.Dataset):
                     output_dict[modality_type] = {}
 
                 if modality_type in self.transforms:
-                    output_dict[modality_type][sub_modality_name] = self.transforms[
-                        modality_type
-                    ](data_dict[sub_modality_name])
+                    output_dict[modality_type][
+                        sub_modality_name
+                    ] = self.transforms[modality_type](
+                        data_dict[sub_modality_name]
+                    )
                 else:
                     output_dict[modality_type][sub_modality_name] = data_dict[
                         sub_modality_name
@@ -1295,7 +1343,9 @@ class TALIDataset(torch.utils.data.Dataset):
             output_dict["wit_idx"] = wit_idx
 
         except Exception as e:
-            logger.exception(f"{e} {self.requested_youtube_data}, {self.modality_list}")
+            logger.exception(
+                f"{e} {self.requested_youtube_data}, {self.modality_list}"
+            )
             self.broken_idx.add(idx)
             return self.__getitem__(idx + 1)
 

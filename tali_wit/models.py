@@ -204,9 +204,9 @@ def get_similarities(
         * logit_scale
     }
 
-    similarities[f"{modality_b_name}_to_{modality_a_name}_similarities"] = similarities[
-        f"{modality_a_name}_to_{modality_b_name}_similarities"
-    ].T
+    similarities[
+        f"{modality_b_name}_to_{modality_a_name}_similarities"
+    ] = similarities[f"{modality_a_name}_to_{modality_b_name}_similarities"].T
 
     if return_loss:
         contrastive_losses_dict = {
@@ -215,7 +215,9 @@ def get_similarities(
         }
 
         contrastive_accuracy_dict = {
-            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(value)
+            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(
+                value
+            )
             for key, value in similarities.items()
         }
 
@@ -234,6 +236,7 @@ def get_similarities(
         )
 
     return similarities
+
 
 def reinit(input_module: nn.Module):
     for name, module in input_module.named_modules():
@@ -261,7 +264,8 @@ def reinit(input_module: nn.Module):
             torch.nn.init.normal_(module.weight, std=0.02)
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
-                
+
+
 @configurable
 class TALIModel(nn.Module):
     def __init__(
@@ -278,25 +282,28 @@ class TALIModel(nn.Module):
 
         self.build_model()
         self.build_logit_scales()
-        
+
     def build_model(self):
         self.model = nn.ModuleDict()
 
         self.clip_model = CLIPModel.from_pretrained(self.image_text_model_name)
-        logger.info(f"Attention here: {(not self.multi_modality_config.image.pretrained and self.multi_modality_config.image.support)} "
-                    f"and {(not self.multi_modality_config.text.pretrained and self.multi_modality_config.text.support)} "
-                    f"specifically {self.multi_modality_config.image.pretrained} and {self.multi_modality_config.text.pretrained} "
-                    f"and {self.multi_modality_config.image.support} and {self.multi_modality_config.text.support}")
+        logger.info(
+            f"Attention here: {(not self.multi_modality_config.image.pretrained and self.multi_modality_config.image.support)} "
+            f"and {(not self.multi_modality_config.text.pretrained and self.multi_modality_config.text.support)} "
+            f"specifically {self.multi_modality_config.image.pretrained} and {self.multi_modality_config.text.pretrained} "
+            f"and {self.multi_modality_config.image.support} and {self.multi_modality_config.text.support}"
+        )
         if (
             not self.multi_modality_config.image.pretrained
             and self.multi_modality_config.image.support
-        ) or (not self.multi_modality_config.text.pretrained and self.multi_modality_config.text.support):
+        ) or (
+            not self.multi_modality_config.text.pretrained
+            and self.multi_modality_config.text.support
+        ):
             logger.info("Reinitializing the image and text models")
             # for name, module in self.clip_model.named_modules():
             reinit(self.clip_model)
-                
-            
-        
+
         self.linear_projection_dim = self.clip_model.projection_dim
 
         self.model["image"] = self.clip_model.vision_model
@@ -305,7 +312,9 @@ class TALIModel(nn.Module):
         self.model["text"] = self.clip_model.text_model
         self.text_linear_layer = self.clip_model.text_projection
 
-        self.model["audio"] = WhisperModel.from_pretrained(self.audio_model_name)
+        self.model["audio"] = WhisperModel.from_pretrained(
+            self.audio_model_name
+        )
         self.audio_output_shape = self.model["audio"].config.d_model
         self.model["audio"] = WhisperModel.from_pretrained(
             self.audio_model_name
@@ -333,7 +342,9 @@ class TALIModel(nn.Module):
             self.model["video"].d_model, self.linear_projection_dim, bias=False
         )
 
-        self.logit_init_value = float(self.clip_model.config.logit_scale_init_value)
+        self.logit_init_value = float(
+            self.clip_model.config.logit_scale_init_value
+        )
 
         if (
             not self.multi_modality_config.image.support
@@ -390,7 +401,8 @@ class TALIModel(nn.Module):
                     name = f"{modality_a}_to_{modality_b}"
                     if name not in self.logit_scales.keys():
                         self.logit_scales[name] = nn.Parameter(
-                            torch.ones(1, requires_grad=True) * self.logit_init_value
+                            torch.ones(1, requires_grad=True)
+                            * self.logit_init_value
                         )
 
     def print_model_summary(self):
@@ -428,7 +440,9 @@ class TALIModel(nn.Module):
                         sub_modality_b,
                     ) in modality_b.items():
                         pair_name = f"{modality_a_name}_to_{modality_b_name}"
-                        reverse_pair_name = f"{modality_b_name}_to_{modality_a_name}"
+                        reverse_pair_name = (
+                            f"{modality_b_name}_to_{modality_a_name}"
+                        )
                         if (
                             pair_name in processed_pairs
                             or reverse_pair_name in processed_pairs
@@ -454,14 +468,18 @@ class TALIModel(nn.Module):
             x = x.squeeze(1)
         x = x.to(self.image_linear_layer.weight.device)
         cast_to_device_end_time = time.time()
-        logger.debug(f"Cast Image to device time: {cast_to_device_end_time - cast_to_device_start_time}")
-        
+        logger.debug(
+            f"Cast Image to device time: {cast_to_device_end_time - cast_to_device_start_time}"
+        )
+
         fprop_actual_start_time = time.time()
         features = self.model["image"](pixel_values=x).pooler_output
         projection_output = self.image_linear_layer(features)
         fprop_actual_end_time = time.time()
-        logger.debug(f"Fprop image actual time: {fprop_actual_end_time - fprop_actual_start_time}")
-        
+        logger.debug(
+            f"Fprop image actual time: {fprop_actual_end_time - fprop_actual_start_time}"
+        )
+
         return {"features": features, "projection_output": projection_output}
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
@@ -470,13 +488,17 @@ class TALIModel(nn.Module):
         cast_to_device_start_time = time.time()
         x = x.to(self.text_linear_layer.weight.device)
         cast_to_device_end_time = time.time()
-        logger.debug(f"Cast Text to device time: {cast_to_device_end_time - cast_to_device_start_time}")
-        
+        logger.debug(
+            f"Cast Text to device time: {cast_to_device_end_time - cast_to_device_start_time}"
+        )
+
         fprop_actual_start_time = time.time()
         features = self.model["text"](x).pooler_output
         projection_output = self.text_linear_layer(features)
         fprop_actual_end_time = time.time()
-        logger.debug(f"Fprop text actual time: {fprop_actual_end_time - fprop_actual_start_time}")
+        logger.debug(
+            f"Fprop text actual time: {fprop_actual_end_time - fprop_actual_start_time}"
+        )
         return {"features": features, "projection_output": projection_output}
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
@@ -485,22 +507,30 @@ class TALIModel(nn.Module):
         cast_to_device_start_time = time.time()
         x = x.to(self.audio_linear_layer.weight.device)
         cast_to_device_end_time = time.time()
-        logger.debug(f"cast audio to device time: {cast_to_device_end_time - cast_to_device_start_time}")
-        
+        logger.debug(
+            f"cast audio to device time: {cast_to_device_end_time - cast_to_device_start_time}"
+        )
+
         fprop_actual_start_time = time.time()
         features = self.model["audio"](x).last_hidden_state[:, -1, :]
         projection_output = self.audio_linear_layer(features)
         fprop_actual_end_time = time.time()
-        logger.debug(f"Fprop audio actual time: {fprop_actual_end_time - fprop_actual_start_time}")
-        
+        logger.debug(
+            f"Fprop audio actual time: {fprop_actual_end_time - fprop_actual_start_time}"
+        )
+
         return {"features": features, "projection_output": projection_output}
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
         logger.debug("Video ---------------------------------")
-        input_shape = x.shape  # (batch_size, num_frames, channels, height, width)
+        input_shape = (
+            x.shape
+        )  # (batch_size, num_frames, channels, height, width)
 
         out = x.to(self.video_linear_layer.weight.device)
-        out = self.forward_image(out.view(-1, *out.shape[-3:]))["projection_output"]
+        out = self.forward_image(out.view(-1, *out.shape[-3:]))[
+            "projection_output"
+        ]
         out = out.view(input_shape[0], input_shape[1], -1)
         features = self.model["video"](out)
         projection_output = self.video_linear_layer(features)
@@ -549,5 +579,3 @@ if __name__ == "__main__":
     # 12 batch size for audio to youtube_video
     # set up a config that allows to select modality pairs + batch size and then build unique dataloaders for each pair
     # add accuracy and top-k accuracy metrics
-
-    

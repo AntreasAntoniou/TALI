@@ -46,7 +46,7 @@ RUN mkdir /app/
 ADD tali_wit/ /app/tali_wit
 ADD setup.py /app/
 
-RUN git config --global --add safe.directory /app/
+RUN  /app/
 
 RUN echo y | pip install /app/
 

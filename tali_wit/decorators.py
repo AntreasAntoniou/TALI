@@ -22,7 +22,10 @@ def check_if_configurable(func: Callable, phase_name: str) -> bool:
 
 def collect_metrics(func: Callable) -> Callable:
     def collect_metrics(
-        metrics_dict: dict(), phase_name: str, experiment_tracker: Any, global_step: int
+        metrics_dict: dict(),
+        phase_name: str,
+        experiment_tracker: Any,
+        global_step: int,
     ) -> None:
         for metric_key, computed_value in metrics_dict.items():
             if computed_value is not None:
@@ -32,7 +35,9 @@ def collect_metrics(func: Callable) -> Callable:
                     else computed_value
                 )
                 experiment_tracker[f"{phase_name}/{metric_key}"].append(value)
-                wandb.log({f"{phase_name}/{metric_key}": value}, step=global_step)
+                wandb.log(
+                    {f"{phase_name}/{metric_key}": value}, step=global_step
+                )
 
     @functools.wraps(func)
     def wrapper_collect_metrics(*args, **kwargs):
@@ -54,7 +59,9 @@ if __name__ == "__main__":
     def build_something(batch_size: int, num_layers: int):
         return batch_size, num_layers
 
-    build_something_config = build_something.build_config(populate_full_signature=True)
+    build_something_config = build_something.build_config(
+        populate_full_signature=True
+    )
     dummy_config = build_something_config(batch_size=32, num_layers=2)
     print(dummy_config)
 

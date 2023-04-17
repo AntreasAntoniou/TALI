@@ -34,7 +34,8 @@ def main(
             #     )
 
             subtitle_path: pathlib.Path = (
-                pathlib.Path(source_dataset_dir) / example["youtube_subtitle_text"]
+                pathlib.Path(source_dataset_dir)
+                / example["youtube_subtitle_text"]
             )
             source_path = subtitle_path.as_posix().replace(
                 "/data/datasets/tali-wit-2-1-buckets/", source_dataset_dir
