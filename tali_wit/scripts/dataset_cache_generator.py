@@ -1,14 +1,14 @@
-from concurrent import futures
 import pathlib
 from collections import defaultdict
+from concurrent import futures
 from math import floor
-import torch.utils.data
 from typing import Any, List, Union
-import datasets
 
+import datasets
 import numpy as np
 import pyarrow as pa
 import pyarrow.dataset as ds
+import torch.utils.data
 import tqdm
 from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.transforms import (
@@ -18,7 +18,7 @@ from pytorchvideo.transforms import (
 )
 from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import CenterCropVideo
-import datasets
+
 from tali_wit.data import (
     AnyModalSample,
     ModalityDataSample,
@@ -27,7 +27,6 @@ from tali_wit.data import (
     VideoCLIPScoreSchema,
 )
 from tali_wit.data_plus import TALIBase
-
 from tali_wit.utils import get_logger, load_json, set_seed
 
 logger = get_logger(__name__)

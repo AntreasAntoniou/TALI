@@ -1,8 +1,8 @@
 import argparse
 import os
 import sys
-from numpy import False_
 
+from numpy import False_
 from responses import start
 
 os.environ["TMPDIR"] = "/data/tmp"
@@ -11,17 +11,16 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "loglevel;error"
 # null_device = open(os.devnull, 'w')
 # sys.stderr = null_device
 
+import os
 import pathlib
 import shutil
-import datasets
+import tempfile
 
-from tali_wit.dataset_cache_generator import TALICacheGenerator
+import datasets
 from rich import print
 from rich.traceback import install
-import os
-import tempfile
-import shutil
 
+from tali_wit.dataset_cache_generator import TALICacheGenerator
 
 install()
 

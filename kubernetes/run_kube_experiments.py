@@ -31,7 +31,7 @@ def get_scripts(exp_configs: List[ExperimentConfig]):
 
 
 if __name__ == "__main__":
-    from bwatchcompute.kubernetes.job import Job, ExperimentTemplate
+    from bwatchcompute.kubernetes.job import ExperimentTemplate, Job
 
     exp_configs = [
         ExperimentConfig(

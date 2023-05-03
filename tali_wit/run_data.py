@@ -3,17 +3,15 @@ import pathlib
 import time
 
 import neptune
+import tqdm
 from rich import print
 from rich.traceback import install
-import tqdm
+
+from tali_wit.ctools import get_max_supported_batch_size
 from tali_wit.data import dataclass_collate
 from tali_wit.data_plus import CustomConcatDataset
-
 from tali_wit.models import TALIModel
-from tali_wit.utils import (
-    create_hf_model_repo_and_download_maybe,
-)
-from tali_wit.ctools import get_max_supported_batch_size
+from tali_wit.utils import create_hf_model_repo_and_download_maybe
 
 os.environ[
     "HYDRA_FULL_ERROR"

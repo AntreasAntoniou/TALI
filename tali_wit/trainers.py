@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import time
+from dataclasses import dataclass
 from typing import Any, Dict
 
 import torch
@@ -173,8 +173,12 @@ class ClassificationTrainer(Trainer):
             sub_modality_b,
         ) in possible_pairs:
             sample = {
-                modality_a: {sub_modality_a: batch[modality_a][sub_modality_a]},
-                modality_b: {sub_modality_b: batch[modality_b][sub_modality_b]},
+                modality_a: {
+                    sub_modality_a: batch[modality_a][sub_modality_a]
+                },
+                modality_b: {
+                    sub_modality_b: batch[modality_b][sub_modality_b]
+                },
             }
 
             step_output: StepOutput = self.step(

@@ -1,9 +1,10 @@
 import array
 import time
+
+import av
 import numpy as np
 import torch
 import torchvision
-import av
 
 # from tali_wit.utils import get_#logger
 
@@ -67,7 +68,9 @@ def extract_frames_torchvision(
     )
 
     if frame_selection_method == FrameSelectionMethod.RANDOM:
-        frame_indices = rng.choice(len(frame_values), num_frames, replace=False)
+        frame_indices = rng.choice(
+            len(frame_values), num_frames, replace=False
+        )
     elif frame_selection_method == FrameSelectionMethod.UNIFORM:
         frame_indices = np.linspace(
             0, len(frame_values), num_frames, endpoint=False, dtype=int

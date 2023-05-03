@@ -2,28 +2,22 @@ import os
 import pathlib
 import time
 from typing import Any, Dict, Optional
-import datasets
 
+import datasets
 import numpy as np
-from tali_wit.data_plus import get_next_on_error, get_submodality_name
 import torch
 import tqdm
-from torch.utils.data import DataLoader, Dataset
-from torch.utils.data import Dataset, Subset, DataLoader
-import datasets
+from torch.utils.data import DataLoader, Dataset, Subset
+from transformers import CLIPProcessor, WhisperProcessor
+
 from tali_wit.data import (
+    ModalityTypes,
     dataclass_collate,
     default_image_transforms,
-    ModalityTypes,
 )
-
+from tali_wit.data_plus import get_next_on_error, get_submodality_name
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger, load_json, save_json
-
-from transformers import (
-    CLIPProcessor,
-    WhisperProcessor,
-)
 
 logger = get_logger(__name__)
 
@@ -80,7 +74,10 @@ class WITBase(Dataset):
             train_wit_indices = []
             with tqdm.tqdm(total=len(self.dataset)) as pbar:
                 for i in range(len(self.dataset)):
-                    if i not in tali_val_indices and i not in tali_test_indices:
+                    if (
+                        i not in tali_val_indices
+                        and i not in tali_test_indices
+                    ):
                         train_wit_indices.append(i)
                     pbar.update(1)
 
@@ -90,7 +87,9 @@ class WITBase(Dataset):
                 "test": tali_test_indices,
             }
             save_json(
-                filepath=os.path.join(self.wit_dataset_dir, "wit_indices.json"),
+                filepath=os.path.join(
+                    self.wit_dataset_dir, "wit_indices.json"
+                ),
                 dict_to_store=self.indices,
             )
         else:
@@ -265,11 +264,12 @@ class WITBaseTransform:
 
 
 if __name__ == "__main__":
-    import tqdm
-    from rich.traceback import install
     import cProfile
     import pstats
+
     import datasets
+    import tqdm
+    from rich.traceback import install
 
     install()
     os.environ["HYDRA_FULL_ERROR"] = "1"

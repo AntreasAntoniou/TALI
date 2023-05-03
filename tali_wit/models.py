@@ -1,13 +1,14 @@
 import math
 import os
-from dataclasses import dataclass
 import time
-import torch.nn.functional
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import torch
 import torch.nn as nn
+import torch.nn.functional
 import torch.nn.functional as F
+from accelerate import Accelerator
 from rich import print
 from torch.utils.data import DataLoader
 from transformers import (
@@ -18,8 +19,7 @@ from transformers import (
 )
 from transformers.models.clip.modeling_clip import contrastive_loss
 
-from accelerate import Accelerator
-from tali_wit.data import ModalityTypes, TALIDataset, dataclass_collate
+from tali_wit.data.data import ModalityTypes, TALIDataset, dataclass_collate
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger
 
@@ -554,7 +554,9 @@ def extract_all_possible_pairs(batch_dict):
     # get all possible pairs of two lists
     pairs = []
     for key1, key2 in pairs_keys:
-        for sub_key1, sub_key2 in zip(modality_dict[key1], modality_dict[key2]):
+        for sub_key1, sub_key2 in zip(
+            modality_dict[key1], modality_dict[key2]
+        ):
             pairs.append((key1, sub_key1, key2, sub_key2))
 
     return pairs

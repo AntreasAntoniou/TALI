@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from enum import Enum
 from math import floor
 from typing import Any, Callable, Dict, List, Optional, Union
-import datasets
 
+import datasets
 import numpy as np
 import PIL
 import pyarrow as pa
@@ -30,7 +30,6 @@ from torch.utils.data.dataloader import default_collate
 from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
 from torchvision.transforms._transforms_video import CenterCropVideo
 from transformers import CLIPProcessor
-import datasets
 
 from tali_wit.decorators import configurable
 from tali_wit.utils import get_logger, load_json
@@ -212,7 +211,9 @@ def dataclass_collate(batch):
             return batch
         else:
             batched_dict = {
-                key: default_collate([getattr(sample, key) for sample in batch])
+                key: default_collate(
+                    [getattr(sample, key) for sample in batch]
+                )
                 if getattr(batch[0], key) != None
                 else None
                 for key in batch[0].__dict__.keys()
@@ -233,7 +234,6 @@ def get_image_transforms_instait():
 import pathlib
 from dataclasses import dataclass
 from typing import List
-from tali_wit.data import dataclass_collate
 
 
 @dataclass

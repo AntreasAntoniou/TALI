@@ -4,15 +4,13 @@ import pathlib
 import neptune
 from rich import print
 from rich.traceback import install
+
 import wandb
+from tali_wit.ctools import get_max_supported_batch_size
 from tali_wit.data import dataclass_collate
 from tali_wit.data_plus import CustomConcatDataset
-
 from tali_wit.models import TALIModel
-from tali_wit.utils import (
-    create_hf_model_repo_and_download_maybe,
-)
-from tali_wit.ctools import get_max_supported_batch_size
+from tali_wit.utils import create_hf_model_repo_and_download_maybe
 
 os.environ[
     "HYDRA_FULL_ERROR"
@@ -77,7 +75,9 @@ def run(cfg: BaseConfig) -> None:
     model: TALIModel = instantiate(cfg.model)
 
     if ckpt_path is not None and cfg.resume is True:
-        trainer_state = torch.load(pathlib.Path(ckpt_path) / "trainer_state.pt")
+        trainer_state = torch.load(
+            pathlib.Path(ckpt_path) / "trainer_state.pt"
+        )
         global_step = trainer_state["global_step"]
         neptune_id = (
             trainer_state["neptune_id"]

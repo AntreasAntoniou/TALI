@@ -1,22 +1,21 @@
-from functools import wraps
 import logging
 import shutil
 import signal
+from functools import wraps
 
+import accelerate
 import torch
-from omegaconf import DictConfig, OmegaConf
-from rich.logging import RichHandler
-from rich.syntax import Syntax
-from rich.traceback import install
-from rich.tree import Tree
-
 from huggingface_hub import (
     create_repo,
     hf_hub_download,
     login,
     snapshot_download,
 )
-import accelerate
+from omegaconf import DictConfig, OmegaConf
+from rich.logging import RichHandler
+from rich.syntax import Syntax
+from rich.traceback import install
+from rich.tree import Tree
 
 
 def get_logger(
@@ -439,7 +438,8 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
 
     try:
         if cfg.resume == False and not (
-            cfg.download_checkpoint_with_name is not None or cfg.download_latest
+            cfg.download_checkpoint_with_name is not None
+            or cfg.download_latest
         ):
             return None, repo_url
 
@@ -467,7 +467,9 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
             for file in files:
                 if "checkpoints/ckpt" in file:
                     ckpt_global_step = int(file.split("/")[-2].split("_")[-1])
-                    ckpt_dict[ckpt_global_step] = "/".join(file.split("/")[:-1])
+                    ckpt_dict[ckpt_global_step] = "/".join(
+                        file.split("/")[:-1]
+                    )
 
             latest_ckpt = ckpt_dict[max(ckpt_dict.keys())]
 

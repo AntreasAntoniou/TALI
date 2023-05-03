@@ -1,9 +1,10 @@
 import pathlib
-import datasets
-import tqdm
 import shutil
-from rich import print
+
+import datasets
 import fire
+import tqdm
+from rich import print
 
 
 def main(

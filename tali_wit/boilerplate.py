@@ -1,23 +1,20 @@
 import itertools
 import pathlib
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any, List, Union
-from neptune import Run
 
 import torch
 import torch.nn as nn
 from accelerate import Accelerator, DistributedDataParallelKwargs
+from neptune import Run
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from tali_wit.callbacks import Callback, CallbackHandler, Interval
 from tali_wit.decorators import configurable
 from tali_wit.evaluators import ClassificationEvaluator, Evaluator
-from tali_wit.trainers import (
-    ClassificationTrainer,
-    Trainer,
-)
+from tali_wit.trainers import ClassificationTrainer, Trainer
 from tali_wit.utils import get_logger
 
 logger = get_logger(__name__)
@@ -567,7 +564,9 @@ class Learner(nn.Module):
             global_step=self.global_step,
             state_dict={
                 "train": [trainer.state_dict for trainer in self.trainers],
-                "eval": [evaluator.state_dict for evaluator in self.evaluators],
+                "eval": [
+                    evaluator.state_dict for evaluator in self.evaluators
+                ],
             },
             neptune_id=self.neptune_run._id if self.neptune_run else None,
         )

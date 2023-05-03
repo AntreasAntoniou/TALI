@@ -1,13 +1,11 @@
+import torch
+from termcolor import colored
 from transformers import (
     CLIPModel,
     CLIPProcessor,
     WhisperModel,
     WhisperProcessor,
 )
-import torch
-
-from termcolor import colored
-
 
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch16")
 

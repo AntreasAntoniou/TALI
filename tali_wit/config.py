@@ -1,18 +1,13 @@
-from math import floor
 import os
-from dataclasses import MISSING, dataclass
 import pathlib
+from dataclasses import MISSING, dataclass
+from math import floor
 from typing import Any, Optional
 
 import torch
 from accelerate import Accelerator
 from hydra.core.config_store import ConfigStore
-from hydra_zen import (
-    MISSING,
-    ZenField,
-    builds,
-    make_config,
-)
+from hydra_zen import MISSING, ZenField, builds, make_config
 from timm.scheduler import CosineLRScheduler
 from torch.utils.data import DataLoader
 

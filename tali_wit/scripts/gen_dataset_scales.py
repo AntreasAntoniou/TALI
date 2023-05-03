@@ -1,14 +1,15 @@
 import pathlib
-import datasets
-import tqdm
 import shutil
-from rich import print
-import fire
 
+import datasets
+import fire
+import tqdm
+from rich import print
 
 if __name__ == "__main__":
-    from huggingface_hub import Repository
     import os
+
+    from huggingface_hub import Repository
 
     tali_dataset_dir = "/data_fast/TALI/"
 
@@ -45,9 +46,14 @@ if __name__ == "__main__":
                     cur_idx += 1
                     pbar.update(size)
                 try:
-                    if cur_commit_size >= batch_size_in_mb and len(commited_files) > 0:
+                    if (
+                        cur_commit_size >= batch_size_in_mb
+                        and len(commited_files) > 0
+                    ):
                         # Commit and push all files to the repository
-                        repo.git_commit(f"Add existing dataset files {cur_idx}")
+                        repo.git_commit(
+                            f"Add existing dataset files {cur_idx}"
+                        )
                         repo.git_push()
                         commited_files = []
                         cur_commit_size = 0

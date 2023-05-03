@@ -1,30 +1,48 @@
 import os
 
+from tali_wit.data.data import ModalityTypes
+
 os.environ["HYDRA_FULL_ERROR"] = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 import pathlib
 import random
 
+import datasets
 import tqdm
 from rich import print
 from rich.traceback import install
 
-import datasets
-from tali_wit.data import ModalityTypes
-
-
 install()
 
 from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger, load_json, save_json
 from tali_wit.models import ModalityConfig
+from tali_wit.utils import get_logger, load_json, save_json
+
+from collections import defaultdict
+from distutils.command.upload import upload
+from importlib.resources import path
+
+import gradio as gr
+import torchaudio
+import torchvision
+
+from collections import defaultdict
+from distutils.command.upload import upload
+from importlib.resources import path
+
+import gradio as gr
+import torchaudio
+import torchvision
 
 logger = get_logger(__name__)
 
-from tali_wit.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig
+from tali_wit.data.data_plus import (
+    TALIBaseDemoTransform,
+    TALIBaseTransformConfig,
+)
 
-data_root = "/data_large/datasets/tali-wit-2-1-buckets/"
+data_root = "/data-fast0/TALI-bak/TALI/"
 transform = TALIBaseDemoTransform(
     config=TALIBaseTransformConfig(
         root_filepath=data_root,
@@ -56,12 +74,6 @@ test_dataset = datasets.load_from_disk(data_root + "test-set")
 test_dataset = test_dataset.with_transform(transform)
 num_samples = 0
 
-from collections import defaultdict
-from distutils.command.upload import upload
-from importlib.resources import path
-import gradio as gr
-import torchvision
-import torchaudio
 
 dataset_dict = {
     "train": train_dataset,
@@ -81,12 +93,7 @@ dataset_dict = {
 # isn't is in change i don't think shintomicho has much of a personality when they took away the kabuki theater it
 # really did change  </ysub>"
 # }
-from collections import defaultdict
-from distutils.command.upload import upload
-from importlib.resources import path
-import gradio as gr
-import torchvision
-import torchaudio
+
 
 dataset_dict = {
     "train": train_dataset,

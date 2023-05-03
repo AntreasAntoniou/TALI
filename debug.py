@@ -1,6 +1,6 @@
-from transformers import WhisperProcessor, WhisperForConditionalGeneration
-from datasets import load_dataset
 import torch
+from datasets import load_dataset
+from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
 # load model and processor
 processor = WhisperProcessor.from_pretrained("openai/whisper-large-v2")

@@ -1,7 +1,8 @@
 import os
 import subprocess
-from tqdm import tqdm
+
 import fire
+from tqdm import tqdm
 
 
 def add_files_with_progress(

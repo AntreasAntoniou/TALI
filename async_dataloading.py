@@ -1,16 +1,15 @@
 import asyncio
 import queue
 import threading
-from typing import List
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import tqdm
-import torch.nn.functional as F
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
-from torch.utils.data import DataLoader
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+import tqdm
+from torch.utils.data import DataLoader, Dataset
 
 
 # 📘 Create a synthetic dataset for linear regression
@@ -35,7 +34,9 @@ class SyntheticDataset(Dataset):
 class LinearRegressionModel(nn.Module):
     def __init__(self):
         super(LinearRegressionModel, self).__init__()
-        self.in_linear = nn.Linear(in_features=3 * 224 * 224, out_features=1024)
+        self.in_linear = nn.Linear(
+            in_features=3 * 224 * 224, out_features=1024
+        )
         self.middle_linear = nn.Linear(in_features=1024, out_features=1024)
         self.out_linear = nn.Linear(in_features=1024, out_features=1)
 
