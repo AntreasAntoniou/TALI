@@ -60,9 +60,9 @@ transform = TALIBaseDemoTransform(
         rng_seed=42,
         top_k_tali=10,
         image_size=224,
-        num_video_frames=100,
-        num_audio_frames=5 * 16000,
-        clip_duration_in_seconds=5.0,
+        num_video_frames=25 * 25,
+        num_audio_frames=25 * 16000,
+        clip_duration_in_seconds=25.0,
         deterministic_sampling=True,
     )
 )
