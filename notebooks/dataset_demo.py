@@ -9,31 +9,16 @@ import pathlib
 import random
 
 import datasets
-import tqdm
 from rich import print
 from rich.traceback import install
 
 install()
 
-from tali_wit.decorators import configurable
-from tali_wit.models import ModalityConfig
-from tali_wit.utils import get_logger, load_json, save_json
-
-from collections import defaultdict
-from distutils.command.upload import upload
-from importlib.resources import path
-
 import gradio as gr
 import torchaudio
 import torchvision
 
-from collections import defaultdict
-from distutils.command.upload import upload
-from importlib.resources import path
-
-import gradio as gr
-import torchaudio
-import torchvision
+from tali_wit.utils import get_logger
 
 logger = get_logger(__name__)
 
