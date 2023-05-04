@@ -40,7 +40,7 @@ RUN apt-get install git -y
 
 RUN git lfs install
 RUN git config --global credential.helper store
-RUN pip install wandb --upgrade
+RUN pip install wandb --upgrade`
 
 RUN mkdir /app/
 ADD tali_wit/ /app/tali_wit
