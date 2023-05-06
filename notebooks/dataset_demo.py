@@ -354,7 +354,10 @@ if __name__ == "__main__":
             [report_button, report_textbox],
         )
 
-        # fetch_random_btn.click(update_language_choices, [input_set_name, input_sample_index], [output_language, caption_alt_text_description, caption_reference_description, caption_title_and_reference_description, context_page_description, context_section_description, hierarchical_section_title, page_title, section_title])
+        # fetch_random_btn.click(update_language_choices, [input_set_name, input_sample_index],
+        # [output_language, caption_alt_text_description, caption_reference_description,
+        # caption_title_and_reference_description, context_page_description, context_section_description,
+        # hierarchical_section_title, page_title, section_title])
         fetch_random_btn.click(
             fn=load_random_sample,
             inputs=[input_set_name],
@@ -377,7 +380,10 @@ if __name__ == "__main__":
             ],
         )
 
-        # fetch_btn.click(update_language_choices, [input_set_name, input_sample_index], [output_language, caption_alt_text_description, caption_reference_description, caption_title_and_reference_description, context_page_description, context_section_description, hierarchical_section_title, page_title, section_title])
+        # fetch_btn.click(update_language_choices, [input_set_name, input_sample_index],
+        # [output_language, caption_alt_text_description, caption_reference_description,
+        # caption_title_and_reference_description, context_page_description, context_section_description,
+        # hierarchical_section_title, page_title, section_title])
         fetch_btn.click(
             fn=load_sample,
             inputs=[input_set_name, input_sample_index],
