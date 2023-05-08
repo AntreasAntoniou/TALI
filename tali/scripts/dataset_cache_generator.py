@@ -19,15 +19,15 @@ from pytorchvideo.transforms import (
 from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import CenterCropVideo
 
-from tali_wit.data import (
+from tali.data import (
     AnyModalSample,
     ModalityDataSample,
     ModalityTypes,
     TALISchema,
     VideoCLIPScoreSchema,
 )
-from tali_wit.data_plus import TALIBase
-from tali_wit.utils import get_logger, load_json, set_seed
+from tali.data_plus import TALIBase
+from tali.utils import get_logger, load_json, set_seed
 
 logger = get_logger(__name__)
 

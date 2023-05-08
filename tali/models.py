@@ -19,9 +19,9 @@ from transformers import (
 )
 from transformers.models.clip.modeling_clip import contrastive_loss
 
-from tali_wit.data.data import ModalityTypes, TALIDataset, dataclass_collate
-from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger
+from tali.data.data import ModalityTypes, TALIDataset, dataclass_collate
+from tali.decorators import configurable
+from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -287,7 +287,7 @@ class TALIModel(nn.Module):
         self.model = nn.ModuleDict()
 
         self.clip_model = CLIPModel.from_pretrained(self.image_text_model_name)
-        
+
         if (
             not self.multi_modality_config.image.pretrained
             and self.multi_modality_config.image.support
@@ -455,18 +455,18 @@ class TALIModel(nn.Module):
         if len(x.shape) == 5:
             x = x.squeeze(1)
         x = x.to(self.image_linear_layer.weight.device)
-        
+
         features = self.model["image"](pixel_values=x).pooler_output
         projection_output = self.image_linear_layer(features)
-        
+
         return {"features": features, "projection_output": projection_output}
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
         if len(x.shape) == 3:
             x = x.squeeze(1)
-        
+
         x = x.to(self.text_linear_layer.weight.device)
-        
+
         features = self.model["text"](x).pooler_output
         projection_output = self.text_linear_layer(features)
         return {"features": features, "projection_output": projection_output}
@@ -475,10 +475,10 @@ class TALIModel(nn.Module):
         if len(x.shape) == 4:
             x = x.squeeze(1)
         x = x.to(self.audio_linear_layer.weight.device)
-        
+
         features = self.model["audio"](x).last_hidden_state[:, -1, :]
         projection_output = self.audio_linear_layer(features)
-        
+
         return {"features": features, "projection_output": projection_output}
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:

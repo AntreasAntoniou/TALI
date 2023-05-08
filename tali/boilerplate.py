@@ -11,11 +11,11 @@ from neptune import Run
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from tali_wit.callbacks import Callback, CallbackHandler, Interval
-from tali_wit.decorators import configurable
-from tali_wit.evaluators import ClassificationEvaluator, Evaluator
-from tali_wit.trainers import ClassificationTrainer, Trainer
-from tali_wit.utils import get_logger
+from tali.callbacks import Callback, CallbackHandler, Interval
+from tali.decorators import configurable
+from tali.evaluators import ClassificationEvaluator, Evaluator
+from tali.trainers import ClassificationTrainer, Trainer
+from tali.utils import get_logger
 
 logger = get_logger(__name__)
 

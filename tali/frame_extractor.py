@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torchvision
 
-# from tali_wit.utils import get_#logger
+# from tali.utils import get_#logger
 
 # logger = get_#logger(name=__name__)
 

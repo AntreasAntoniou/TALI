@@ -31,8 +31,8 @@ from torchvision.transforms import Compose, RandomCrop, Resize, ToTensor
 from torchvision.transforms._transforms_video import CenterCropVideo
 from transformers import CLIPProcessor
 
-from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger, load_json
+from tali.decorators import configurable
+from tali.utils import get_logger, load_json
 
 logger = get_logger(__name__)
 
@@ -916,7 +916,7 @@ def get_language_specific_entries(
 def get_wit_sample_idx_with_video_available(
     root_path: pathlib.Path = pathlib.Path("/data/"),
 ):
-    wit_idx_to_tali_wit_table_path = defaultdict(list)
+    wit_idx_to_tali_table_path = defaultdict(list)
     wit_to_video_paths_table_path = (
         root_path / "wit_to_video_paths.parquet" / "relevance"
     )
@@ -940,15 +940,15 @@ def get_wit_sample_idx_with_video_available(
                             / f"{table['video_id'][0]}.parquet"
                         )
                         if video_clip_score_table_path.exists():
-                            wit_idx_to_tali_wit_table_path[
+                            wit_idx_to_tali_table_path[
                                 str(table.get("wit_idx")[0])
                             ].append(file.as_posix())
                     inner_pbar.update(1)
                 top_pbar.update(1)
                 top_pbar.set_description(
-                    f"Size of dict: {len(wit_idx_to_tali_wit_table_path)}"
+                    f"Size of dict: {len(wit_idx_to_tali_table_path)}"
                 )
-    return wit_idx_to_tali_wit_table_path
+    return wit_idx_to_tali_table_path
 
 
 def get_dataset_both_way_dictionaries(
@@ -969,7 +969,7 @@ def get_dataset_both_way_dictionaries(
                 pbar.update(1)
 
     return {
-        "wit_idx_to_tali_wit_dict": wit_idx_with_videos_dict,
+        "wit_idx_to_tali_dict": wit_idx_with_videos_dict,
         "video_id_to_wit_idx_dict": video_id_to_wit_idx_dict,
     }
 
@@ -1011,7 +1011,7 @@ class TALIDataset(torch.utils.data.Dataset):
             cache_dir=root_filepath / "wit_cache",
         )
 
-        self.wit_idx_to_tali_wit_dict = load_json(
+        self.wit_idx_to_tali_dict = load_json(
             filepath=root_filepath / "wit_idx_to_video_id_dict_cleaned.json"
         )
         self.video_id_list = load_json(

@@ -6,9 +6,9 @@ import torch
 from accelerate import Accelerator
 from torch.utils.data import DataLoader
 
-from tali_wit.data_plus import *
-from tali_wit.models import extract_all_possible_pairs
-from tali_wit.trainers import StepOutput
+from tali.data_plus import *
+from tali.models import extract_all_possible_pairs
+from tali.trainers import StepOutput
 
 from .decorators import collect_metrics
 from .utils import get_logger

@@ -43,7 +43,7 @@ RUN git config --global credential.helper store
 RUN pip install wandb --upgrade`
 
 RUN mkdir /app/
-ADD tali_wit/ /app/tali_wit
+ADD tali/ /app/tali
 ADD setup.py /app/
 
 RUN  /app/
