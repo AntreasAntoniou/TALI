@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(
-    name="tali_wit",
+    name="tali",
     version="2.0.0",
     description="A minimal, stateless, machine learning research template for PyTorch",
     author="Antreas Antoniou",
