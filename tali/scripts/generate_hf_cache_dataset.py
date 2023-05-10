@@ -20,7 +20,7 @@ import datasets
 from rich import print
 from rich.traceback import install
 
-from tali_wit.dataset_cache_generator import TALICacheGenerator
+from tali.dataset_cache_generator import TALICacheGenerator
 
 install()
 

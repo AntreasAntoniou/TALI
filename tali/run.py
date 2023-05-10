@@ -2,15 +2,15 @@ import os
 import pathlib
 
 import neptune
+import wandb
 from rich import print
 from rich.traceback import install
 
-import wandb
-from tali_wit.ctools import get_max_supported_batch_size
-from tali_wit.data import dataclass_collate
-from tali_wit.data_plus import CustomConcatDataset
-from tali_wit.models import TALIModel
-from tali_wit.utils import create_hf_model_repo_and_download_maybe
+from tali.ctools import get_max_supported_batch_size
+from tali.data import dataclass_collate
+from tali.data_plus import CustomConcatDataset
+from tali.models import TALIModel
+from tali.utils import create_hf_model_repo_and_download_maybe
 
 os.environ[
     "HYDRA_FULL_ERROR"
@@ -33,12 +33,12 @@ from hydra_zen import instantiate
 from omegaconf import OmegaConf
 from torch.utils.data import Dataset, Subset
 
-from tali_wit.boilerplate import Learner
-from tali_wit.callbacks import Callback
-from tali_wit.config import BaseConfig, collect_config_store
-from tali_wit.evaluators import ClassificationEvaluator
-from tali_wit.trainers import ClassificationTrainer
-from tali_wit.utils import get_logger, pretty_config, set_seed
+from tali.boilerplate import Learner
+from tali.callbacks import Callback
+from tali.config import BaseConfig, collect_config_store
+from tali.evaluators import ClassificationEvaluator
+from tali.trainers import ClassificationTrainer
+from tali.utils import get_logger, pretty_config, set_seed
 
 config_store = collect_config_store()
 
@@ -85,13 +85,13 @@ def run(cfg: BaseConfig) -> None:
             else None
         )
         experiment_tracker = neptune.init_run(
-            source_files=["tali_wit/*.py", "kubernetes/*.py"],
+            source_files=["tali/*.py", "kubernetes/*.py"],
             with_id=neptune_id,
         )
     else:
         global_step = 0
         experiment_tracker = neptune.init_run(
-            source_files=["tali_wit/*.py", "kubernetes/*.py"]
+            source_files=["tali/*.py", "kubernetes/*.py"]
         )
 
     wandb.init()

@@ -20,7 +20,7 @@ from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import CenterCropVideo
 from transformers import CLIPProcessor, WhisperProcessor
 
-from tali_wit.data.data import (
+from tali.data.data import (
     AnyModalSample,
     ModalityTypes,
     dataclass_collate,
@@ -28,14 +28,14 @@ from tali_wit.data.data import (
     get_base_modality,
     select_subtitles_between_timestamps,
 )
-from tali_wit.decorators import configurable
-from tali_wit.frame_extractor import (
+from tali.decorators import configurable
+from tali.frame_extractor import (
     FrameSelectionMethod,
     duration_in_seconds_from_path,
     extract_frames_pyav,
     extract_frames_torchvision,
 )
-from tali_wit.utils import get_logger, load_json, set_seed, timeout
+from tali.utils import get_logger, load_json, set_seed, timeout
 
 logger = get_logger(__name__)
 pytorchvideo_logger = get_logger("pytorchvideo", logging_level=logging.NOTSET)

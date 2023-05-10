@@ -10,14 +10,14 @@ import tqdm
 from torch.utils.data import DataLoader, Dataset, Subset
 from transformers import CLIPProcessor, WhisperProcessor
 
-from tali_wit.data import (
+from tali.data import (
     ModalityTypes,
     dataclass_collate,
     default_image_transforms,
 )
-from tali_wit.data_plus import get_next_on_error, get_submodality_name
-from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger, load_json, save_json
+from tali.data_plus import get_next_on_error, get_submodality_name
+from tali.decorators import configurable
+from tali.utils import get_logger, load_json, save_json
 
 logger = get_logger(__name__)
 

@@ -5,9 +5,9 @@ from typing import Any, Dict
 import torch
 from accelerate import Accelerator
 
-from tali_wit.callbacks import Interval
-from tali_wit.data_plus import *
-from tali_wit.models import extract_all_possible_pairs
+from tali.callbacks import Interval
+from tali.data_plus import *
+from tali.models import extract_all_possible_pairs
 
 from .decorators import collect_metrics
 from .utils import get_logger

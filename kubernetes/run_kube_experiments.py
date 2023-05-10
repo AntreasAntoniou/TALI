@@ -22,7 +22,7 @@ def get_scripts(exp_configs: List[ExperimentConfig]):
     for exp_config in exp_configs:
         current_script_text = (
             f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 "
-            f"/app/tali_wit/run.py exp_name=tali-2-{exp_config.model}-{exp_config.dataset}-{exp_config.seed} "
+            f"/app/tali/run.py exp_name=tali-2-{exp_config.model}-{exp_config.dataset}-{exp_config.seed} "
             f"dataset={exp_config.dataset} model={exp_config.model} num_workers={exp_config.num_workers} seed={exp_config.seed} learner.train_iters=100000"
         )
         script_list.append(current_script_text)

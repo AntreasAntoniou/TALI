@@ -120,12 +120,12 @@ Override anything in the config (foo.bar=value)
 
 exp_name: ???
 model:
-  _target_: tali_wit.models.build_model
+  _target_: tali.models.build_model
   model_name: google/vit-base-patch16-224-in21k
   pretrained: true
   num_classes: 101
 dataset:
-  _target_: tali_wit.data.build_dataset
+  _target_: tali.data.build_dataset
   dataset_name: food101
   data_dir: ${data_dir}
   sets_to_include: null
@@ -178,7 +178,7 @@ scheduler:
   k_decay: 1.0
   initialize: true
 learner:
-  _target_: tali_wit.boilerplate.Learner
+  _target_: tali.boilerplate.Learner
   experiment_name: ${exp_name}
   experiment_dir: ${hf_cache_dir}
   model: null
@@ -200,7 +200,7 @@ learner:
   print_model_parameters: false
 callbacks:
   hf_uploader:
-    _target_: tali_wit.callbacks.UploadCheckpointsToHuggingFace
+    _target_: tali.callbacks.UploadCheckpointsToHuggingFace
     repo_name: ${exp_name}
     repo_owner: ${hf_username}
 wandb_args:

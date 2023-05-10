@@ -6,10 +6,10 @@ from hydra_zen import instantiate
 from rich import print
 from rich.traceback import install
 
-from tali_wit.config import BaseConfig, collect_config_store
-from tali_wit.ctools import get_max_supported_batch_size
-from tali_wit.models import TALIModel
-from tali_wit.utils import get_logger, pretty_config, set_seed
+from tali.config import BaseConfig, collect_config_store
+from tali.ctools import get_max_supported_batch_size
+from tali.models import TALIModel
+from tali.utils import get_logger, pretty_config, set_seed
 
 logger = get_logger(name=__name__)
 config_store = collect_config_store()

@@ -4,9 +4,9 @@ import accelerate
 import torch
 import torch.nn as nn
 
-from tali_wit.data import get_base_modality
-from tali_wit.models import extract_all_possible_pairs
-from tali_wit.utils import get_logger
+from tali.data import get_base_modality
+from tali.models import extract_all_possible_pairs
+from tali.utils import get_logger
 
 logger = get_logger(__name__)
 

@@ -10,7 +10,7 @@ spec:
         - command:
             - /opt/conda/envs/main/bin/accelerate-launch
             - --mixed_precision=bf16
-            - /app/tali_wit/run.py
+            - /app/tali/run.py
             - exp_name=tali-2-tali_image_text_audio_base_patch16_224_scratch-wit_tali_omni-v-2306-debug-1
             - dataset=wit_tali_image_text_audio_dataset
             - model=tali_image_text_audio_base_patch16_224_scratch

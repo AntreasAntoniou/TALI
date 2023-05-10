@@ -1,6 +1,6 @@
 import os
 
-from tali_wit.data.data import ModalityTypes
+from tali.data.data import ModalityTypes
 
 os.environ["HYDRA_FULL_ERROR"] = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -18,14 +18,11 @@ import gradio as gr
 import torchaudio
 import torchvision
 
-from tali_wit.utils import get_logger
+from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
-from tali_wit.data.data_plus import (
-    TALIBaseDemoTransform,
-    TALIBaseTransformConfig,
-)
+from tali.data.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig
 
 data_root = "/data-fast0/TALI-bak/TALI/"
 transform = TALIBaseDemoTransform(

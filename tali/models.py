@@ -19,9 +19,9 @@ from transformers import (
 )
 from transformers.models.clip.modeling_clip import contrastive_loss
 
-from tali_wit.data.data import ModalityTypes, TALIDataset, dataclass_collate
-from tali_wit.decorators import configurable
-from tali_wit.utils import get_logger
+from tali.data.data import ModalityTypes, TALIDataset, dataclass_collate
+from tali.decorators import configurable
+from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -287,12 +287,7 @@ class TALIModel(nn.Module):
         self.model = nn.ModuleDict()
 
         self.clip_model = CLIPModel.from_pretrained(self.image_text_model_name)
-        logger.info(
-            f"Attention here: {(not self.multi_modality_config.image.pretrained and self.multi_modality_config.image.support)} "
-            f"and {(not self.multi_modality_config.text.pretrained and self.multi_modality_config.text.support)} "
-            f"specifically {self.multi_modality_config.image.pretrained} and {self.multi_modality_config.text.pretrained} "
-            f"and {self.multi_modality_config.image.support} and {self.multi_modality_config.text.support}"
-        )
+
         if (
             not self.multi_modality_config.image.pretrained
             and self.multi_modality_config.image.support
@@ -362,16 +357,6 @@ class TALIModel(nn.Module):
             delattr(self.model, "video")
             delattr(self, "video_linear_layer")
 
-        # if (
-        #     not self.multi_modality_config.image.pretrained
-        #     and self.multi_modality_config.image.support
-        # ):
-        #     self.model["image"].init_weights()
-        # if (
-        #     not self.multi_modality_config.text.pretrained
-        #     and self.multi_modality_config.text.support
-        # ):
-        #     self.model["text"].init_weights()
         if (
             not self.multi_modality_config.audio.pretrained
             and self.multi_modality_config.audio.support
@@ -467,66 +452,36 @@ class TALIModel(nn.Module):
         return output_dict | similarity_dict
 
     def forward_image(self, x: torch.Tensor) -> torch.Tensor:
-        cast_to_device_start_time = time.time()
         if len(x.shape) == 5:
             x = x.squeeze(1)
         x = x.to(self.image_linear_layer.weight.device)
-        cast_to_device_end_time = time.time()
-        logger.debug(
-            f"Cast Image to device time: {cast_to_device_end_time - cast_to_device_start_time}"
-        )
 
-        fprop_actual_start_time = time.time()
         features = self.model["image"](pixel_values=x).pooler_output
         projection_output = self.image_linear_layer(features)
-        fprop_actual_end_time = time.time()
-        logger.debug(
-            f"Fprop image actual time: {fprop_actual_end_time - fprop_actual_start_time}"
-        )
 
         return {"features": features, "projection_output": projection_output}
 
     def forward_text(self, x: torch.Tensor) -> torch.Tensor:
         if len(x.shape) == 3:
             x = x.squeeze(1)
-        cast_to_device_start_time = time.time()
-        x = x.to(self.text_linear_layer.weight.device)
-        cast_to_device_end_time = time.time()
-        logger.debug(
-            f"Cast Text to device time: {cast_to_device_end_time - cast_to_device_start_time}"
-        )
 
-        fprop_actual_start_time = time.time()
+        x = x.to(self.text_linear_layer.weight.device)
+
         features = self.model["text"](x).pooler_output
         projection_output = self.text_linear_layer(features)
-        fprop_actual_end_time = time.time()
-        logger.debug(
-            f"Fprop text actual time: {fprop_actual_end_time - fprop_actual_start_time}"
-        )
         return {"features": features, "projection_output": projection_output}
 
     def forward_audio(self, x: torch.Tensor) -> torch.Tensor:
         if len(x.shape) == 4:
             x = x.squeeze(1)
-        cast_to_device_start_time = time.time()
         x = x.to(self.audio_linear_layer.weight.device)
-        cast_to_device_end_time = time.time()
-        logger.debug(
-            f"cast audio to device time: {cast_to_device_end_time - cast_to_device_start_time}"
-        )
 
-        fprop_actual_start_time = time.time()
         features = self.model["audio"](x).last_hidden_state[:, -1, :]
         projection_output = self.audio_linear_layer(features)
-        fprop_actual_end_time = time.time()
-        logger.debug(
-            f"Fprop audio actual time: {fprop_actual_end_time - fprop_actual_start_time}"
-        )
 
         return {"features": features, "projection_output": projection_output}
 
     def forward_video(self, x: torch.Tensor) -> torch.Tensor:
-        logger.debug("Video ---------------------------------")
         input_shape = (
             x.shape
         )  # (batch_size, num_frames, channels, height, width)

@@ -11,12 +11,12 @@ from hydra_zen import MISSING, ZenField, builds, make_config
 from timm.scheduler import CosineLRScheduler
 from torch.utils.data import DataLoader
 
-from tali_wit.boilerplate import Learner
-from tali_wit.callbacks import UploadCheckpointsToHuggingFace
-from tali_wit.data import ModalityTypes
-from tali_wit.data_plus import *
-from tali_wit.utils import get_hydra_config, get_logger
-from tali_wit.wit import WITBase
+from tali.boilerplate import Learner
+from tali.callbacks import UploadCheckpointsToHuggingFace
+from tali.data import ModalityTypes
+from tali.data_plus import *
+from tali.utils import get_hydra_config, get_logger
+from tali.wit import WITBase
 
 from .models import ModalityConfig, MultiModalityConfig, TALIModel
 

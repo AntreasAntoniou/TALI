@@ -1,6 +1,6 @@
 callbacks:
   hf_uploader:
-    _target_: tali_wit.callbacks.UploadCheckpointsToHuggingFace
+    _target_: tali.callbacks.UploadCheckpointsToHuggingFace
     repo_name: tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306
     repo_owner: Antreas
 code_dir: /app/
@@ -26,7 +26,7 @@ dataloader:
 dataset:
   tali_dataset_image_text:
   - 128
-  - _target_: tali_wit.data_plus.TALIBase
+  - _target_: tali.data_plus.TALIBase
     audio_model_name: openai/whisper-base
     clip_duration_in_seconds: 10
     deterministic_sampling: false
@@ -84,7 +84,7 @@ dataset:
     use_model_preprocessing: true
   tali_dataset_omni:
   - 4
-  - _target_: tali_wit.data_plus.TALIBase
+  - _target_: tali.data_plus.TALIBase
     audio_model_name: openai/whisper-base
     clip_duration_in_seconds: 10
     deterministic_sampling: false
@@ -150,7 +150,7 @@ dataset:
     use_model_preprocessing: true
   wit_dataset_image_text:
   - 240
-  - _target_: tali_wit.wit.WITBase
+  - _target_: tali.wit.WITBase
     audio_model_name: openai/whisper-base
     deterministic_sampling: false
     dummy_batch_mode: false
@@ -172,7 +172,7 @@ hf_cache_dir: /experiments//tali-2-tali_omni_base_patch16_224-wit_tali_image_tex
 hf_repo_path: Antreas/tali-2-tali_omni_base_patch16_224-wit_tali_image_text_audio_video_dataset-2306
 hf_username: Antreas
 learner:
-  _target_: tali_wit.boilerplate.Learner
+  _target_: tali.boilerplate.Learner
   callbacks: null
   checkpoint_after_validation: true
   checkpoint_every_n_steps: 500
@@ -196,7 +196,7 @@ learner:
   val_dataloaders: null
 logger_level: INFO
 model:
-  _target_: tali_wit.models.TALIModel
+  _target_: tali.models.TALIModel
   audio_model_name: openai/whisper-base
   image_text_model_name: openai/clip-vit-base-patch16
   multi_modality_config:

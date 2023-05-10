@@ -1,6 +1,6 @@
 from datasets import Dataset
 
-from tali_wit.dataset_cache_generator import tali_cache_generator
+from tali.dataset_cache_generator import tali_cache_generator
 
 
 def train_tali_generator():
