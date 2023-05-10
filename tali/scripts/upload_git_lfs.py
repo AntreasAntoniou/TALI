@@ -4,7 +4,7 @@ from tqdm import tqdm
 import fire
 
 
-def upload_lfs_files(target_dir):
+def upload_lfs_files(target_dir, upload_batch_size=10):
     # Convert to a Path object
     target_dir = Path(target_dir)
 
@@ -30,38 +30,38 @@ def upload_lfs_files(target_dir):
         subprocess.run(["git", "add", str(file)], cwd=target_dir)
 
         # If we've processed 10 files, commit and push
-        if count % 10 == 0:
+        if count % upload_batch_size == 0:
             subprocess.run(
                 [
                     "git",
                     "commit",
                     "-m",
-                    f"Adding files {count - 9} to {count}",
+                    f"Adding files {count - upload_batch_size} to {count}",
                 ],
                 cwd=target_dir,
             )
             subprocess.run(["git", "push", "origin", "main"], cwd=target_dir)
 
             # Delete the last 10 files from the local system
-            for i in range(count - 9, count + 1):
+            for i in range(count - upload_batch_size + 1, count + 1):
                 files[i].unlink()
 
             # Update the progress bar
             pbar.update(10)
 
     # If there are any remaining files (less than 10), commit and push those
-    if count % 10 != 0:
+    if count % upload_batch_size != 0:
         subprocess.run(
             ["git", "commit", "-m", "Adding remaining files"], cwd=target_dir
         )
         subprocess.run(["git", "push", "origin", "main"], cwd=target_dir)
 
         # Delete the remaining files from the local system
-        for i in range(count - count % 10 + 1, count + 1):
+        for i in range(count - count % upload_batch_size + 1, count + 1):
             files[i].unlink()
 
         # Final update to the progress bar
-        pbar.update(count % 10)
+        pbar.update(count % upload_batch_size)
 
     pbar.close()
 
