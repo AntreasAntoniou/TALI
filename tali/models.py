@@ -173,8 +173,9 @@ class VideoTransformer(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x + self.pos_encoder(x)
         x = self.transformer(x)[:, -1, :]  # take the last frame
-        x = self.output_norm(x)
-        return x
+        raw_features = self.transformer(x)
+        features = self.output_norm(x)
+        return {"features": features, "raw_features": raw_features}
 
 
 def get_device():
