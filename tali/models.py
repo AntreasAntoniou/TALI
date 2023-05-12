@@ -462,7 +462,7 @@ class TALIModel(nn.Module):
             x = x.squeeze(1)
 
         x = x.to(self.text_linear_layer.weight.device)
-        output = self.model["text"](x)
+        out = self.model["text"](x)
         features = output.pooler_output
         raw_features = out.last_hidden_state
         projection_output = self.text_linear_layer(features)
