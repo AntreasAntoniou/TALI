@@ -463,7 +463,7 @@ class TALIModel(nn.Module):
 
         x = x.to(self.text_linear_layer.weight.device)
         out = self.model["text"](x)
-        features = output.pooler_output
+        features = out.pooler_output
         raw_features = out.last_hidden_state
         projection_output = self.text_linear_layer(features)
         return {
