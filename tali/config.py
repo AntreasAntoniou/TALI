@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from tali.boilerplate import Learner
 from tali.callbacks import UploadCheckpointsToHuggingFace
 from tali.data.data import ModalityTypes
-from tali.data.data_plus import *
+from tali.data.data_plus import TALIBase
 from tali.utils import get_hydra_config, get_logger
 from tali.wit import WITBase
 
@@ -102,7 +102,6 @@ tali_dataset_config = TALIBase.build_config(
     num_audio_frames=2 * 16000,
     clip_duration_in_seconds=10,
     deterministic_sampling=False,
-    infinite_sampling=False,
     dummy_batch_mode=DUMMY_BATCH_MODE,
     image_text_model_name=IMAGE_TEXT_MODEL_NAME,
     audio_model_name=AUDIO_MODEL_NAME,
