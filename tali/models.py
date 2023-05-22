@@ -741,6 +741,7 @@ class TALIModelDataParallel(nn.Module):
         audio_model_name: str = "openai/whisper-small",
         multi_modality_config: MultiModalityConfig = MultiModalityConfig(),
     ):
+        super().__init__()
         self.model = TALIModule(
             image_text_model_name=image_text_model_name,
             audio_model_name=audio_model_name,
