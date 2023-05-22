@@ -15,7 +15,7 @@ from tali.data import (
     dataclass_collate,
     default_image_transforms,
 )
-from tali.data_plus import get_next_on_error, get_submodality_name
+from tali.data.data_plus import get_next_on_error, get_submodality_name
 from tali.decorators import configurable
 from tali.utils import get_logger, load_json, save_json
 

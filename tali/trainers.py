@@ -6,7 +6,7 @@ import torch
 from accelerate import Accelerator
 
 from tali.callbacks import Interval
-from tali.data_plus import *
+from tali.data.data_plus import *
 from tali.models import extract_all_possible_pairs
 
 from .decorators import collect_metrics

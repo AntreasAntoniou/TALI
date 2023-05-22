@@ -9,7 +9,7 @@ from rich.traceback import install
 
 from tali.ctools import get_max_supported_batch_size
 from tali.data import dataclass_collate
-from tali.data_plus import CustomConcatDataset
+from tali.data.data_plus import CustomConcatDataset
 from tali.models import TALIModel
 from tali.utils import create_hf_model_repo_and_download_maybe
 
