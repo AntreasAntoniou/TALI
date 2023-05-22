@@ -732,6 +732,7 @@ class TALIModule(nn.Module):
         }
 
 
+@configurable
 class TALIModelDataParallel(nn.Module):
     def __init__(
         self,
