@@ -14,11 +14,16 @@ from torch.utils.data import DataLoader
 from tali.boilerplate import Learner
 from tali.callbacks import UploadCheckpointsToHuggingFace
 from tali.data import ModalityTypes
-from tali.data_plus import *
+from tali.data.data_plus import *
 from tali.utils import get_hydra_config, get_logger
 from tali.wit import WITBase
 
-from .models import ModalityConfig, MultiModalityConfig, TALIModel
+from .models import (
+    ModalityConfig,
+    MultiModalityConfig,
+    TALIModel,
+    TALIModelDataParallel,
+)
 
 CHECKPOINT_DIR = "${hf_cache_dir}"
 NUM_WORKERS = "${num_workers}"
@@ -72,7 +77,7 @@ accelerator_config = builds(Accelerator, populate_full_signature=True)
 
 cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()
 
-model_config = TALIModel.build_config(populate_full_signature=True)
+model_config = TALIModelDataParallel.build_config(populate_full_signature=True)
 
 tali_dataset_config = TALIBase.build_config(
     populate_full_signature=True,
