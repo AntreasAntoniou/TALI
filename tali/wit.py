@@ -10,7 +10,7 @@ import tqdm
 from torch.utils.data import DataLoader, Dataset, Subset
 from transformers import CLIPProcessor, WhisperProcessor
 
-from tali.data import (
+from tali.data.data import (
     ModalityTypes,
     dataclass_collate,
     default_image_transforms,
