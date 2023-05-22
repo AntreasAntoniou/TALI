@@ -1,10 +1,12 @@
 from pathlib import Path
 import subprocess
+import sys
 from tqdm import tqdm
+from rich import print
 import fire
 
 
-def upload_lfs_files(target_dir, upload_batch_size=10):
+def upload_lfs_files(target_dir, upload_batch_size: int = 10):
     # Convert to a Path object
     target_dir = Path(target_dir)
 
@@ -15,7 +17,11 @@ def upload_lfs_files(target_dir, upload_batch_size=10):
     files = list(target_dir.glob("**/*"))
 
     # Filter out directories, hidden files and files inside hidden directories
-    files = [f for f in files if f.is_file() and not ".git" in f.parts]
+    files = [
+        f
+        for f in files
+        if f.is_file() and ".git" not in f.parts and not f.name.startswith(".")
+    ]
 
     total = len(files)
 
@@ -24,13 +30,29 @@ def upload_lfs_files(target_dir, upload_batch_size=10):
 
     for count, file in enumerate(files, 1):
         # Track the file with Git LFS
-        subprocess.run(["git", "lfs", "track", str(file)], cwd=target_dir)
+        print(f"Tracking {file}")
+
+        subprocess.run(
+            ["git", "lfs", "track", file.as_posix()],
+            cwd=target_dir,
+            stdout=sys.stdout,
+            stderr=sys.stdout,
+        )
 
         # Add the file to the repository
-        subprocess.run(["git", "add", str(file)], cwd=target_dir)
+        print(f"Adding {file}")
+        subprocess.run(
+            ["git", "add", file.as_posix()],
+            cwd=target_dir,
+            stdout=sys.stdout,
+            stderr=sys.stdout,
+        )
 
         # If we've processed 10 files, commit and push
         if count % upload_batch_size == 0:
+            print(
+                f"Committing and pushing files {count - upload_batch_size} to {count}"
+            )
             subprocess.run(
                 [
                     "git",
@@ -39,8 +61,16 @@ def upload_lfs_files(target_dir, upload_batch_size=10):
                     f"Adding files {count - upload_batch_size} to {count}",
                 ],
                 cwd=target_dir,
+                stdout=sys.stdout,
+                stderr=sys.stdout,
             )
-            subprocess.run(["git", "push", "origin", "main"], cwd=target_dir)
+            print("Pushing to remote")
+            subprocess.run(
+                ["git", "push", "origin", "main"],
+                cwd=target_dir,
+                stdout=sys.stdout,
+                stderr=sys.stdout,
+            )
 
             # Delete the last 10 files from the local system
             for i in range(count - upload_batch_size + 1, count + 1):
