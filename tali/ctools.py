@@ -3,8 +3,8 @@ from typing import Any, Dict, Optional
 import accelerate
 import torch
 import torch.nn as nn
+from tali.data.data import get_base_modality
 
-from tali.data import get_base_modality
 from tali.models import extract_all_possible_pairs
 from tali.utils import get_logger
 
