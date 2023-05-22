@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 from tali.boilerplate import Learner
 from tali.callbacks import UploadCheckpointsToHuggingFace
-from tali.data import ModalityTypes
+from tali.data.data import ModalityTypes
 from tali.data.data_plus import *
 from tali.utils import get_hydra_config, get_logger
 from tali.wit import WITBase
