@@ -148,9 +148,6 @@ class WITBase(Dataset):
     def __getitem__(self, idx):
         episode_dict = {}
 
-        if idx >= self.dataset_size:
-            idx = idx % self.dataset_size
-
         if self.dummy_batch_mode and self.dummy_batch is not None:
             return self.dummy_batch
 
@@ -186,8 +183,8 @@ class WITBase(Dataset):
 
     @get_next_on_error
     def get_sample(self, idx):
-        if self.infinite_sampling:
-            idx = idx % len(self.dataset)
+        if idx >= self.dataset_size:
+            idx = idx % self.dataset_size
 
         sample = self.dataset[idx] | {"wit_idx": idx}
         sample = self.wit_transform(sample)
@@ -287,7 +284,6 @@ if __name__ == "__main__":
             tali_dataset_dir="/data/",
             image_size=224,
             deterministic_sampling=True,
-            infinite_sampling=False,  # True,
             priority_caption_language="en",
             set_name="train",
             dummy_batch_mode=False,
