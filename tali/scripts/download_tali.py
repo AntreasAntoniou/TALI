@@ -12,7 +12,7 @@ from huggingface_hub import snapshot_download, hf_hub_download
 
 hf_hub_download(
     filename="caption_data.7z",
-    folder_path="data/",
+    subfolder="data/",
     repo_id="Antreas/TALI",
     repo_type="dataset",
     cache_dir="/tali-data/TALI",
