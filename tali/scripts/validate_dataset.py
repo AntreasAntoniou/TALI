@@ -84,8 +84,8 @@ if __name__ == "__main__":
             item["youtube_content_video"] = updated_video_list
             yield item
 
-    for item in train_generator():
-        print(item)
+    # for item in train_generator():
+    #     print(item)
 
     # train_data = datasets.Dataset.from_generator(train_generator, num_proc=64)
     # train_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"train-set")
@@ -97,3 +97,27 @@ if __name__ == "__main__":
     #     test_generator, writer_batch_size=1000
     # )
     # test_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"test-set")
+
+    set_name = "train"
+    dataset = datasets.load_from_disk(
+        pathlib.Path(tali_dataset_dir) / f"{set_name}-set",
+        keep_in_memory=True,
+    )
+    updated_video_list = []
+    for item in dataset:
+        video_list = item["youtube_content_video"]
+        for video_path in video_list:
+            video_path: pathlib.Path = (
+                pathlib.Path(
+                    tali_dataset_dir.replace("/data/", tali_dataset_dir)
+                )
+                / video_path
+            )
+            print(
+                f"Video {video_path.as_posix()}, exists: {video_path.exists()}"
+            )
+            if video_path.exists():
+                updated_video_list.append(video_path.as_posix())
+
+        item["youtube_content_video"] = updated_video_list
+        print(list(item.keys()))
