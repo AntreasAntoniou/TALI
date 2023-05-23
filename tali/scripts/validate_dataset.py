@@ -118,6 +118,7 @@ if __name__ == "__main__":
             )
             if video_path.exists():
                 updated_video_list.append(video_path.as_posix())
-
+        if len(updated_video_list) == 0:
+            continue
         item["youtube_content_video"] = updated_video_list
         print(list(item.keys()))
