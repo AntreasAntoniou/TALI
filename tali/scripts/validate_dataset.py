@@ -72,7 +72,8 @@ if __name__ == "__main__":
                             tali_dataset_dir, "/data/"
                         )
                     )
-
+            if len(updated_video_list) == 0:
+                continue
             item["youtube_content_video"] = updated_video_list
             yield item
 
