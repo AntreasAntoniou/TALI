@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     # train_data = datasets.Dataset.from_generator(train_generator)
     # train_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"train-set")
-    val_data = datasets.Dataset.from_generator(val_generator)
-    val_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"val-set")
+    # val_data = datasets.Dataset.from_generator(val_generator)
+    # val_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"val-set")
     test_data = datasets.Dataset.from_generator(test_generator)
     test_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"test-set")
