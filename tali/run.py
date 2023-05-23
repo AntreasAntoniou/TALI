@@ -114,21 +114,21 @@ def run(cfg: BaseConfig) -> None:
         train_dataset: Dataset = instantiate(
             dataset,
             set_name="train",
-            infinite_sampling=True,
+            total_num_samples=10000000,
             num_samples_per_episode=batch_size,
         )
 
         val_dataset: Dataset = instantiate(
             dataset,
             set_name="val",
-            infinite_sampling=False,
+            total_num_samples=None,
             num_samples_per_episode=batch_size,
         )
 
         test_dataset: Dataset = instantiate(
             dataset,
             set_name="test",
-            infinite_sampling=False,
+            total_num_samples=None,
             num_samples_per_episode=batch_size,
         )
 

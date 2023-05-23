@@ -99,6 +99,7 @@ tali_dataset_config = TALIBase.build_config(
     image_size=224,
     num_samples_per_episode=32,
     num_video_frames=10,
+    total_num_samples=10000000,
     num_audio_frames=2 * 16000,
     clip_duration_in_seconds=10,
     deterministic_sampling=False,
