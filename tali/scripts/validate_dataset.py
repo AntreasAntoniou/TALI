@@ -27,6 +27,7 @@ if __name__ == "__main__":
             if len(updated_video_list) == 0:
                 continue
             item["youtube_content_video"] = updated_video_list
+            print(list(item.keys()))
             yield item
 
     def val_generator():
