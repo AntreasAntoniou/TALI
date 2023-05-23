@@ -103,7 +103,7 @@ if __name__ == "__main__":
         pathlib.Path(tali_dataset_dir) / f"{set_name}-set",
         keep_in_memory=True,
     )
-    print(dataset)
+
     updated_video_list = []
     for item in dataset:
         video_list = item["youtube_content_video"]
