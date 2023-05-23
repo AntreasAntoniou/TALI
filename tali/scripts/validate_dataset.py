@@ -2,7 +2,7 @@ import datasets
 import pathlib
 from tqdm.auto import tqdm
 
-tali_dataset_dir = "/tali-data/TALI"
+tali_dataset_dir = "/tali-data/"
 
 if __name__ == "__main__":
     # def train_generator():
