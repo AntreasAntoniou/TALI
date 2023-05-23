@@ -32,7 +32,7 @@ class WITBase(Dataset):
         set_name: str,
         num_samples_per_episode: int,
         deterministic_sampling: bool = False,
-        infinite_sampling: bool = False,
+        total_num_samples: Optional[int] = None,
         priority_caption_language: Optional[str] = None,
         dummy_batch_mode: bool = False,
         image_text_model_name: str = "openai/clip-vit-base-patch32",
@@ -99,10 +99,14 @@ class WITBase(Dataset):
         self.dummy_batch_mode = dummy_batch_mode
         self.dummy_batch = None
 
-        self.infinite_sampling = infinite_sampling
-        self.num_samples = 10**8 if infinite_sampling else len(self.dataset)
+        self.num_samples = (
+            total_num_samples
+            if total_num_samples is not None
+            else len(self.dataset)
+        )
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
+        self.dataset_size = len(self.dataset)
         self.transforms = self.build_transforms()
 
     def build_transforms(self):
@@ -143,6 +147,9 @@ class WITBase(Dataset):
 
     def __getitem__(self, idx):
         episode_dict = {}
+
+        if idx >= self.dataset_size:
+            idx = idx % self.dataset_size
 
         if self.dummy_batch_mode and self.dummy_batch is not None:
             return self.dummy_batch
