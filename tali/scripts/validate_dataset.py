@@ -1,6 +1,6 @@
 import datasets
 import pathlib
-import tqdm.auto as tqdm
+from tqdm.auto import tqdm
 
 tali_dataset_dir = "/tali-data/TALI"
 
