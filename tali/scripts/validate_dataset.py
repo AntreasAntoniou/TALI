@@ -12,4 +12,4 @@ if __name__ == "__main__":
     )
 
     for item in tqdm(dataset):
-        print(item)
+        print(item["youtube_content_video"])
