@@ -77,8 +77,8 @@ if __name__ == "__main__":
             item["youtube_content_video"] = updated_video_list
             yield item
 
-    train_data = datasets.Dataset.from_generator(train_generator)
-    train_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"train-set")
+    # train_data = datasets.Dataset.from_generator(train_generator)
+    # train_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"train-set")
     val_data = datasets.Dataset.from_generator(val_generator)
     val_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"val-set")
     test_data = datasets.Dataset.from_generator(test_generator)
