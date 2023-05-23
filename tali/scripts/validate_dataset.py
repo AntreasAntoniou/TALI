@@ -13,7 +13,7 @@ if __name__ == "__main__":
             keep_in_memory=True,
         )
         updated_video_list = []
-        for item in tqdm(dataset):
+        for item in dataset:
             video_list = item["youtube_content_video"]
             for video_path in video_list:
                 video_path: pathlib.Path = (
@@ -40,7 +40,7 @@ if __name__ == "__main__":
             keep_in_memory=True,
         )
         updated_video_list = []
-        for item in tqdm(dataset):
+        for item in dataset:
             video_list = item["youtube_content_video"]
 
             for video_path in video_list:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
             keep_in_memory=True,
         )
         updated_video_list = []
-        for item in tqdm(dataset):
+        for item in dataset:
             video_list = item["youtube_content_video"]
             for video_path in video_list:
                 video_path: pathlib.Path = (
