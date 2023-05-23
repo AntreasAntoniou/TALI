@@ -117,7 +117,6 @@ wit_dataset_config = WITBase.build_config(
     image_size=224,
     num_samples_per_episode=32,
     deterministic_sampling=False,
-    infinite_sampling=False,  # True,
     priority_caption_language="en",
     dummy_batch_mode=DUMMY_BATCH_MODE,
     image_text_model_name=IMAGE_TEXT_MODEL_NAME,
