@@ -22,6 +22,9 @@ if __name__ == "__main__":
                     )
                     / video_path
                 )
+                print(
+                    f"Video {video_path.as_posix()}, exists: {video_path.exists()}"
+                )
                 if video_path.exists():
                     updated_video_list.append(video_path.as_posix())
             if len(updated_video_list) == 0:
