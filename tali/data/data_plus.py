@@ -537,7 +537,7 @@ class TALIBase(Dataset):
         self,
         set_name: str,
         tali_dataset_dir: str,
-        modality_list: List[str],
+        modality_list: List,
         num_samples_per_episode: int,
         rng_seed: int = 42,
         top_k_tali: int = 10,
