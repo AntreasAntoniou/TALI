@@ -1,30 +1,29 @@
 #!/bin/bash
-export NEPTUNE_API_TOKEN=""
-export NEPTUNE_PROJECT=""
+export NEPTUNE_API_TOKEN="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ=="
+export NEPTUNE_PROJECT=MachineLearningBrewery/gate-dev-0-8-0
 export NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'
 
-export WANDB_API_KEY=""
-export WANDB_ENTITY=""
-export WANDB_PROJECT=""
+export WANDB_API_KEY="821661c6ee1657a2717093701ab76574ae1a9be0"
+export WANDB_ENTITY=machinelearningbrewery
+export WANDB_PROJECT=tali-godzilla
 
-export EXPERIMENT_NAME=""
-export HF_USERNAME=""
-export HF_TOKEN=""
+export KAGGLE_USERNAME="antreasantoniou"
+export KAGGLE_KEY="d14aab63e71334cfa118bd5251bf85da"
+
+export PYTEST_DIR="/data/"
+
+export EXPERIMENT_NAME=tali-godzilla
+export HF_USERNAME="Antreas"
+export HF_TOKEN=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
+export HF_CACHE_DIR=$PYTEST_DIR
 
 export TOKENIZERS_PARALLELISM=False
 
-export CODE_DIR=/app/
-export PROJECT_DIR=/app/
-export EXPERIMENT_NAME_PREFIX="tali-exp-2"
-export EXPERIMENTS_DIR=/experiments/
-export EXPERIMENT_DIR=/experiments/
-export TALI_DATASET_DIR=/tali-data/
-export WIT_DATASET_DIR=/wit-data/
-export MODEL_DIR=/model/
-
-export CLUSTER_NAME=spot-gpu-cluster-1
-export CLUSTER_ZONE=us-central1-c
-export CLUSTER_PROJECT=tali-multi-modal
-
-export DOCKER_IMAGE_PATH="gcr.io/tali-multi-modal/tali:latest"
-
+export CODE_DIR=/devcode/tali_wit
+export PROJECT_DIR=/devcode/tali_wit
+export EXPERIMENT_NAME_PREFIX="talis-base-16-witav-godzilla"
+export EXPERIMENTS_DIR=/data1/experiments/
+export EXPERIMENT_DIR=/data1/experiments/
+export TALI_DATASET_DIR=/data0/TALI-data/
+export WIT_DATASET_DIR=/data1/wit/
+export MODEL_DIR=/data1/model/
