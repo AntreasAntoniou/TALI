@@ -108,7 +108,7 @@ if __name__ == "__main__":
         video_list = item["youtube_content_video"]
         for video_path in video_list:
             print(video_path)
-            temp_path = tali_dataset_dir.replace("/data/", tali_dataset_dir)
+            temp_path = video_path.replace("/data/", tali_dataset_dir)
             print(temp_path)
             video_path_actual: pathlib.Path = pathlib.Path(temp_path)
             print(
