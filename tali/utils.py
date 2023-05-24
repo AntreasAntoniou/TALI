@@ -445,7 +445,7 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
 
         if cfg.resume_from_checkpoint is not None:
             logger.info(f"Resume from {cfg.resume_from_checkpoint}")
-            return cfg.resume_from_checkpoint, repo_url
+            return pathlib.Path(cfg.resume_from_checkpoint), repo_url
 
         if cfg.download_checkpoint_with_name is not None:
             logger.info(
