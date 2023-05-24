@@ -198,6 +198,10 @@ def extract_audio(num_audio_frames, audio_frames):
     return audio
 
 
+def get_submodality_name(item: AnyModalSample):
+    return str(item.sub_modality).replace("SubModalityTypes.", "")
+
+
 @dataclass
 class TALIBaseTransformConfig:
     root_filepath: Union[str, pathlib.Path]
