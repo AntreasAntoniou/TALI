@@ -102,27 +102,27 @@ if __name__ == "__main__":
         pathlib.Path(tali_dataset_dir) / f"{set_name}-set",
         keep_in_memory=True,
     )
-    print(dataset[0])
 
-    # updated_video_list = []
-    # for item in dataset:
-    #     video_list = item["youtube_content_video"]
-    #     print(video_list)
-    #     for video_path in video_list:
-    #         video_path: pathlib.Path = (
-    #             pathlib.Path(
-    #                 tali_dataset_dir.replace("/data/", tali_dataset_dir)
-    #             )
-    #             / video_path
-    #         )
-    #         print(
-    #             f"Video {video_path.as_posix()}, exists: {video_path.exists()}"
-    #         )
-    #         if video_path.exists():
-    #             updated_video_list.append(video_path.as_posix())
+    updated_video_list = []
+    for item in dataset:
+        video_list = item["youtube_content_video"]
+        print(video_list)
+        for video_path in video_list:
+            video_path: pathlib.Path = (
+                pathlib.Path(
+                    tali_dataset_dir.replace("/data/", tali_dataset_dir)
+                )
+                / video_path
+            )
+            print(
+                f"Video {video_path.as_posix()}, exists: {video_path.exists()}"
+            )
+            if video_path.exists():
+                updated_video_list.append(video_path.as_posix())
 
-    #     # if len(updated_video_list) == 0:
-    #     #     continue
+        if len(updated_video_list) == 0:
+            continue
 
-    #     item["youtube_content_video"] = updated_video_list
-    #     print(list(item.keys()))
+        item["youtube_content_video"] = updated_video_list
+        print(list(item.keys()))
+        print(len(item["youtube_content_video"]))
