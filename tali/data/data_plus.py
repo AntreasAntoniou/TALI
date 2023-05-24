@@ -461,7 +461,7 @@ class TALIBaseTransform:
                         ModalityTypes.youtube_image.value
                     )
                 ] = youtube_media_data["image"]
-        return clip_starting_second, clip_ending_second, output_dict
+        return output_dict, clip_starting_second, clip_ending_second
 
     def _get_youtube_description(self, input_dict):
         return (
