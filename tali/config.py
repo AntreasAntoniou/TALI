@@ -77,7 +77,7 @@ accelerator_config = builds(Accelerator, populate_full_signature=True)
 
 cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()
 
-model_config = TALIModelDataParallel.build_config(populate_full_signature=True)
+model_config = TALIModel.build_config(populate_full_signature=True)
 
 tali_dataset_config = TALIBase.build_config(
     populate_full_signature=True,
