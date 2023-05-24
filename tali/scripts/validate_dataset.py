@@ -103,9 +103,9 @@ if __name__ == "__main__":
         keep_in_memory=True,
     )
 
-    updated_video_list = []
     for item in dataset:
         video_list = item["youtube_content_video"]
+        updated_video_list = []
         for video_path in video_list:
             temp_path = video_path.replace(
                 "/data/", tali_dataset_dir + "TALI/"
