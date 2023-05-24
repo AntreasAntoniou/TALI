@@ -195,7 +195,7 @@ class TALIBaseTransform:
         self.modality_list = [
             get_submodality_name(item) for item in self.config.modality_list
         ]
-        self.image_transform = default_image_transforms(self.config.image_size)
+        self.image_transform = lambda x: x
         self.video_transform = (
             lambda x, start, end, rng: videoclip_to_video_audio_tensors(
                 video_path=x.replace(
@@ -859,7 +859,11 @@ class TALIBase(Dataset):
                     and isinstance(value, torch.Tensor)
                 ):
                     value = torch.cat(
-                        [value, 49407 * torch.ones(77 - len(value)).long()]
+                        [
+                            value,
+                            self.image_text_processor.tokenizer.pad_token_id
+                            * torch.ones(77 - len(value)).long(),
+                        ]
                     )
                 if key not in episode_dict:
                     episode_dict[key] = [value]
