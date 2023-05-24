@@ -443,6 +443,10 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
         ):
             return None, repo_url
 
+        if cfg.resume_from_checkpoint is not None:
+            logger.info(f"Resume from {cfg.resume_from_checkpoint}")
+            return cfg.resume_from_checkpoint, repo_url
+
         if cfg.download_checkpoint_with_name is not None:
             logger.info(
                 f"Download {cfg.download_checkpoint_with_name} checkpoint, if it exists, from the huggingface hub 👨🏻‍💻"
