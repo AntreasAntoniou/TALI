@@ -222,6 +222,7 @@ class BaseConfig:
 
 # Using hydra might look a bit more verbose but it saves having to manually define
 # future args, and makes it a lot easier to add whatever we need from the command line
+batch_size_multiplier = 2
 
 
 def collect_config_store():
@@ -603,7 +604,7 @@ def collect_config_store():
         name="wit_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                240,
+                int(floor(240 * batch_size_multiplier)),
                 wit_dataset_image_text_config,
             ),
         },
@@ -614,7 +615,7 @@ def collect_config_store():
         name="tali_image_text_dataset",
         node={
             "tali_dataset_image_text": (
-                128,
+                int(floor(128 * batch_size_multiplier)),
                 tali_dataset_image_text_config,
             ),
         },
@@ -625,11 +626,11 @@ def collect_config_store():
         name="wit_tali_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                240,
+                int(floor(240 * batch_size_multiplier)),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                128,
+                int(floor(128 * batch_size_multiplier)),
                 tali_dataset_image_text_config,
             ),
         },
@@ -640,11 +641,11 @@ def collect_config_store():
         name="wit_tali_image_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                240,
+                int(floor(240 * batch_size_multiplier)),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                8,
+                int(floor(8 * batch_size_multiplier)),
                 tali_dataset_image_audio_config,
             ),
         },
@@ -655,11 +656,11 @@ def collect_config_store():
         name="wit_tali_image_video_dataset",
         node={
             "wit_dataset_image_text": (
-                240,
+                int(floor(240 * batch_size_multiplier)),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
-                8,
+                int(floor(8 * batch_size_multiplier)),
                 tali_dataset_image_video_config,
             ),
         },
@@ -670,19 +671,19 @@ def collect_config_store():
         name="wit_tali_image_text_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                240,
+                int(floor(240 * batch_size_multiplier)),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                128,
+                int(floor(128 * batch_size_multiplier)),
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                8,
+                int(floor(8 * batch_size_multiplier)),
                 tali_dataset_image_audio_config,
             ),
             "tali_dataset_text_audio": (
-                8,
+                int(floor(8 * batch_size_multiplier)),
                 tali_dataset_text_audio_config,
             ),
         },
@@ -693,15 +694,15 @@ def collect_config_store():
         name="wit_tali_image_text_audio_video_dataset",
         node={
             "wit_dataset_image_text": (
-                240,
+                int(floor(240 * batch_size_multiplier)),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                128,
+                int(floor(128 * batch_size_multiplier)),
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_omni": (
-                4,
+                int(floor(4 * batch_size_multiplier)),
                 tali_dataset_omni_config,
             ),
             # "tali_dataset_image_audio": (
