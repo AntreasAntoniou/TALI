@@ -81,14 +81,19 @@ if __name__ == "__main__":
             item["youtube_content_video"] = updated_video_list
             yield item
 
-    train_data = datasets.Dataset.from_generator(train_generator, num_proc=64)
+    train_data = datasets.Dataset.from_generator(
+        train_generator, num_proc=64, keep_in_memory=True
+    )
     train_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"train-set")
     val_data = datasets.Dataset.from_generator(
-        val_generator, writer_batch_size=1000
+        val_generator, writer_batch_size=1000, num_proc=64, keep_in_memory=True
     )
     val_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"val-set")
     test_data = datasets.Dataset.from_generator(
-        test_generator, writer_batch_size=1000
+        test_generator,
+        writer_batch_size=1000,
+        num_proc=64,
+        keep_in_memory=True,
     )
     test_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"test-set")
     dataset = datasets.DatasetDict(
