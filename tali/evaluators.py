@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import Any, List
 
 import torch
-from accelerate import Accelerator
 from torch.utils.data import DataLoader
+from tali.data.data_plus import generate_hierarchical_data_dict
 
-from tali.data.data_plus import *
+
 from tali.models import extract_all_possible_pairs
 from tali.trainers import StepOutput
 
@@ -46,7 +46,7 @@ class ClassificationEvaluator(Evaluator):
         self.state_dict = {}
         self.experiment_tracker = experiment_tracker
 
-    def step(self, model, batch, global_step, accelerator: Accelerator):
+    def step(self, model, batch, global_step):
         try:
             output_dict = model.forward(batch, return_loss=True)
             loss = torch.mean(
@@ -117,7 +117,6 @@ class ClassificationEvaluator(Evaluator):
         model,
         batch,
         global_step,
-        accelerator: Accelerator,
     ):
         model.eval()
         batch = generate_hierarchical_data_dict(batch)
@@ -146,7 +145,6 @@ class ClassificationEvaluator(Evaluator):
                     model=model,
                     batch=sample,
                     global_step=global_step,
-                    accelerator=accelerator,
                 )
 
                 keys = list(step_output.output_dict.keys())
@@ -188,7 +186,6 @@ class ClassificationEvaluator(Evaluator):
         model,
         batch,
         global_step,
-        accelerator: Accelerator,
     ):
         model.eval()
         batch = generate_hierarchical_data_dict(batch)
@@ -216,7 +213,6 @@ class ClassificationEvaluator(Evaluator):
                     model=model,
                     batch=sample,
                     global_step=global_step,
-                    accelerator=accelerator,
                 )
 
                 keys = list(step_output.output_dict.keys())

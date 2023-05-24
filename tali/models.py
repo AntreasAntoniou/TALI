@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional
 import torch.nn.functional as F
-from accelerate import Accelerator
 from rich import print
 from torch.utils.data import DataLoader
 from transformers import (
@@ -653,16 +652,19 @@ class TALIModule(nn.Module):
         x: Dict[str, torch.Tensor],
         restrict_source_modality: Optional[List[str]] = None,
     ) -> torch.Tensor:
-        output_dict = {modality: {} for modality in self.model.keys()}
-        for modality in self.model.keys():
-            if modality in x:
-                if restrict_source_modality is not None:
-                    if modality not in restrict_source_modality:
-                        continue
-                for sub_modality in x[modality].keys():
-                    output_dict[modality][sub_modality] = getattr(
-                        self, f"forward_{modality}"
-                    )(x[modality][sub_modality])
+        with torch.autocast(
+            device_type="cuda", dtype=torch.float16, enabled=True
+        ):
+            output_dict = {modality: {} for modality in self.model.keys()}
+            for modality in self.model.keys():
+                if modality in x:
+                    if restrict_source_modality is not None:
+                        if modality not in restrict_source_modality:
+                            continue
+                    for sub_modality in x[modality].keys():
+                        output_dict[modality][sub_modality] = getattr(
+                            self, f"forward_{modality}"
+                        )(x[modality][sub_modality])
 
         return output_dict
 

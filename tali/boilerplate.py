@@ -6,7 +6,6 @@ from typing import Any, List, Union
 
 import torch
 import torch.nn as nn
-from accelerate import Accelerator, DistributedDataParallelKwargs
 from neptune import Run
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -138,40 +137,6 @@ class Learner(nn.Module):
             test_dataloaders=self.test_dataloaders,
         )
 
-        # use if you want to debug unused parameter errors in DDP
-        self.accelerator = Accelerator(
-            kwargs_handlers=[
-                DistributedDataParallelKwargs(find_unused_parameters=True)
-            ]
-        )
-
-        self.model = self.accelerator.prepare(self.model)
-
-        for trainer in self.trainers:
-            trainer.optimizer = self.accelerator.prepare(
-                trainer.get_optimizer()
-            )
-            if trainer.scheduler is not None:
-                trainer.scheduler = self.accelerator.prepare(trainer.scheduler)
-
-        if self.train_dataloaders is not None:
-            for i in range(len(self.train_dataloaders)):
-                self.train_dataloaders[i] = self.accelerator.prepare(
-                    self.train_dataloaders[i]
-                )
-
-        if self.val_dataloaders is not None:
-            for i in range(len(self.val_dataloaders)):
-                self.val_dataloaders[i] = self.accelerator.prepare(
-                    self.val_dataloaders[i]
-                )
-
-        if self.test_dataloaders is not None:
-            for i in range(len(self.test_dataloaders)):
-                self.test_dataloaders[i] = self.accelerator.prepare(
-                    self.test_dataloaders[i]
-                )
-
         if isinstance(resume, str):
             checkpoint_path = Path(resume)
             if not checkpoint_path.exists():
@@ -214,7 +179,6 @@ class Learner(nn.Module):
                 model=model,
                 batch=batch,
                 global_step=self.global_step,
-                accelerator=self.accelerator,
             )
             output_list.append(cur_output_dict)
 
@@ -232,7 +196,6 @@ class Learner(nn.Module):
                 model=model,
                 batch=batch,
                 global_step=self.global_step,
-                accelerator=self.accelerator,
             )
 
         self.callback_handler.on_batch_end(model, batch)
@@ -247,7 +210,6 @@ class Learner(nn.Module):
                 model=model,
                 batch=batch,
                 global_step=self.global_step,
-                accelerator=self.accelerator,
             )
 
         self.callback_handler.on_batch_end(model, batch)
@@ -348,7 +310,6 @@ class Learner(nn.Module):
 
     def train(self, train_dataloaders: DataLoader = None):
         if train_dataloaders is not None:
-            train_dataloaders = self.accelerator.prepare(train_dataloaders)
             self.train_dataloaders = train_dataloaders
 
         if self.dummy_batch_mode:
@@ -362,18 +323,16 @@ class Learner(nn.Module):
         if val_dataloaders is not None:
             self.val_dataloaders = []
             for val_dataloader in val_dataloaders:
-                val_dataloader = self.accelerator.prepare(val_dataloader)
                 self.val_dataloaders.append(val_dataloader)
-            model = self.accelerator.prepare(model)
+
         self._validation_loop(val_dataloaders=val_dataloaders, model=model)
 
     def test(self, test_dataloaders: List[DataLoader] = None):
         if test_dataloaders is not None:
             self.test_dataloaders = []
             for test_dataloader in test_dataloaders:
-                test_dataloader = self.accelerator.prepare(test_dataloader)
                 self.test_dataloaders.append(test_dataloader)
-            model = self.accelerator.prepare(model)
+
         self._testing_loop(
             test_dataloaders=test_dataloaders,
             model=model,
