@@ -533,7 +533,7 @@ class Learner(nn.Module):
             obj=experiment_hyperparameters,
             f=ckpt_save_path / "trainer_state.pt",
         )
-        self.accelerator.save_state(ckpt_save_path)
+        torch.save(self.model, ckpt_save_path / "model.pt")
         logger.info(f"Saved checkpoint to {ckpt_save_path}")
         self.callback_handler.on_save_checkpoint(
             model=self.model,
@@ -579,7 +579,8 @@ class Learner(nn.Module):
                 state_dict["eval"][self.evaluators.index(evaluator)],
             )
 
-        self.accelerator.load_state(checkpoint_path)
+        model_state = torch.load(checkpoint_path / "model.pt")
+        self.model.load_state_dict(model_state)
 
         self.callback_handler.on_load_checkpoint(
             model=self.model,
