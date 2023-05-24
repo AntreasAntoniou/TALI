@@ -22,7 +22,6 @@ from .models import (
     ModalityConfig,
     MultiModalityConfig,
     TALIModel,
-    TALIModelDataParallel,
 )
 
 CHECKPOINT_DIR = "${hf_cache_dir}"
