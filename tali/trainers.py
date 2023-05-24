@@ -106,7 +106,6 @@ class ClassificationTrainer(Trainer):
                     del output_dict[key]
 
             # Scales loss. Calls ``backward()`` on scaled loss to create scaled gradients.
-            self.scaler.scale(loss).backward()
 
             return StepOutput(
                 output_dict=output_dict,
@@ -164,9 +163,6 @@ class ClassificationTrainer(Trainer):
         logger.debug(
             f"possible_pairs_time: {possible_pairs_end_time - possible_pairs_start_time}"
         )
-        self.optimizer.zero_grad(
-            set_to_none=True
-        )  # set_to_none=True here can modestly improve performance
 
         for (
             modality_a,
@@ -194,17 +190,16 @@ class ClassificationTrainer(Trainer):
                 overall_accuracy.append(step_output.accuracy)
                 overall_accuracy_top_5.append(step_output.accuracy_top_5)
 
-            # ``scaler.step()`` first unscales the gradients of the optimizer's assigned parameters.
-            # If these gradients do not contain ``inf``s or ``NaN``s, optimizer.step() is then called,
-            # otherwise, optimizer.step() is skipped.
-            self.scaler.step(self.optimizer)
+                # ``scaler.step()`` first unscales the gradients of the optimizer's assigned parameters.
+                # If these gradients do not contain ``inf``s or ``NaN``s, optimizer.step() is then called,
+                # otherwise, optimizer.step() is skipped.
+                self.scaler.scale(step_output.loss).backward()
+                self.scaler.step(self.optimizer)
 
-            # Updates the scale for next iteration.
-            self.scaler.update()
+                # Updates the scale for next iteration.
+                self.scaler.update()
 
-            self.optimizer.zero_grad(
-                set_to_none=True
-            )  # set_to_none=True here can modestly improve performance
+                self.optimizer.zero_grad()  # set_to_none=True here can modestly improve performance
 
         if len(overall_loss) > 0:
             metrics = {
