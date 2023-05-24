@@ -487,11 +487,8 @@ class TALIBaseTransform:
                         self.config.root_filepath,
                     )
                 ),
-                starting_timestamp=youtube_media_data["youtube_video_id"]
-                + clip_starting_second,
-                ending_timestamp=youtube_media_data["youtube_video_id"]
-                + clip_starting_second
-                + clip_ending_second,
+                starting_timestamp=clip_starting_second,
+                ending_timestamp=clip_starting_second + clip_ending_second,
             )
             + " </ysub>"
         )
