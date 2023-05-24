@@ -82,7 +82,10 @@ if __name__ == "__main__":
             yield item
 
     train_data = datasets.Dataset.from_generator(
-        train_generator, num_proc=64, keep_in_memory=True
+        train_generator,
+        num_proc=64,
+        keep_in_memory=True,
+        writer_batch_size=10000,
     )
     train_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"train-set")
     val_data = datasets.Dataset.from_generator(
@@ -91,7 +94,7 @@ if __name__ == "__main__":
     val_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"val-set")
     test_data = datasets.Dataset.from_generator(
         test_generator,
-        writer_batch_size=1000,
+        writer_batch_size=10000,
         num_proc=64,
         keep_in_memory=True,
     )
