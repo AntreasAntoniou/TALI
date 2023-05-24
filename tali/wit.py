@@ -1,7 +1,7 @@
 import os
 import pathlib
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 import PIL
 
 import datasets
@@ -110,7 +110,7 @@ class WITBase(Dataset):
         self.dataset_size = len(self.dataset)
         self.transforms = self.build_transforms()
 
-    def build_model_transforms(self) -> Dict[str, Callable]:
+    def build_transforms(self) -> Dict[str, Callable]:
         """
         Build a dictionary of transformation functions for each modality of data (image, text, audio, video)
         using model-specific preprocessing steps.
@@ -136,7 +136,7 @@ class WITBase(Dataset):
 
             return self.image_text_processor(
                 images=x, return_tensors="pt"
-            ).pixel_values.squeeze(1)
+            ).pixel_values.squeeze()
 
         def text_transforms(x):
             return self.image_text_processor(
@@ -197,8 +197,10 @@ class WITBase(Dataset):
         # 🔄 Convert value lists into tensors if possible
         for key, value in episode_dict.items():
             episode_dict[key] = (
-                torch.stack(value, dim=0)
+                torch.stack(value, dim=0).squeeze()
                 if isinstance(value[0], torch.Tensor)
+                else value.squeeze()
+                if isinstance(value, torch.Tensor)
                 else value
             )
 
