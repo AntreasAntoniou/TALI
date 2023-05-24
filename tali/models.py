@@ -211,19 +211,21 @@ def get_similarities(
 
     if return_loss:
         contrastive_losses_dict = {
-            f"{key.replace('_similarities', '_loss')}": contrastive_loss(value)
+            f"{key.replace('_similarities', f'{value.shape[-1]}_loss')}": contrastive_loss(
+                value
+            )
             for key, value in similarities.items()
         }
 
         contrastive_accuracy_dict = {
-            f"{key.replace('_similarities', '_accuracy')}": contrastive_accuracy(
+            f"{key.replace('_similarities',  f'{value.shape[-1]}_accuracy')}": contrastive_accuracy(
                 value
             )
             for key, value in similarities.items()
         }
 
         contrastive_accuracy_top_5_dict = {
-            f"{key.replace('_similarities', '_accuracy_top_5')}": contrastive_accuracy_top_k(
+            f"{key.replace('_similarities',  f'{value.shape[-1]}_accuracy_top_5')}": contrastive_accuracy_top_k(
                 value, k=5
             )
             for key, value in similarities.items()
