@@ -256,15 +256,21 @@ def reinit(input_module: nn.Module):
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, torch.nn.Conv2d):
-            torch.nn.init.normal_(module.weight, std=0.02)
+            torch.nn.init.kaiming_normal_(
+                module.weight, mode="fan_out", nonlinearity="relu"
+            )
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, torch.nn.Conv1d):
-            torch.nn.init.normal_(module.weight, std=0.02)
+            torch.nn.init.kaiming_normal_(
+                module.weight, mode="fan_out", nonlinearity="relu"
+            )
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, torch.nn.ConvTranspose1d):
-            torch.nn.init.normal_(module.weight, std=0.02)
+            torch.nn.init.kaiming_normal_(
+                module.weight, mode="fan_out", nonlinearity="relu"
+            )
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
 
