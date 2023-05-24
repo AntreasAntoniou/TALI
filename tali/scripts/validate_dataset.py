@@ -91,7 +91,7 @@ if __name__ == "__main__":
         test_generator, writer_batch_size=1000
     )
     test_data.save_to_disk(pathlib.Path(tali_dataset_dir) / f"test-set")
-
-    train_data.push_to_hub(repo_id="Antreas/TALI", repo_type="dataset")
-    val_data.push_to_hub(repo_id="Antreas/TALI", repo_type="dataset")
-    test_data.push_to_hub(repo_id="Antreas/TALI", repo_type="dataset")
+    dataset = datasets.DatasetDict(
+        {"train": train_data, "val": val_data, "test": test_data}
+    )
+    dataset.push_to_hub(repo_id="Antreas/TALI", repo_type="dataset")
