@@ -7,11 +7,13 @@ import time
 from dataclasses import dataclass
 from math import floor
 from typing import Any, Callable, Dict, List, Optional, Union
+import PIL
 
 import datasets
 import numpy as np
 import torch
 import torchaudio.transforms as T
+import torchvision.transforms as VT
 import tqdm
 from pytorchvideo.transforms import ApplyTransformToKey, ShortSideScale
 from rich import print
@@ -644,15 +646,25 @@ class TALIBase(Dataset):
             self.audio_model_name
         )
 
-        # Return a dictionary of transformations
-        return {
-            "image": lambda x: self.image_text_processor(
+        def image_transforms(x):
+            if isinstance(x, PIL.Image.Image):
+                temp_x = np.array(x)
+                if temp_x.max() > 255:
+                    temp_x = temp_x / 65535.0
+                    temp_x = (temp_x * 255).astype(np.uint8)
+                    x = PIL.Image.fromarray(temp_x)
+
+            return self.image_text_processor(
                 images=x, return_tensors="pt"
-            ).pixel_values.squeeze(1),
-            "text": lambda x: self.image_text_processor(
+            ).pixel_values.squeeze(1)
+
+        def text_transforms(x):
+            return self.image_text_processor(
                 text=x, return_tensors="pt", padding=True, truncation=True
-            ).input_ids.squeeze(0),
-            "audio": lambda x: torch.cat(
+            ).input_ids.squeeze(0)
+
+        def audio_transforms(x):
+            return torch.cat(
                 [
                     self.audio_processor(
                         item.view(-1),
@@ -661,16 +673,20 @@ class TALIBase(Dataset):
                     ).input_features
                     for item in x.unbind(0)
                 ]
-            ),
-            "video": lambda x: torch.stack(
-                [
-                    self.image_text_processor(
-                        images=image, return_tensors="pt"
-                    ).pixel_values
-                    for image in x
-                ],
+            )
+
+        def video_transforms(x):
+            return torch.stack(
+                [image_transforms(image) for image in x],
                 dim=0,
-            ),
+            )
+
+        # Return a dictionary of transformations
+        return {
+            "image": image_transforms,
+            "text": text_transforms,
+            "audio": audio_transforms,
+            "video": video_transforms,
         }
 
     def build_basic_transforms(self) -> Dict[str, Callable]:
