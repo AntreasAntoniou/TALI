@@ -2,6 +2,7 @@ import os
 import pathlib
 import time
 from typing import Any, Dict, Optional
+import PIL
 
 import datasets
 import numpy as np
@@ -109,7 +110,15 @@ class WITBase(Dataset):
         self.dataset_size = len(self.dataset)
         self.transforms = self.build_transforms()
 
-    def build_transforms(self):
+    def build_model_transforms(self) -> Dict[str, Callable]:
+        """
+        Build a dictionary of transformation functions for each modality of data (image, text, audio, video)
+        using model-specific preprocessing steps.
+
+        Returns:
+            A dictionary of transformations with keys as modality names and values as transformation functions.
+        """
+        # Get processors from the models
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
         )
@@ -117,67 +126,81 @@ class WITBase(Dataset):
             self.audio_model_name
         )
 
-        return {
-            "image": lambda x: self.image_text_processor(
+        def image_transforms(x):
+            if isinstance(x, PIL.Image.Image):
+                temp_x = np.array(x)
+                if temp_x.max() > 255:
+                    temp_x = temp_x / 65535.0
+                    temp_x = (temp_x * 255).astype(np.uint8)
+                    x = PIL.Image.fromarray(temp_x)
+
+            return self.image_text_processor(
                 images=x, return_tensors="pt"
-            ).pixel_values.squeeze(1),
-            "text": lambda x: self.image_text_processor(
+            ).pixel_values.squeeze(1)
+
+        def text_transforms(x):
+            return self.image_text_processor(
                 text=x, return_tensors="pt", padding=True, truncation=True
-            ).input_ids.squeeze(0),
-            "audio": lambda x: torch.cat(
+            ).input_ids.squeeze(0)
+
+        def audio_transforms(x):
+            return torch.cat(
                 [
                     self.audio_processor(
-                        item,
+                        item.view(-1),
                         sampling_rate=16000,
                         return_tensors="pt",
                     ).input_features
                     for item in x.unbind(0)
                 ]
-            ),
-            "video": lambda x: torch.stack(
-                [
-                    self.image_text_processor(
-                        images=image, return_tensors="pt"
-                    ).pixel_values
-                    for image in x
-                ],
+            )
+
+        def video_transforms(x):
+            return torch.stack(
+                [image_transforms(image) for image in x],
                 dim=0,
-            ),
+            )
+
+        # Return a dictionary of transformations
+        return {
+            "image": image_transforms,
+            "text": text_transforms,
+            "audio": audio_transforms,
+            "video": video_transforms,
         }
 
     def __getitem__(self, idx):
         episode_dict = {}
 
-        if self.dummy_batch_mode and self.dummy_batch is not None:
-            return self.dummy_batch
-
         for i in range(idx, idx + self.num_samples_per_episode):
             sample = self.get_sample(idx=i)
             for key, value in sample.items():
+                # 📝 If text value is too short, pad with pad_token_id
                 if (
                     "text" in key
                     and len(value) < 77
                     and isinstance(value, torch.Tensor)
                 ):
                     value = torch.cat(
-                        [value, 49407 * torch.ones(77 - len(value)).long()]
+                        [
+                            value,
+                            self.image_text_processor.tokenizer.pad_token_id
+                            * torch.ones(77 - len(value)).long(),
+                        ]
                     )
+                # 🔑 If key is new, initialize it in the dictionary
                 if key not in episode_dict:
                     episode_dict[key] = [value]
                 else:
                     episode_dict[key].append(value)
 
+        # 🔄 Convert value lists into tensors if possible
         for key, value in episode_dict.items():
             episode_dict[key] = (
                 torch.stack(value, dim=0)
                 if isinstance(value[0], torch.Tensor)
                 else value
             )
-
-        if self.dummy_batch_mode:
-            if self.dummy_batch is None:
-                self.dummy_batch = sample
-            return self.dummy_batch
 
         return episode_dict
 
@@ -209,7 +232,6 @@ class WITBaseTransform:
         priority_caption_language: Optional[str] = None,
     ):
         self.image_size = image_size
-        self.image_transform = default_image_transforms(self.image_size)
         self.deterministic_sampling = deterministic_sampling
         self.priority_caption_language = priority_caption_language
 
@@ -234,7 +256,7 @@ class WITBaseTransform:
 
         output_dict[
             get_submodality_name(ModalityTypes.wit_image.value)
-        ] = self.image_transform(input_dict["image"])
+        ] = input_dict["image"]
 
         if self.priority_caption_language is None:
             choose_language = rng.choice(wit_sample["language"])
