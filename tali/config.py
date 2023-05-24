@@ -676,8 +676,7 @@ def collect_config_store():
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                128,
-                *num_gpus,
+                128 * num_gpus,
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
