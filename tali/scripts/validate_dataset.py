@@ -107,15 +107,15 @@ if __name__ == "__main__":
     for item in dataset:
         video_list = item["youtube_content_video"]
         for video_path in video_list:
-            print(video_path)
-            temp_path = video_path.replace("/data/", tali_dataset_dir)
-            print(temp_path)
+            temp_path = video_path.replace(
+                "/data/", tali_dataset_dir + "TALI/"
+            )
             video_path_actual: pathlib.Path = pathlib.Path(temp_path)
             print(
                 f"Video {video_path_actual.as_posix()}, exists: {video_path_actual.exists()}"
             )
             if video_path_actual.exists():
-                updated_video_list.append(video_path_actual.as_posix())
+                updated_video_list.append(video_path)
 
         if len(updated_video_list) == 0:
             continue
