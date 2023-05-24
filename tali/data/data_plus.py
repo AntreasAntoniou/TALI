@@ -111,6 +111,12 @@ def videoclip_to_video_audio_tensors(
     output = {}
     video = image = audio = None
 
+    def convert_to_pil(image):
+        image = image.numpy().transpose(1, 2, 0)
+        image = (image * 255).astype(np.uint8)
+        image = PIL.Image.fromarray(image)
+        return image
+
     if return_video:
         video = extract_frames_pyav(
             video_path=video_path,
@@ -141,7 +147,7 @@ def videoclip_to_video_audio_tensors(
                 ],
                 dim=0,
             )
-        output["video"] = video
+        output["video"] = [convert_to_pil(frame) for frame in video]
 
     if return_image:
         if image is None:
@@ -157,7 +163,7 @@ def videoclip_to_video_audio_tensors(
             )
             image = get_video_tensors(image, image_size)[0]
 
-        output["image"] = image
+        output["image"] = convert_to_pil(image)
 
     if return_audio:
         audio = extract_frames_pyav(
@@ -424,7 +430,7 @@ class TALIBaseTransform:
             or self._is_in_modality_list(ModalityTypes.youtube_audio)
             or self._is_in_modality_list(ModalityTypes.youtube_image)
         ):
-            youtube_media_data = self.video_transform(
+            youtube_media_data = self._video_transform(
                 x=choose_video,
                 start=clip_starting_second,
                 end=clip_ending_second,
