@@ -205,7 +205,7 @@ def get_submodality_name(item: AnyModalSample):
 @dataclass
 class TALIBaseTransformConfig:
     root_filepath: Union[str, pathlib.Path]
-    modality_list: List[AnyModalSample]
+    modality_list: List
     rng_seed: int = 42
     top_k_tali: int = 10
     image_size: int = 224
