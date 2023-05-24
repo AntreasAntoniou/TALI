@@ -223,8 +223,6 @@ class BaseConfig:
 # Using hydra might look a bit more verbose but it saves having to manually define
 # future args, and makes it a lot easier to add whatever we need from the command line
 
-num_gpus = torch.cuda.device_count()
-
 
 def collect_config_store():
     config_store = ConfigStore.instance()
@@ -605,7 +603,7 @@ def collect_config_store():
         name="wit_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                240 * num_gpus,
+                240,
                 wit_dataset_image_text_config,
             ),
         },
@@ -616,7 +614,7 @@ def collect_config_store():
         name="tali_image_text_dataset",
         node={
             "tali_dataset_image_text": (
-                128 * num_gpus,
+                128,
                 tali_dataset_image_text_config,
             ),
         },
@@ -627,11 +625,11 @@ def collect_config_store():
         name="wit_tali_image_text_dataset",
         node={
             "wit_dataset_image_text": (
-                240 * num_gpus,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                128 * num_gpus,
+                128,
                 tali_dataset_image_text_config,
             ),
         },
@@ -642,11 +640,11 @@ def collect_config_store():
         name="wit_tali_image_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                240 * num_gpus,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                8 * num_gpus,
+                8,
                 tali_dataset_image_audio_config,
             ),
         },
@@ -657,11 +655,11 @@ def collect_config_store():
         name="wit_tali_image_video_dataset",
         node={
             "wit_dataset_image_text": (
-                240 * num_gpus,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
-                8 * num_gpus,
+                8,
                 tali_dataset_image_video_config,
             ),
         },
@@ -672,19 +670,19 @@ def collect_config_store():
         name="wit_tali_image_text_audio_dataset",
         node={
             "wit_dataset_image_text": (
-                240 * num_gpus,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                128 * num_gpus,
+                128,
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                8 * num_gpus,
+                8,
                 tali_dataset_image_audio_config,
             ),
             "tali_dataset_text_audio": (
-                8 * num_gpus,
+                8,
                 tali_dataset_text_audio_config,
             ),
         },
@@ -695,15 +693,15 @@ def collect_config_store():
         name="wit_tali_image_text_audio_video_dataset",
         node={
             "wit_dataset_image_text": (
-                240 * num_gpus,
+                240,
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_text": (
-                128 * num_gpus,
+                128,
                 tali_dataset_image_text_config,
             ),
             "tali_dataset_omni": (
-                4 * num_gpus,
+                4,
                 tali_dataset_omni_config,
             ),
             # "tali_dataset_image_audio": (

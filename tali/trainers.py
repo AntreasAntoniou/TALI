@@ -3,9 +3,10 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 import torch
-from torch.cuda.amp import GradScaler, autocast
+from accelerate import Accelerator
+
 from tali.callbacks import Interval
-from tali.data.data_plus import generate_hierarchical_data_dict
+from tali.data.data_plus import *
 from tali.models import extract_all_possible_pairs
 
 from .decorators import collect_metrics
@@ -60,7 +61,6 @@ class ClassificationTrainer(Trainer):
         self.scheduler = scheduler
         self.experiment_tracker = experiment_tracker
         self.state_dict = {}
-        self.scaler = torch.cuda.amp.GradScaler(enabled=True)
 
         if self.scheduler is not None:
             assert scheduler_interval in {"step", "epoch"}
@@ -69,7 +69,7 @@ class ClassificationTrainer(Trainer):
     def get_optimizer(self):
         return self.optimizer
 
-    def step(self, model, batch, global_step):
+    def step(self, model, batch, global_step, accelerator: Accelerator):
         try:
             output_dict = model.forward(batch, return_loss=True)
             loss = torch.mean(
@@ -105,7 +105,7 @@ class ClassificationTrainer(Trainer):
                 if "_loss" not in key and "_accuracy" not in key:
                     del output_dict[key]
 
-            # Scales loss. Calls ``backward()`` on scaled loss to create scaled gradients.
+            accelerator.backward(loss)
 
             return StepOutput(
                 output_dict=output_dict,
@@ -143,6 +143,7 @@ class ClassificationTrainer(Trainer):
         model,
         batch,
         global_step,
+        accelerator: Accelerator,
     ) -> TrainerOutput:
         model.train()
 
@@ -163,6 +164,7 @@ class ClassificationTrainer(Trainer):
         logger.debug(
             f"possible_pairs_time: {possible_pairs_end_time - possible_pairs_start_time}"
         )
+        self.optimizer.zero_grad()
 
         for (
             modality_a,
@@ -183,6 +185,7 @@ class ClassificationTrainer(Trainer):
                 model=model,
                 batch=sample,
                 global_step=global_step,
+                accelerator=accelerator,
             )
             if step_output is not None:
                 overall_output_dict |= step_output.output_dict
@@ -190,16 +193,7 @@ class ClassificationTrainer(Trainer):
                 overall_accuracy.append(step_output.accuracy)
                 overall_accuracy_top_5.append(step_output.accuracy_top_5)
 
-                # ``scaler.step()`` first unscales the gradients of the optimizer's assigned parameters.
-                # If these gradients do not contain ``inf``s or ``NaN``s, optimizer.step() is then called,
-                # otherwise, optimizer.step() is skipped.
-                self.scaler.scale(step_output.loss).backward()
-                self.scaler.step(self.optimizer)
-
-                # Updates the scale for next iteration.
-                self.scaler.update()
-
-                self.optimizer.zero_grad()  # set_to_none=True here can modestly improve performance
+        self.optimizer.step()
 
         if len(overall_loss) > 0:
             metrics = {

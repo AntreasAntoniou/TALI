@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import Any, List
 
 import torch
+from accelerate import Accelerator
 from torch.utils.data import DataLoader
-from tali.data.data_plus import generate_hierarchical_data_dict
 
-
+from tali.data.data_plus import *
 from tali.models import extract_all_possible_pairs
 from tali.trainers import StepOutput
 
@@ -46,7 +46,7 @@ class ClassificationEvaluator(Evaluator):
         self.state_dict = {}
         self.experiment_tracker = experiment_tracker
 
-    def step(self, model, batch, global_step):
+    def step(self, model, batch, global_step, accelerator: Accelerator):
         try:
             output_dict = model.forward(batch, return_loss=True)
             loss = torch.mean(
@@ -117,6 +117,7 @@ class ClassificationEvaluator(Evaluator):
         model,
         batch,
         global_step,
+        accelerator: Accelerator,
     ):
         model.eval()
         batch = generate_hierarchical_data_dict(batch)
@@ -145,13 +146,15 @@ class ClassificationEvaluator(Evaluator):
                     model=model,
                     batch=sample,
                     global_step=global_step,
+                    accelerator=accelerator,
                 )
 
+                keys = list(step_output.output_dict.keys())
+                for key in keys:
+                    if "_loss" not in key and "_accuracy" not in key:
+                        del step_output.output_dict[key]
+
                 if step_output is not None:
-                    keys = list(step_output.output_dict.keys())
-                    for key in keys:
-                        if "_loss" not in key and "_accuracy" not in key:
-                            del step_output.output_dict[key]
                     overall_output_dict |= step_output.output_dict
                     overall_loss.append(step_output.loss)
                     overall_accuracy.append(step_output.accuracy)
@@ -185,6 +188,7 @@ class ClassificationEvaluator(Evaluator):
         model,
         batch,
         global_step,
+        accelerator: Accelerator,
     ):
         model.eval()
         batch = generate_hierarchical_data_dict(batch)
@@ -212,6 +216,7 @@ class ClassificationEvaluator(Evaluator):
                     model=model,
                     batch=sample,
                     global_step=global_step,
+                    accelerator=accelerator,
                 )
 
                 keys = list(step_output.output_dict.keys())
