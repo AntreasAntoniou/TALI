@@ -121,7 +121,7 @@ def run(cfg: BaseConfig) -> None:
         val_dataset: Dataset = instantiate(
             dataset,
             set_name="val",
-            total_num_samples=1000,
+            total_num_samples=None,
             num_samples_per_episode=batch_size,
         )
 
