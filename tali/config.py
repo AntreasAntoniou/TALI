@@ -222,7 +222,7 @@ class BaseConfig:
 
 # Using hydra might look a bit more verbose but it saves having to manually define
 # future args, and makes it a lot easier to add whatever we need from the command line
-batch_size_multiplier = 2
+batch_size_multiplier = 2.2
 
 
 def collect_config_store():
