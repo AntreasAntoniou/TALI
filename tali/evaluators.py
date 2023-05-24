@@ -147,12 +147,11 @@ class ClassificationEvaluator(Evaluator):
                     global_step=global_step,
                 )
 
-                keys = list(step_output.output_dict.keys())
-                for key in keys:
-                    if "_loss" not in key and "_accuracy" not in key:
-                        del step_output.output_dict[key]
-
                 if step_output is not None:
+                    keys = list(step_output.output_dict.keys())
+                    for key in keys:
+                        if "_loss" not in key and "_accuracy" not in key:
+                            del step_output.output_dict[key]
                     overall_output_dict |= step_output.output_dict
                     overall_loss.append(step_output.loss)
                     overall_accuracy.append(step_output.accuracy)
