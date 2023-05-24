@@ -175,7 +175,7 @@ class BaseConfig:
 
     freeze_backbone: bool = False
     resume: bool = False
-    resume_from_checkpoint: Optional[int] = None
+    resume_from_checkpoint: Optional[str] = None
     print_config: bool = True
     # Dataloader config
     train_num_samples_per_episode: int = 96
