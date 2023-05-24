@@ -311,9 +311,11 @@ class TALIBaseTransform:
                 or self._is_in_modality_list(ModalityTypes.youtube_audio)
                 or self._is_in_modality_list(ModalityTypes.youtube_image)
             ):
-                youtube_media_data = self._process_youtube_video(
-                    rng, input_dict
-                )
+                (
+                    youtube_media_data,
+                    clip_starting_second,
+                    clip_ending_second,
+                ) = self._process_youtube_video(rng, input_dict)
                 output_dict.update(youtube_media_data)
 
             if self._is_in_modality_list(ModalityTypes.youtube_description):
@@ -335,7 +337,12 @@ class TALIBaseTransform:
                     TALIBaseTransformConfig.get_submodality_name(
                         ModalityTypes.youtube_subtitles.value
                     )
-                ] = self._get_youtube_subtitles(input_dict, youtube_media_data)
+                ] = self._get_youtube_subtitles(
+                    input_dict,
+                    youtube_media_data,
+                    clip_starting_second,
+                    clip_ending_second,
+                )
         except Exception as e:
             logger.exception(e)
             return {}
@@ -454,7 +461,7 @@ class TALIBaseTransform:
                         ModalityTypes.youtube_image.value
                     )
                 ] = youtube_media_data["image"]
-        return output_dict
+        return clip_starting_second, clip_ending_second, output_dict
 
     def _get_youtube_description(self, input_dict):
         return (
@@ -464,7 +471,13 @@ class TALIBaseTransform:
     def _get_youtube_title(self, input_dict):
         return f"<ytitle> " + input_dict["youtube_title_text"] + f" </ytitle>"
 
-    def _get_youtube_subtitles(self, input_dict, youtube_media_data):
+    def _get_youtube_subtitles(
+        self,
+        input_dict,
+        youtube_media_data,
+        clip_starting_second,
+        clip_ending_second,
+    ):
         return (
             "<ysub> "
             + select_subtitles_between_timestamps(
@@ -475,10 +488,10 @@ class TALIBaseTransform:
                     )
                 ),
                 starting_timestamp=youtube_media_data["youtube_video_id"]
-                + youtube_media_data["clip_starting_second"],
+                + clip_starting_second,
                 ending_timestamp=youtube_media_data["youtube_video_id"]
-                + youtube_media_data["clip_starting_second"]
-                + youtube_media_data["clip_ending_second"],
+                + clip_starting_second
+                + clip_ending_second,
             )
             + " </ysub>"
         )
