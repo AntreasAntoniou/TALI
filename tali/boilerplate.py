@@ -13,8 +13,8 @@ from tqdm import tqdm
 
 from tali.callbacks import Callback, CallbackHandler, Interval
 from tali.decorators import configurable
-from tali.evaluator import ClassificationEvaluator, Evaluator
-from tali.trainer import ClassificationTrainer, Trainer
+from tali.evaluators import ClassificationEvaluator, Evaluator
+from tali.trainers import ClassificationTrainer, Trainer
 from tali.utils import get_logger
 
 logger = get_logger(__name__)
@@ -339,11 +339,8 @@ class Learner(nn.Module):
 
     def test(self, test_dataloader: List[DataLoader] = None):
         if test_dataloader is not None:
-            self.test_dataloader = []
-            for test_dataloader in test_dataloader:
-                test_dataloader = self.accelerator.prepare(test_dataloader)
-                self.test_dataloader.append(test_dataloader)
-            model = self.accelerator.prepare(model)
+            self.test_dataloader = self.accelerator.prepare(test_dataloader)
+            model = self.accelerator.prepare(self.model)
         self._testing_loop(
             test_dataloader=test_dataloader,
             model=model,
@@ -361,20 +358,15 @@ class Learner(nn.Module):
         if val_dataloader is not None:
             self.start_validation()
 
-            with tqdm(
-                total=max([len(d) for d in val_dataloader])
-            ) as pbar_dataloaders:
-                for batch_idx, batch in enumerate(
-                    itertools.zip_longest(*val_dataloader)
-                ):
+            with tqdm(total=len(val_dataloader)) as pbar_dataloaders:
+                for batch_idx, batch in enumerate(val_dataloader):
                     if self.limit_val_iters is not None:
                         if batch_idx >= self.limit_val_iters:
                             break
-                    for multi_modal_batch in batch:
-                        if multi_modal_batch is not None:
+                        if batch is not None:
                             self.validation_step(
                                 model=self.model,
-                                batch=multi_modal_batch,
+                                batch=batch,
                             )
                     pbar_dataloaders.update(1)
 
@@ -394,82 +386,16 @@ class Learner(nn.Module):
         if test_dataloader is not None:
             self.start_testing()
 
-            with tqdm(
-                total=max([len(d) for d in test_dataloader])
-            ) as pbar_dataloaders:
-                for batch_idx, batch in enumerate(
-                    itertools.zip_longest(*test_dataloader)
-                ):
-                    for multi_modal_batch in batch:
-                        if multi_modal_batch is not None:
-                            self.testing_step(
-                                model=self.model,
-                                batch=multi_modal_batch,
-                            )
-                    pbar_dataloaders.update(1)
+            with tqdm(total=len(test_dataloader)) as pbar_dataloaders:
+                for batch_idx, batch in enumerate(test_dataloader):
+                    if batch is not None:
+                        self.testing_step(
+                            model=self.model,
+                            batch=batch,
+                        )
                     pbar_dataloaders.update(1)
 
             self.end_testing()
-
-    def _dummy_training_loop(self, train_dataloader: DataLoader = None):
-        if train_dataloader is None:
-            train_dataloader = self.train_dataloader
-
-        if train_dataloader is not None:
-            self.start_training(train_dataloader=train_dataloader)
-            dummy_batch = next(iter(itertools.zip_longest(*train_dataloader)))
-            if self.train_iters is None:
-                self.train_iters = len(train_dataloader)
-
-            with tqdm(
-                initial=self.step_idx, total=self.train_iters
-            ) as pbar_steps:
-                while self.step_idx < self.train_iters:
-                    if self.limit_train_iters is not None:
-                        if self.step_idx >= self.limit_train_iters:
-                            return self.end_training()
-
-                    for i in range(self.train_iters):
-                        loading_start_time = time.time()
-                        for multi_modal_batch in dummy_batch:
-                            if multi_modal_batch is not None:
-                                loading_end_time = time.time()
-                                loading_time_in_seconds = (
-                                    loading_end_time - loading_start_time
-                                )
-                                logger.info(
-                                    f"Loading time: {loading_time_in_seconds} seconds"
-                                )
-                                step_time_start = time.time()
-                                self.training_step(
-                                    model=self.model,
-                                    batch=multi_modal_batch,
-                                )
-                                step_time_end = time.time()
-                                logger.info(
-                                    f"step time: {step_time_end - step_time_start} seconds"
-                                )
-                            loading_start_time = time.time()
-
-                        if self.step_idx % self.evaluate_every_n_steps == 0:
-                            self._validation_loop()
-                            self.check_manage_background_threads()
-
-                        if (
-                            self.step_idx % self.checkpoint_every_n_steps == 0
-                            and self.step_idx > 0
-                        ):
-                            self.save_checkpoint(
-                                checkpoint_name=f"ckpt_{self.global_step}"
-                            )
-
-                        if self.step_idx >= self.train_iters:
-                            return self.end_training()
-
-                        self.step_idx += 1
-                        pbar_steps.update(1)
-
-            return self.end_training()
 
     def _training_loop(self, train_dataloader: DataLoader = None):
         if train_dataloader is None:
@@ -489,15 +415,12 @@ class Learner(nn.Module):
                         if self.step_idx >= self.limit_train_iters:
                             return self.end_training()
 
-                    for batch_idx, batch in enumerate(
-                        itertools.zip_longest(*train_dataloader)
-                    ):
-                        for multi_modal_batch in batch:
-                            if multi_modal_batch is not None:
-                                self.training_step(
-                                    model=self.model,
-                                    batch=multi_modal_batch,
-                                )
+                    for batch_idx, batch in enumerate(train_dataloader):
+                        if batch is not None:
+                            self.training_step(
+                                model=self.model,
+                                batch=batch,
+                            )
 
                         if self.step_idx % self.evaluate_every_n_steps == 0:
                             self._validation_loop()
@@ -533,8 +456,8 @@ class Learner(nn.Module):
             epoch_idx=self.epoch_idx,
             global_step=self.global_step,
             state_dict={
-                "train": [trainer.state_dict for trainer in self.trainer],
-                "eval": [evaluator.state_dict for evaluator in self.evaluator],
+                "train": self.trainer.state_dict,
+                "eval": self.evaluator.state_dict,
             },
             neptune_id=self.neptune_run._id if self.neptune_run else None,
         )
@@ -574,19 +497,17 @@ class Learner(nn.Module):
         self.global_step = trainer_state["global_step"]
         state_dict = trainer_state["state_dict"]
 
-        for trainer in self.trainer:
-            setattr(
-                trainer,
-                "state_dict",
-                state_dict["train"][self.trainer.index(trainer)],
-            )
+        setattr(
+            self.trainer,
+            "state_dict",
+            state_dict["train"],
+        )
 
-        for evaluator in self.evaluator:
-            setattr(
-                evaluator,
-                "state_dict",
-                state_dict["eval"][self.evaluator.index(evaluator)],
-            )
+        setattr(
+            self.evaluator,
+            "state_dict",
+            state_dict["val"],
+        )
 
         self.accelerator.load_state(checkpoint_path)
 
@@ -596,88 +517,3 @@ class Learner(nn.Module):
             experiment=self,
             checkpoint_path=checkpoint_path,
         )
-
-
-if __name__ == "__main__":
-    # a minimal example of how to use the Learner class
-    import torch
-    from datasets import load_dataset
-    from rich import print
-    from torch.nn import CrossEntropyLoss
-    from torch.optim import Adam
-    from torch.utils.data import DataLoader
-    from torchvision.transforms import ColorJitter, Compose, Resize, ToTensor
-
-    train_dataset = load_dataset("beans", split="train")
-    val_dataset = load_dataset("beans", split="validation")
-    test_dataset = load_dataset("beans", split="test")
-
-    jitter = Compose(
-        [
-            Resize(size=(96, 96)),
-            ColorJitter(brightness=0.5, hue=0.5),
-            ToTensor(),
-        ]
-    )
-
-    def transforms(examples):
-        examples["pixel_values"] = [
-            jitter(image.convert("RGB")) for image in examples["image"]
-        ]
-        return examples
-
-    train_dataset = train_dataset.with_transform(transforms)
-    val_dataset = val_dataset.with_transform(transforms)
-    test_dataset = test_dataset.with_transform(transforms)
-
-    def collate_fn(examples):
-        images = []
-        labels = []
-        for example in examples:
-            images.append((example["pixel_values"]))
-            labels.append(example["labels"])
-
-        pixel_values = torch.stack(images)
-        labels = torch.tensor(labels)
-        return {"pixel_values": pixel_values, "labels": labels}
-
-    train_dataloader = DataLoader(
-        train_dataset,
-        collate_fn=collate_fn,
-        batch_size=256,
-        shuffle=True,
-        num_workers=4,
-    )
-    val_dataloader = DataLoader(
-        val_dataset, collate_fn=collate_fn, batch_size=256, num_workers=4
-    )
-    test_dataloader = DataLoader(
-        test_dataset, collate_fn=collate_fn, batch_size=256, num_workers=4
-    )
-
-    model = torch.hub.load(
-        "pytorch/vision:v0.9.0", "resnet18", pretrained=False
-    )
-    model.fc = torch.nn.Linear(512, 4)
-
-    optimizer = Adam(model.parameters(), lr=1e-3)
-
-    criterion = CrossEntropyLoss()
-
-    experiment = Learner(
-        experiment_name="debug_checkpointing",
-        experiment_dir="/exp/debug_checkpointing",
-        model=model,
-        train_dataloader=[train_dataloader],
-        val_dataloader=[val_dataloader],
-        test_dataloader=[test_dataloader],
-        trainer=[ClassificationTrainer(optimizer=optimizer)],
-        evaluator=[ClassificationEvaluator()],
-        evaluate_every_n_steps=5,
-        checkpoint_every_n_steps=5,
-        checkpoint_after_validation=True,
-        train_iters=1000,
-        resume=True,
-    )
-
-    experiment.run()
