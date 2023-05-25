@@ -179,14 +179,13 @@ class Learner(nn.Module):
         self.callback_handler.on_training_step_start(model, batch)
         output_list = []
 
-        for trainer in self.trainer:
-            cur_output_dict = trainer.training_step(
-                model=model,
-                batch=batch,
-                global_step=self.global_step,
-                accelerator=self.accelerator,
-            )
-            output_list.append(cur_output_dict)
+        cur_output_dict = self.trainer.training_step(
+            model=model,
+            batch=batch,
+            global_step=self.global_step,
+            accelerator=self.accelerator,
+        )
+        output_list.append(cur_output_dict)
 
         self.callback_handler.on_batch_end(model, batch)
         self.callback_handler.on_training_step_end(model, batch)
@@ -197,13 +196,12 @@ class Learner(nn.Module):
         self.callback_handler.on_batch_start(model, batch)
         self.callback_handler.on_validation_step_start(model, batch)
 
-        for evaluator in self.evaluator:
-            evaluator.validation_step(
-                model=model,
-                batch=batch,
-                global_step=self.global_step,
-                accelerator=self.accelerator,
-            )
+        self.evaluator.validation_step(
+            model=model,
+            batch=batch,
+            global_step=self.global_step,
+            accelerator=self.accelerator,
+        )
 
         self.callback_handler.on_batch_end(model, batch)
         self.callback_handler.on_validation_step_end(model, batch)
@@ -212,13 +210,12 @@ class Learner(nn.Module):
         self.callback_handler.on_batch_start(model, batch)
         self.callback_handler.on_testing_step_start(model, batch)
 
-        for evaluator in self.evaluator:
-            evaluator.testing_step(
-                model=model,
-                batch=batch,
-                global_step=self.global_step,
-                accelerator=self.accelerator,
-            )
+        self.evaluator.testing_step(
+            model=model,
+            batch=batch,
+            global_step=self.global_step,
+            accelerator=self.accelerator,
+        )
 
         self.callback_handler.on_batch_end(model, batch)
         self.callback_handler.on_testing_step_end(model, batch)
