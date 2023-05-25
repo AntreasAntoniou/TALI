@@ -14,13 +14,13 @@ from huggingface_hub import hf_hub_download
 
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="train-set",
+    subfolder="test-set",
     filename="data-00000-of-00001.arrow",
 )
 
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="train-set",
+    subfolder="test-set",
     filename="dataset_info.json",
     cache_dir="/tali-data/",
     local_dir="/tali-data/",
@@ -28,7 +28,7 @@ hf_hub_download(
 
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="train-set",
+    subfolder="test-set",
     filename="state.json",
     cache_dir="/tali-data/",
     local_dir="/tali-data/",
@@ -36,13 +36,13 @@ hf_hub_download(
 ####################
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="val-set",
+    subfolder="val-set",
     filename="data-00000-of-00001.arrow",
 )
 
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="val-set",
+    subfolder="val-set",
     filename="dataset_info.json",
     cache_dir="/tali-data/",
     local_dir="/tali-data/",
@@ -50,7 +50,7 @@ hf_hub_download(
 
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="val-set",
+    subfolder="val-set",
     filename="state.json",
     cache_dir="/tali-data/",
     local_dir="/tali-data/",
@@ -60,13 +60,13 @@ hf_hub_download(
 for i in range(9):
     hf_hub_download(
         repo_id="Antreas/TALI",
-        subdir="train-set",
+        subfolder="train-set",
         filename=f"data-0000{i}-of-00009.arrow",
     )
 
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="train-set",
+    subfolder="train-set",
     filename="dataset_info.json",
     cache_dir="/tali-data/",
     local_dir="/tali-data/",
@@ -74,7 +74,7 @@ hf_hub_download(
 
 hf_hub_download(
     repo_id="Antreas/TALI",
-    subdir="train-set",
+    subfolder="train-set",
     filename="state.json",
     cache_dir="/tali-data/",
     local_dir="/tali-data/",
