@@ -229,10 +229,9 @@ class Learner(nn.Module):
             model=self.model,
         )
 
-        for trainer in self.trainer:
-            trainer.start_training(
-                global_step=self.global_step,
-            )
+        self.trainer.start_training(
+            global_step=self.global_step,
+        )
 
         logger.info("Starting training 🏋🏽")
 
@@ -242,8 +241,7 @@ class Learner(nn.Module):
             model=self.model,
         )
 
-        for trainer in self.trainer:
-            trainer.end_training(global_step=self.global_step)
+        self.trainer.end_training(global_step=self.global_step)
 
         for background_thread in self.background_threads:
             background_thread.join()
@@ -267,10 +265,9 @@ class Learner(nn.Module):
             experiment=self, model=self.model
         )
 
-        for evaluator in self.evaluator:
-            evaluator.start_validation(
-                global_step=self.global_step,
-            )
+        self.evaluator.start_validation(
+            global_step=self.global_step,
+        )
 
         logger.info("Starting validation 🧪")
 
@@ -279,10 +276,9 @@ class Learner(nn.Module):
             experiment=self, model=self.model
         )
 
-        for evaluator in self.evaluator:
-            evaluator.end_validation(
-                global_step=self.global_step,
-            )
+        self.evaluator.end_validation(
+            global_step=self.global_step,
+        )
         logger.info(f"{self.checkpoint_after_validation}")
         if self.checkpoint_after_validation:
             logger.info("Saving checkpoint after validation")
@@ -295,13 +291,12 @@ class Learner(nn.Module):
             experiment=self, model=self.model
         )
 
-        for evaluator in self.evaluator:
-            evaluator.start_testing(
-                epoch_idx=self.epoch_idx,
-                step_idx=self.global_step,
-                global_step=self.global_step,
-            )
-            logger.info("Starting testing 🧪")
+        self.evaluator.start_testing(
+            epoch_idx=self.epoch_idx,
+            step_idx=self.global_step,
+            global_step=self.global_step,
+        )
+        logger.info("Starting testing 🧪")
 
     def end_testing(self):
         self.callback_handler.on_testing_end(
@@ -309,10 +304,9 @@ class Learner(nn.Module):
             model=self.model,
         )
 
-        for evaluator in self.evaluator:
-            evaluator.end_testing(
-                global_step=self.global_step,
-            )
+        self.evaluator.end_testing(
+            global_step=self.global_step,
+        )
 
         logger.info("Testing finished 🎉")
 
@@ -330,12 +324,9 @@ class Learner(nn.Module):
         self, val_dataloader: List[DataLoader] = None, model: nn.Module = None
     ):
         if val_dataloader is not None:
-            self.val_dataloader = []
-            for val_dataloader in val_dataloader:
-                val_dataloader = self.accelerator.prepare(val_dataloader)
-                self.val_dataloader.append(val_dataloader)
+            self.val_dataloader = self.accelerator.prepare(val_dataloader)
             model = self.accelerator.prepare(model)
-        self._validation_loop(val_dataloader=val_dataloader, model=model)
+        self._validation_loop(val_dataloader=self.val_dataloader, model=model)
 
     def test(self, test_dataloader: List[DataLoader] = None):
         if test_dataloader is not None:
@@ -469,7 +460,7 @@ class Learner(nn.Module):
         logger.info(f"Saved checkpoint to {ckpt_save_path}")
         self.callback_handler.on_save_checkpoint(
             model=self.model,
-            optimizers=[trainer.optimizer for trainer in self.trainer],
+            optimizers=self.trainer.optimizer,
             experiment=self,
             checkpoint_path=ckpt_save_path,
         )
