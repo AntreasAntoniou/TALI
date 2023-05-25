@@ -358,7 +358,7 @@ class Learner(nn.Module):
         if val_dataloader is not None:
             self.start_validation()
 
-            with tqdm(total=len(val_dataloader)) as pbar_dataloaders:
+            with tqdm(total=len(val_dataloader)) as pbar_dataloader:
                 for batch_idx, batch in enumerate(val_dataloader):
                     if self.limit_val_iters is not None:
                         if batch_idx >= self.limit_val_iters:
@@ -368,7 +368,7 @@ class Learner(nn.Module):
                                 model=self.model,
                                 batch=batch,
                             )
-                    pbar_dataloaders.update(1)
+                    pbar_dataloader.update(1)
 
             self.end_validation()
 
@@ -386,14 +386,14 @@ class Learner(nn.Module):
         if test_dataloader is not None:
             self.start_testing()
 
-            with tqdm(total=len(test_dataloader)) as pbar_dataloaders:
+            with tqdm(total=len(test_dataloader)) as pbar_dataloader:
                 for batch_idx, batch in enumerate(test_dataloader):
                     if batch is not None:
                         self.testing_step(
                             model=self.model,
                             batch=batch,
                         )
-                    pbar_dataloaders.update(1)
+                    pbar_dataloader.update(1)
 
             self.end_testing()
 
