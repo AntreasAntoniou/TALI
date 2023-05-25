@@ -494,7 +494,7 @@ class Learner(nn.Module):
         setattr(
             self.evaluator,
             "state_dict",
-            state_dict["val"],
+            state_dict["eval"],
         )
 
         self.accelerator.load_state(checkpoint_path)
