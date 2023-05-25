@@ -613,7 +613,7 @@ class TALIBase(Dataset):
         # Load dataset
         self.dataset = datasets.load_dataset(
             path="Antreas/TALI",
-            name=set_name,
+            split=set_name
             keep_in_memory=True,
             cache_dir=os.environ["HF_CACHE_DIR"],
         )
