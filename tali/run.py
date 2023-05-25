@@ -189,18 +189,16 @@ def run(cfg: BaseConfig) -> None:
     learner: Learner = instantiate(
         cfg.learner,
         model=model,
-        trainers=[
-            ClassificationTrainer(
-                optimizer=optimizer,
-                scheduler=scheduler,
-                experiment_tracker=experiment_tracker,
-            )
-        ],
-        evaluators=[
-            ClassificationEvaluator(experiment_tracker=experiment_tracker)
-        ],
-        train_dataloaders=[train_dataloader],
-        val_dataloaders=[val_dataloader],
+        trainers=ClassificationTrainer(
+            optimizer=optimizer,
+            scheduler=scheduler,
+            experiment_tracker=experiment_tracker,
+        ),
+        evaluators=ClassificationEvaluator(
+            experiment_tracker=experiment_tracker
+        ),
+        train_dataloaders=train_dataloader,
+        val_dataloaders=val_dataloader,
         callbacks=instantiate_callbacks(cfg.callbacks),
         resume=ckpt_path,
         experiment_tracker=experiment_tracker,
@@ -210,7 +208,7 @@ def run(cfg: BaseConfig) -> None:
         learner.train()
 
     if cfg.test:
-        learner.test(test_dataloaders=[test_dataloader])
+        learner.test(test_dataloaders=test_dataloader)
 
 
 if __name__ == "__main__":
