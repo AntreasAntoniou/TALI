@@ -611,9 +611,8 @@ class TALIBase(Dataset):
         )
 
         # Load dataset
-        self.dataset = datasets.load_from_disk(
-            pathlib.Path(tali_dataset_dir) / f"{set_name}-set",
-            keep_in_memory=True,
+        self.dataset = datasets.load_dataset(
+            path="Antreas/TALI", name=set_name, keep_in_memory=True
         )
 
         # Apply transformations
