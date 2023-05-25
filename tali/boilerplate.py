@@ -6,15 +6,15 @@ from typing import Any, List, Union
 
 import torch
 import torch.nn as nn
-from accelerate import Accelerator, DistributedDataParallelKwargs
+from accelerate import Accelerator
 from neptune import Run
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from tali.callbacks import Callback, CallbackHandler, Interval
 from tali.decorators import configurable
-from tali.evaluators import ClassificationEvaluator, Evaluator
-from tali.trainers import ClassificationTrainer, Trainer
+from tali.evaluators import Evaluator
+from tali.trainers import Trainer
 from tali.utils import get_logger
 
 logger = get_logger(__name__)
@@ -131,7 +131,7 @@ class Learner(nn.Module):
         self.model = self.accelerator.prepare(self.model)
 
         self.trainer.optimizer = self.accelerator.prepare(
-            self.trainer.get_optimizer()
+            self.trainer.optimizer
         )
         if self.trainer.scheduler is not None:
             self.trainer.scheduler = self.accelerator.prepare(
@@ -504,7 +504,7 @@ class Learner(nn.Module):
 
         self.callback_handler.on_load_checkpoint(
             model=self.model,
-            optimizers=[trainer.get_optimizer() for trainer in self.trainer],
+            optimizers=self.trainer.optimizer,
             experiment=self,
             checkpoint_path=checkpoint_path,
         )
