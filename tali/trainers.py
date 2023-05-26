@@ -1,7 +1,6 @@
 import time
 from dataclasses import dataclass
 from typing import Any, Dict
-import accelerate
 
 import torch
 from accelerate import Accelerator
@@ -188,7 +187,7 @@ class ClassificationTrainer(Trainer):
             A TrainerOutput object containing the metrics and other details of the training step.
         """
         model.train()
-        with accelerate.accumulate(model):
+        with accelerator.accumulate(model):
             overall_loss = []
             overall_accuracy = []
             overall_accuracy_top_5 = []
