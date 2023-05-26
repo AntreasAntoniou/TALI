@@ -246,6 +246,7 @@ class ClassificationTrainer(Trainer):
             opt_loss=torch.mean(torch.stack(overall_loss))
             if overall_loss
             else None,
+            global_step=global_step,
             metrics=metrics,
             experiment_tracker=self.experiment_tracker,
         )
