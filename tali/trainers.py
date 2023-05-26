@@ -250,3 +250,35 @@ class ClassificationTrainer(Trainer):
             metrics=metrics,
             experiment_tracker=self.experiment_tracker,
         )
+
+    @collect_metrics
+    def start_training(
+        self,
+        global_step: int,
+    ):
+        self.state_dict = {}
+        return TrainerOutput(
+            opt_loss=None,
+            global_step=global_step,
+            metrics={},
+            phase_name="training",
+            experiment_tracker=self.experiment_tracker,
+        )
+
+    @collect_metrics
+    def end_training(
+        self,
+        global_step: int,
+    ):
+        epoch_metrics = {}
+        for key, value in self.state_dict.items():
+            epoch_metrics[f"{key}-epoch-mean"] = torch.stack(value).mean()
+            epoch_metrics[f"{key}-epoch-std"] = torch.stack(value).std()
+
+        return TrainerOutput(
+            opt_loss=None,
+            global_step=global_step,
+            metrics=epoch_metrics,
+            phase_name="training",
+            experiment_tracker=self.experiment_tracker,
+        )
