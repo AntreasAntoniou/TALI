@@ -93,11 +93,7 @@ class ClassificationTrainer(Trainer):
         """
         return torch.mean(
             torch.stack(
-                [
-                    value.cpu()
-                    for key, value in output_dict.items()
-                    if metric in key
-                ]
+                [value for key, value in output_dict.items() if metric in key]
             )
         )
 
@@ -121,11 +117,6 @@ class ClassificationTrainer(Trainer):
             accuracy_top_5 = self._calculate_metric_mean(
                 output_dict, "_accuracy_top_5"
             )
-
-            keys = list(output_dict.keys())
-            for key in keys:
-                if "_loss" not in key and "_accuracy" not in key:
-                    del output_dict[key]
 
             accelerator.backward(loss)
 
