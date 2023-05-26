@@ -197,6 +197,7 @@ def run(cfg: BaseConfig) -> None:
             optimizer=optimizer,
             scheduler=scheduler,
             experiment_tracker=experiment_tracker,
+            gradient_clipping=cfg.gradient_clipping,
         ),
         evaluator=ClassificationEvaluator(
             experiment_tracker=experiment_tracker

@@ -184,6 +184,7 @@ class BaseConfig:
     prefetch_factor: int = 1
     persistent_workers: bool = True
     pin_memory: bool = True
+    gradient_clipping: Optional[float] = None
 
     train: bool = True
     test: bool = False
