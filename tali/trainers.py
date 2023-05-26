@@ -53,8 +53,8 @@ def collect_grad_stats(model):
     grad_stats = {}
     for name, param in model.named_parameters():
         if param.grad is not None:
-            abs_mean = torch.mean(torch.abs(param.grad)).item()
-            std = torch.std(param.grad).item()
+            abs_mean = torch.mean(torch.abs(param.grad.detach().cpu())).item()
+            std = torch.std(param.grad.detach().cpu()).item()
             grad_stats[name] = {"abs_mean": abs_mean, "std": std}
     return grad_stats
 
@@ -107,7 +107,7 @@ class ClassificationTrainer(Trainer):
             torch.stack(
                 [value for key, value in output_dict.items() if metric in key]
             )
-        )
+        ).cpu()
 
     def step(self, model, batch, global_step, accelerator: Accelerator):
         """
