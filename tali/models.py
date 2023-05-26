@@ -1,9 +1,10 @@
+# ⚙️ System modules
 import math
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
 
+# 📚 Libraries
 import torch
 import torch.nn as nn
 import torch.nn.functional
@@ -12,46 +13,80 @@ from accelerate import Accelerator
 from rich import print
 from torch.utils.data import DataLoader
 from transformers import (
+    CLIPConfig,
     CLIPModel,
     CLIPProcessor,
+    WhisperConfig,
     WhisperModel,
     WhisperProcessor,
 )
 from transformers.models.clip.modeling_clip import contrastive_loss
 
+# 📋 Local modules
 from tali.data.data import ModalityTypes, TALIDataset, dataclass_collate
 from tali.decorators import configurable
 from tali.utils import get_logger
 
+# 📝 Logging
 logger = get_logger(__name__)
 
 
 @dataclass
 class ModelAndTransform:
+    """
+    🏷️ Dataclass for model and its corresponding transform.
+    """
+
     model: nn.Module
-    transform: Any
+    transform: Any  # 💡 Consider specifying a more specific type here if possible.
 
 
 @dataclass
 class ModalityConfig:
+    """
+    🏷️ Dataclass for modality configuration.
+    """
+
     support: bool = False
     pretrained: bool = False
 
 
 @dataclass
 class MultiModalityConfig:
+    """
+    🏷️ Dataclass for multi-modality configuration.
+    """
+
     image: ModalityConfig = ModalityConfig(support=True, pretrained=True)
     text: ModalityConfig = ModalityConfig(support=True, pretrained=True)
     audio: ModalityConfig = ModalityConfig(support=True, pretrained=True)
     video: ModalityConfig = ModalityConfig(support=True, pretrained=True)
 
 
-def contrastive_accuracy(logits):
+def contrastive_accuracy(logits: torch.Tensor) -> float:
+    """
+    🎯 Calculate contrastive accuracy.
+
+    :param logits: A tensor with shape [batch_size, seq_len, embedding_dim].
+    :type logits: torch.Tensor
+    :return: contrastive accuracy.
+    :rtype: float
+    """
     targets = torch.arange(logits.shape[0]).to(logits.device)
     return (logits.argmax(dim=-1) == targets).float().mean()
 
 
-def contrastive_accuracy_top_k(logits, k: int = 5):
+def contrastive_accuracy_top_k(logits: torch.Tensor, k: int = 5) -> float:
+    """
+    🎯 Calculate top-K contrastive accuracy.
+
+    :param logits: A tensor with shape [batch_size, seq_len, embedding_dim].
+    :type logits: torch.Tensor
+    :param k: number of top predictions to consider for accuracy, defaults to 5.
+    :type k: int, optional
+    :return: contrastive accuracy.
+    :rtype: float
+    """
     targets = torch.arange(logits.shape[0]).to(logits.device)
     accuracy = [
         any(logit.argsort(dim=-1, descending=True)[:k] == target)
@@ -61,22 +96,22 @@ def contrastive_accuracy_top_k(logits, k: int = 5):
 
 
 def num_parameters(
-    model, only_trainable: bool = False, exclude_embeddings: bool = False
+    model: nn.Module,
+    only_trainable: bool = False,
+    exclude_embeddings: bool = False,
 ) -> int:
     """
-    Get number of (optionally, trainable or non-embeddings) parameters in the module.
+    📐 Get number of (optionally, trainable or non-embeddings) parameters in the module.
 
-    Args:
-        only_trainable (`bool`, *optional*, defaults to `False`):
-            Whether or not to return only the number of trainable parameters
-
-        exclude_embeddings (`bool`, *optional*, defaults to `False`):
-            Whether or not to return only the number of non-embeddings parameters
-
-    Returns:
-        `int`: The number of parameters.
+    :param model: The model to calculate parameters for.
+    :type model: nn.Module
+    :param only_trainable: Whether or not to return only the number of trainable parameters, defaults to False.
+    :type only_trainable: bool, optional
+    :param exclude_embeddings: Whether or not to return only the number of non-embeddings parameters, defaults to False.
+    :type exclude_embeddings: bool, optional
+    :return: The number of parameters.
+    :rtype: int
     """
-
     if exclude_embeddings:
         embedding_param_names = [
             f"{name}.weight"
@@ -241,40 +276,6 @@ def get_similarities(
     return similarities
 
 
-def reinit(input_module: nn.Module):
-    for name, module in input_module.named_modules():
-        if isinstance(module, torch.nn.Linear):
-            torch.nn.init.normal_(module.weight, std=0.02)
-            if module.bias is not None:
-                torch.nn.init.zeros_(module.bias)
-        elif isinstance(module, torch.nn.Embedding):
-            torch.nn.init.normal_(module.weight, std=0.02)
-            if module.padding_idx is not None:
-                module.weight.data[module.padding_idx].zero_()
-        elif isinstance(module, torch.nn.LayerNorm):
-            torch.nn.init.ones_(module.weight)
-            if module.bias is not None:
-                torch.nn.init.zeros_(module.bias)
-        elif isinstance(module, torch.nn.Conv2d):
-            torch.nn.init.kaiming_normal_(
-                module.weight, mode="fan_out", nonlinearity="relu"
-            )
-            if module.bias is not None:
-                torch.nn.init.zeros_(module.bias)
-        elif isinstance(module, torch.nn.Conv1d):
-            torch.nn.init.kaiming_normal_(
-                module.weight, mode="fan_out", nonlinearity="relu"
-            )
-            if module.bias is not None:
-                torch.nn.init.zeros_(module.bias)
-        elif isinstance(module, torch.nn.ConvTranspose1d):
-            torch.nn.init.kaiming_normal_(
-                module.weight, mode="fan_out", nonlinearity="relu"
-            )
-            if module.bias is not None:
-                torch.nn.init.zeros_(module.bias)
-
-
 @configurable
 class TALIModel(nn.Module):
     def __init__(
@@ -295,8 +296,6 @@ class TALIModel(nn.Module):
     def build_model(self):
         self.model = nn.ModuleDict()
 
-        self.clip_model = CLIPModel.from_pretrained(self.image_text_model_name)
-
         if (
             not self.multi_modality_config.image.pretrained
             and self.multi_modality_config.image.support
@@ -305,7 +304,12 @@ class TALIModel(nn.Module):
             and self.multi_modality_config.text.support
         ):
             logger.info("Reinitializing the image and text models")
-            reinit(self.clip_model)
+            config = CLIPConfig.from_pretrained(self.image_text_model_name)
+            self.clip_model = CLIPModel(config)
+        else:
+            self.clip_model = CLIPModel.from_pretrained(
+                self.image_text_model_name
+            )
 
         self.linear_projection_dim = self.clip_model.projection_dim
 
@@ -315,13 +319,20 @@ class TALIModel(nn.Module):
         self.model["text"] = self.clip_model.text_model
         self.text_linear_layer = self.clip_model.text_projection
 
-        self.model["audio"] = WhisperModel.from_pretrained(
-            self.audio_model_name
-        )
+        if (
+            not self.multi_modality_config.audio.pretrained
+            and self.multi_modality_config.audio.support
+        ):
+            logger.info("Reinitializing the audio model")
+            config = WhisperConfig.from_pretrained(self.audio_model_name)
+            self.model["audio"] = WhisperModel(config)
+        else:
+            self.model["audio"] = WhisperModel.from_pretrained(
+                self.audio_model_name
+            )
+
         self.audio_output_shape = self.model["audio"].config.d_model
-        self.model["audio"] = WhisperModel.from_pretrained(
-            self.audio_model_name
-        ).encoder
+        self.model["audio"] = self.model["audio"].encoder
 
         self.audio_linear_layer = nn.Linear(
             in_features=self.audio_output_shape,
@@ -364,20 +375,6 @@ class TALIModel(nn.Module):
         if not self.multi_modality_config.video.support:
             delattr(self.model, "video")
             delattr(self, "video_linear_layer")
-
-        if (
-            not self.multi_modality_config.audio.pretrained
-            and self.multi_modality_config.audio.support
-        ):
-            logger.info("Reinitializing the audio model")
-            reinit(self.model["audio"])
-
-        if (
-            not self.multi_modality_config.video.pretrained
-            and self.multi_modality_config.video.support
-        ):
-            logger.info("Reinitializing the video model")
-            reinit(self.model["video"])
 
     def build_logit_scales(self):
         self.logit_scales = nn.ParameterDict()
@@ -545,28 +542,3 @@ def extract_all_possible_pairs(batch_dict):
             pairs.append((key1, sub_key1, key2, sub_key2))
 
     return pairs
-
-
-if __name__ == "__main__":
-    # test all possible options
-
-    import tqdm
-    from rich import print
-    from rich.traceback import install
-
-    install()
-    os.environ["HYDRA_FULL_ERROR"] = "1"
-
-    # dummy_input = torch.randn((10000, 10000))
-    # print(contrastive_accuracy(dummy_input))
-    # print(contrastive_accuracy_top_k(dummy_input, k=5))
-
-    # For 24GB GPU at 16-bit
-    # 128 batch size for wit_image to text
-    # 18 batch size for wit_image to youtube_audio
-    # 24 batch size for wit_image to youtube_video
-    # 20 batch size for text to youtube_audio
-    # 16 batch size for text to youtube_video
-    # 12 batch size for audio to youtube_video
-    # set up a config that allows to select modality pairs + batch size and then build unique dataloaders for each pair
-    # add accuracy and top-k accuracy metrics
