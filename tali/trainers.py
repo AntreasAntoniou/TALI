@@ -152,8 +152,7 @@ class ClassificationTrainer(Trainer):
                 accuracy_top_5=accuracy_top_5,
             )
         except Exception as e:
-            caught_exception = traceback.Traceback(e)
-            logger.warning(f"Error in step: {e} {caught_exception}")
+            logger.warning(f"Error in step: {e}")
             return None
 
     @staticmethod
