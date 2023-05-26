@@ -47,6 +47,16 @@ class StepOutput:
     accuracy_top_5: torch.Tensor
 
 
+def collect_grad_stats(model):
+    grad_stats = {}
+    for name, param in model.named_parameters():
+        if param.grad is not None:
+            abs_mean = torch.mean(torch.abs(param.grad)).item()
+            std = torch.std(param.grad).item()
+            grad_stats[name] = {"abs_mean": abs_mean, "std": std}
+    return grad_stats
+
+
 class ClassificationTrainer(Trainer):
     def __init__(
         self,
@@ -220,6 +230,9 @@ class ClassificationTrainer(Trainer):
                     overall_loss.append(step_output.loss)
                     overall_accuracy.append(step_output.accuracy)
                     overall_accuracy_top_5.append(step_output.accuracy_top_5)
+            grad_dict = None
+            if global_step % 100 == 0:
+                grad_dict = collect_grad_stats(model)
 
             self.optimizer.step()
 
@@ -238,6 +251,8 @@ class ClassificationTrainer(Trainer):
             self.state_dict.setdefault(key, []).append(value)
 
         metrics["lr"] = self.optimizer.param_groups[0]["lr"]
+        if grad_dict is not None:
+            metrics.update(grad_dict)
 
         return TrainerOutput(
             phase_name="training",
