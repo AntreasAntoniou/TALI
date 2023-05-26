@@ -107,7 +107,7 @@ class ClassificationTrainer(Trainer):
             torch.stack(
                 [value for key, value in output_dict.items() if metric in key]
             )
-        ).cpu()
+        )
 
     def step(self, model, batch, global_step, accelerator: Accelerator):
         """
@@ -148,7 +148,7 @@ class ClassificationTrainer(Trainer):
             )
         except Exception as e:
             caught_exception = traceback.Traceback(e)
-            logger.error(f"Error in step: {e} {caught_exception}")
+            logger.exception(f"Error in step: {e} {caught_exception}")
             return None
 
     @staticmethod
