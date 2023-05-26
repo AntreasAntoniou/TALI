@@ -32,7 +32,7 @@ def collect_metrics(func: Callable) -> Callable:
         for metric_key, computed_value in metrics_dict.items():
             if computed_value is not None:
                 value = (
-                    computed_value.detach().item()
+                    computed_value.detach().cpu()
                     if isinstance(computed_value, torch.Tensor)
                     else computed_value
                 )
