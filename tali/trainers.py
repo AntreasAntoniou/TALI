@@ -152,7 +152,7 @@ class ClassificationTrainer(Trainer):
             )
         except Exception as e:
             caught_exception = traceback.Traceback(e)
-            logger.exception(f"Error in step: {e} {caught_exception}")
+            logger.warning(f"Error in step: {e} {caught_exception}")
             return None
 
     @staticmethod
