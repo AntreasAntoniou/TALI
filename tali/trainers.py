@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 import torch
+from rich import print
+from rich import traceback
 from accelerate import Accelerator
 
 from tali.callbacks import Interval
@@ -145,7 +147,8 @@ class ClassificationTrainer(Trainer):
                 accuracy_top_5=accuracy_top_5,
             )
         except Exception as e:
-            logger.warning(e)
+            print(traceback.print_exc())
+            logger.error(f"Error in step: {e}")
             return None
 
     @staticmethod
