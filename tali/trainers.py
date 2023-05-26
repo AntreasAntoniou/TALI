@@ -105,7 +105,11 @@ class ClassificationTrainer(Trainer):
         """
         return torch.mean(
             torch.stack(
-                [value for key, value in output_dict.items() if metric in key]
+                [
+                    value.cpu()
+                    for key, value in output_dict.items()
+                    if metric in key
+                ]
             )
         )
 
