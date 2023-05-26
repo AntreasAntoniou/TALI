@@ -254,12 +254,11 @@ class ClassificationTrainer(Trainer):
                 **overall_output_dict,
             }
 
+        clean_metrics = {}
         for key in metrics.keys():
             if "loss" in key or "accuracy" in key:
-                metrics[key] = metrics[key].cpu()
-            else:
-                del metrics[key]
-
+                clean_metrics[key] = metrics[key].cpu()
+        metrics = clean_metrics
         for key, value in metrics.items():
             self.state_dict.setdefault(key, []).append(value)
 
