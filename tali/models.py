@@ -1,7 +1,5 @@
 # ⚙️ System modules
 import math
-import os
-import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
@@ -10,21 +8,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional
 import torch.nn.functional as F
-from accelerate import Accelerator
-from rich import print
-from torch.utils.data import DataLoader
 from transformers import (
     CLIPConfig,
     CLIPModel,
-    CLIPProcessor,
     WhisperConfig,
     WhisperModel,
-    WhisperProcessor,
 )
 from transformers.models.clip.modeling_clip import contrastive_loss
 
 # 📋 Local modules
-from tali.data.data import ModalityTypes, TALIDataset, dataclass_collate
 from tali.decorators import configurable
 from tali.utils import get_logger
 

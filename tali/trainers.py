@@ -248,6 +248,5 @@ class ClassificationTrainer(Trainer):
             if overall_loss
             else None,
             metrics=metrics,
-            phase_name="training",
             experiment_tracker=self.experiment_tracker,
         )
