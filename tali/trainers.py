@@ -55,7 +55,8 @@ def collect_grad_stats(model):
         if param.grad is not None:
             abs_mean = torch.mean(torch.abs(param.grad.detach().cpu())).item()
             std = torch.std(param.grad.detach().cpu()).item()
-            grad_stats[name] = {"abs_mean": abs_mean, "std": std}
+            grad_stats[f"grads/{name}_abs_mean"] = abs_mean
+            grad_stats[f"grads/{name}_std"] = std
     return grad_stats
 
 
