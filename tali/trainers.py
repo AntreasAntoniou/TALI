@@ -54,6 +54,7 @@ class ClassificationTrainer(Trainer):
         scheduler: torch.optim.lr_scheduler._LRScheduler = None,
         scheduler_interval: str = Interval.STEP,
         experiment_tracker: Any = None,
+        gradient_clipping: float = None,
     ):
         """
         Initializes the ClassificationTrainer class.
@@ -69,6 +70,7 @@ class ClassificationTrainer(Trainer):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.experiment_tracker = experiment_tracker
+        self.gradient_clipping = gradient_clipping
         self.state_dict = {}
 
         if self.scheduler is not None:
@@ -127,8 +129,13 @@ class ClassificationTrainer(Trainer):
 
             accelerator.backward(loss)
 
-            if accelerator.sync_gradients:
-                accelerator.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            if (
+                accelerator.sync_gradients
+                and self.gradient_clipping is not None
+            ):
+                accelerator.clip_grad_norm_(
+                    model.parameters(), max_norm=self.gradient_clipping
+                )
 
             return StepOutput(
                 output_dict=output_dict,
