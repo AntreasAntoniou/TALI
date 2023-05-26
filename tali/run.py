@@ -32,6 +32,7 @@ import torch
 from hydra_zen import instantiate
 from omegaconf import OmegaConf
 from torch.utils.data import Dataset, Subset
+import accelerate
 
 from tali.boilerplate import Learner
 from tali.callbacks import Callback
@@ -43,6 +44,8 @@ from tali.utils import get_logger, pretty_config, set_seed
 config_store = collect_config_store()
 
 logger = get_logger(name=__name__)
+
+accelerator = accelerate.Accelerator()
 
 
 def instantiate_callbacks(callback_dict: dict) -> List[Callback]:
@@ -73,6 +76,7 @@ def run(cfg: BaseConfig) -> None:
     set_seed(seed=cfg.seed)
 
     model: TALIModel = instantiate(cfg.model)
+    model = accelerator.prepare(model)
 
     if ckpt_path is not None and cfg.resume is True:
         trainer_state = torch.load(
