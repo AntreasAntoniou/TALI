@@ -2,8 +2,8 @@ import os
 import shutil
 from pathlib import Path
 
-source_dir = Path("/data-fast1/TALI/data/")
-destination_dir = Path("/data-fast1/TALI/data/")
+source_dir = Path("/data/TALI/data/")
+destination_dir = Path("/data/TALI/data/")
 files = list(source_dir.glob("*"))
 
 for i in range(0, len(files), 5):
