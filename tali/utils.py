@@ -400,7 +400,9 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
     print(
         f"Logged in to huggingface with token {os.environ['HF_TOKEN']}, creating repo {hf_repo_path}"
     )
-    repo_url = create_repo(hf_repo_path, repo_type="model", exist_ok=True)
+    repo_url = create_repo(
+        hf_repo_path, repo_type="model", exist_ok=True, private=True
+    )
 
     logger.info(f"Created repo {hf_repo_path}, {cfg.hf_cache_dir}")
 
@@ -437,7 +439,7 @@ def create_hf_model_repo_and_download_maybe(cfg: Any):
     )
 
     try:
-        if cfg.resume == False and not (
+        if cfg.resume is False and not (
             cfg.download_checkpoint_with_name is not None
             or cfg.download_latest
         ):
