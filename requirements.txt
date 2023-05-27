@@ -133,7 +133,7 @@ mkl-random @ file:///home/builder/ci_310/mkl_random_1641843545607/work
 mkl-service==2.4.0
 monai==1.1.0
 monotonic==1.6
-mpmath==1.2.1
+mpmath==1.3.0
 msgpack==1.0.5
 multidict==6.0.4
 multiprocess==0.70.14
