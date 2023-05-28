@@ -230,7 +230,7 @@ def get_similarities(
         f"{modality_a_name}_to_{modality_b_name}_similarities": torch.einsum(
             "ijk,ilk->ijl", tensor_modality_a, tensor_modality_b
         )[0]
-        * logit_scale
+        * torch.clamp(logit_scale.exp(), max=100)
     }
 
     similarities[
@@ -349,9 +349,7 @@ class TALIModel(nn.Module):
             self.model["video"].d_model, self.linear_projection_dim, bias=False
         )
 
-        self.logit_init_value = float(
-            self.clip_model.config.logit_scale_init_value
-        )
+        self.logit_init_value = float(1 / 0.07)
 
         if (
             not self.multi_modality_config.image.support
@@ -373,10 +371,10 @@ class TALIModel(nn.Module):
         self.logit_scales = nn.ParameterDict()
 
         self.logit_scales["image_to_text"] = nn.Parameter(
-            torch.ones(1, requires_grad=True) * self.clip_model.logit_scale
+            torch.ones(1, requires_grad=True) * self.logit_init_value
         )
         self.logit_scales["text_to_image"] = nn.Parameter(
-            torch.ones(1, requires_grad=True) * self.clip_model.logit_scale
+            torch.ones(1, requires_grad=True) * self.logit_init_value
         )
 
         for modality_a in self.model.keys():
