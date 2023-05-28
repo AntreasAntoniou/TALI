@@ -226,6 +226,14 @@ def get_similarities(
 
     tensor_modality_a = tensor_modality_a.unsqueeze(0)
     tensor_modality_b = tensor_modality_b.unsqueeze(0)
+
+    tensor_modality_a = tensor_modality_a / tensor_modality_a.norm(
+        p=2, dim=-1, keepdim=True
+    )
+    tensor_modality_b = tensor_modality_b / tensor_modality_b.norm(
+        p=2, dim=-1, keepdim=True
+    )
+
     similarities = {
         f"{modality_a_name}_to_{modality_b_name}_similarities": torch.einsum(
             "ijk,ilk->ijl", tensor_modality_a, tensor_modality_b
