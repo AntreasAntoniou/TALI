@@ -59,15 +59,21 @@ class WITBase(Dataset):
         )
 
         if not self.indices_filepath.exists():
-            tali_val_dataset = datasets.load_from_disk(
-                pathlib.Path(tali_dataset_dir) / "val-set"
+            tali_val_dataset = datasets.load_dataset(
+                path="Antreas/TALI",
+                split="val",
+                keep_in_memory=False,
+                cache_dir=os.environ["HF_CACHE_DIR"],
             )
             tali_val_indices = [
                 sample["wit_idx"] for sample in tali_val_dataset
             ]
 
-            tali_test_dataset = datasets.load_from_disk(
-                pathlib.Path(tali_dataset_dir) / "test-set"
+            tali_test_dataset = datasets.load_dataset(
+                path="Antreas/TALI",
+                split="test",
+                keep_in_memory=False,
+                cache_dir=os.environ["HF_CACHE_DIR"],
             )
             tali_test_indices = [
                 sample["wit_idx"] for sample in tali_test_dataset
