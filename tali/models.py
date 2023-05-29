@@ -464,6 +464,9 @@ class TALIModel(nn.Module):
         features = out.pooler_output
         raw_features = out.last_hidden_state
         projection_output = self.image_linear_layer(features)
+        projection_output = projection_output / projection_output.norm(
+            p=2, dim=-1, keepdim=True
+        )
 
         return {
             "features": features,
@@ -480,6 +483,9 @@ class TALIModel(nn.Module):
         features = out.pooler_output
         raw_features = out.last_hidden_state
         projection_output = self.text_linear_layer(features)
+        projection_output = projection_output / projection_output.norm(
+            p=2, dim=-1, keepdim=True
+        )
         return {
             "features": features,
             "raw_features": raw_features,
@@ -494,6 +500,9 @@ class TALIModel(nn.Module):
         features = out.last_hidden_state[:, -1, :]
         raw_features = out.last_hidden_state
         projection_output = self.audio_linear_layer(features)
+        projection_output = projection_output / projection_output.norm(
+            p=2, dim=-1, keepdim=True
+        )
 
         return {
             "features": features,
@@ -515,6 +524,9 @@ class TALIModel(nn.Module):
         features = out["features"]
         raw_features = out["raw_features"]
         projection_output = self.video_linear_layer(features)
+        projection_output = projection_output / projection_output.norm(
+            p=2, dim=-1, keepdim=True
+        )
         return {
             "features": features,
             "raw_features": raw_features,
