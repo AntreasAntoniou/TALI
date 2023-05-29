@@ -114,7 +114,22 @@ def duration_in_seconds_from_path(video_path, modality):
 # # Get the video stream
 # video_stream = next(s for s in container.streams if s.type == 'video')
 
+import contextlib
+import os
+import functools
 
+
+def suppress_stderr(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        with open(os.devnull, "w") as devnull:
+            with contextlib.redirect_stderr(devnull):
+                return func(*args, **kwargs)
+
+    return wrapper
+
+
+@suppress_stderr
 def extract_frames_pyav(
     video_path: str,
     modality: str,

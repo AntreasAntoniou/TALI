@@ -89,26 +89,7 @@ class ClassificationEvaluator(Evaluator):
             )
         except Exception as e:
             logger.warning(f"Exception: {e}")
-            # some_key = list(batch.keys())
-            # some_sub_key = list(batch[some_key[0]].keys())
-            # some_value = batch[some_key[0]][some_sub_key[0]]
-            # if some_value.shape[0] > 1:
-            #     smaller_batch_dict = {}
 
-            #     for key, value in batch.items():
-            #         smaller_batch_dict[key] = {}
-            #         logger.info(f"{key}")
-            #         for sub_key, sub_value in value.items():
-            #             logger.info(
-            #                 f"sub_key, sub_value.shape: {sub_key}, {sub_value.shape}"
-            #             )
-            #             smaller_batch_dict[key][sub_key] = sub_value[1:]
-            #             logger.info(
-            #                 f"smaller_batch_dict[key][sub_key].shape: {smaller_batch_dict[key][sub_key].shape}"
-            #             )
-
-            #     return self.step(model, smaller_batch_dict, global_step, accelerator)
-            # else:
             return None
 
     @torch.inference_mode()
