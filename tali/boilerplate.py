@@ -69,7 +69,7 @@ class Learner(nn.Module):
             self.checkpoints_dir.mkdir(parents=True)
         self.model = model
         self.evaluate_every_n_steps = evaluate_every_n_steps
-        self.checkpoint_every_n_steps = checkpoint_every_n_steps or 99999999999
+        self.checkpoint_every_n_steps = checkpoint_every_n_steps
         self.checkpoint_after_validation = checkpoint_after_validation
         self.step_idx = 0
         self.epoch_idx = 0
@@ -413,7 +413,9 @@ class Learner(nn.Module):
                             self.check_manage_background_threads()
 
                         if (
-                            self.step_idx % self.checkpoint_every_n_steps == 0
+                            self.checkpoint_every_n_steps is not None
+                            and self.step_idx % self.checkpoint_every_n_steps
+                            == 0
                             and self.step_idx > 0
                         ):
                             self.save_checkpoint(
