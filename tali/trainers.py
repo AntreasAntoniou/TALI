@@ -64,9 +64,7 @@ class ClassificationTrainer(Trainer):
     def __init__(
         self,
         optimizer: torch.optim.Optimizer,
-        dummy_optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler._LRScheduler = None,
-        dummy_scheduler: torch.optim.lr_scheduler._LRScheduler = None,
         scheduler_interval: str = Interval.STEP,
         experiment_tracker: Any = None,
         gradient_clipping: float = None,
@@ -83,9 +81,7 @@ class ClassificationTrainer(Trainer):
         super().__init__()
 
         self.optimizer = optimizer
-        self.dummy_optimizer = dummy_optimizer
         self.scheduler = scheduler
-        self.dummy_scheduler = dummy_scheduler
         self.experiment_tracker = experiment_tracker
         self.gradient_clipping = gradient_clipping
         self.state_dict = {}

@@ -74,7 +74,6 @@ class Learner(nn.Module):
         experiment_name: str,
         experiment_dir: Union[str, Path],
         model: torch.nn.Module,
-        dummy_model: torch.nn.Module = None,
         resume: Union[bool, str] = False,
         evaluate_every_n_steps: int = None,
         checkpoint_every_n_steps: int = None,
@@ -114,7 +113,6 @@ class Learner(nn.Module):
         if not self.checkpoints_dir.exists():
             self.checkpoints_dir.mkdir(parents=True)
         self.model = model
-        self.dummy_model = dummy_model
         self.evaluate_every_n_steps = evaluate_every_n_steps
         self.checkpoint_every_n_steps = checkpoint_every_n_steps
         self.checkpoint_after_validation = checkpoint_after_validation
@@ -488,35 +486,35 @@ class Learner(nn.Module):
         )
         save_location = self.accelerator.save_state(ckpt_save_path)
 
-        print(
-            f"save_location: {save_location}, ckpt_save_path: {ckpt_save_path}"
-        )
+        # print(
+        #     f"save_location: {save_location}, ckpt_save_path: {ckpt_save_path}"
+        # )
 
-        save_state_snapshot = {
-            "model": deepcopy(self.model.state_dict()),
-            "optimizer": deepcopy(self.trainer.optimizer.state_dict()),
-        }
+        # save_state_snapshot = {
+        #     "model": deepcopy(self.model.state_dict()),
+        #     "optimizer": deepcopy(self.trainer.optimizer.state_dict()),
+        # }
 
-        self.model = self.accelerator.prepare(self.dummy_model)
-        self.trainer.optimizer = self.accelerator.prepare(
-            self.trainer.dummy_optimizer
-        )
+        # self.model = self.accelerator.prepare(self.dummy_model)
+        # self.trainer.optimizer = self.accelerator.prepare(
+        #     self.trainer.dummy_optimizer
+        # )
 
-        self.accelerator.load_state(ckpt_save_path)
+        # self.accelerator.load_state(ckpt_save_path)
 
-        load_state_snapshot = {
-            "model": self.model.state_dict(),
-            "optimizer": self.trainer.optimizer.state_dict(),
-        }
+        # load_state_snapshot = {
+        #     "model": self.model.state_dict(),
+        #     "optimizer": self.trainer.optimizer.state_dict(),
+        # }
 
-        compare_models(
-            model1=save_state_snapshot["model"],
-            model2=load_state_snapshot["model"],
-            optimizer1=save_state_snapshot["optimizer"],
-            optimizer2=load_state_snapshot["optimizer"],
-        )
+        # compare_models(
+        #     model1=save_state_snapshot["model"],
+        #     model2=load_state_snapshot["model"],
+        #     optimizer1=save_state_snapshot["optimizer"],
+        #     optimizer2=load_state_snapshot["optimizer"],
+        # )
 
-        logger.info(f"Saved checkpoint to {ckpt_save_path}")
+        logger.info(f"Saved checkpoint to {save_location}")
         self.callback_handler.on_save_checkpoint(
             model=self.model,
             optimizers=self.trainer.optimizer,
