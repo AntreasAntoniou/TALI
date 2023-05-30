@@ -202,7 +202,6 @@ def run(cfg: BaseConfig) -> None:
         cfg.learner,
         accelerator=accelerator,
         model=model,
-        dummy_model=dummy_model,
         trainer=ClassificationTrainer(
             optimizer=optimizer,
             scheduler=scheduler,
