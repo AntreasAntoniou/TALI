@@ -29,8 +29,8 @@ def compare_models(model1, model2, optimizer1, optimizer2):
     """Compare parameters and optimizer states between two models."""
 
     # Compare model parameters
-    for name1, param1 in model1.named_parameters():
-        param2 = model2.state_dict()[name1]
+    for name1, param1 in model1.items():
+        param2 = model2[name1]
         if not torch.equal(param1, param2):
             print(f"Parameter {name1} is not identical between models.")
             print("Model1 parameter:", param1)
@@ -507,14 +507,13 @@ class Learner(nn.Module):
         )
 
         save_state_snapshot = {
-            "model": self.model.detach().cpu(),
+            "model": self.model.state_dict(),
             "optimizer": copy_optimizer_with_state(
-                optimizer=self.trainer.optimizer,
-                model=self.model.detach().cpu(),
+                optimizer=self.trainer.optimizer, model=self.model.to("cpu")
             ),
         }
 
-        self.model = self.accelerator.prepare(self.model)
+        self.model = self.accelerator.prepare(self.dummy_model)
         self.trainer.optimizer = self.accelerator.prepare(
             self.trainer.dummy_optimizer
         )
@@ -522,10 +521,9 @@ class Learner(nn.Module):
         self.accelerator.load_state(ckpt_save_path)
 
         load_state_snapshot = {
-            "model": self.model.detach().cpu(),
+            "model": self.model.state_dict(),
             "optimizer": copy_optimizer_with_state(
-                optimizer=self.trainer.optimizer,
-                model=self.model.detach().cpu(),
+                optimizer=self.trainer.optimizer, model=self.model.to("cpu")
             ),
         }
 
