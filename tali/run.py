@@ -78,9 +78,6 @@ def run(cfg: BaseConfig) -> None:
     model: TALIModel = instantiate(cfg.model)
     model = accelerator.prepare(model)
 
-    dummy_model = instantiate(cfg.model)
-    dummy_model = accelerator.prepare(dummy_model)
-
     if ckpt_path is not None and cfg.resume is True:
         trainer_state = torch.load(
             pathlib.Path(ckpt_path) / "trainer_state.pt"
