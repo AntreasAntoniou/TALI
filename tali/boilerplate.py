@@ -41,8 +41,8 @@ def compare_models(model1, model2, optimizer1, optimizer2):
     # Compare optimizer states
     for i, (opt_state1, opt_state2) in enumerate(
         zip(
-            optimizer1.state_dict()["state"].values(),
-            optimizer2.state_dict()["state"].values(),
+            optimizer1["state"].values(),
+            optimizer2["state"].values(),
         )
     ):
         for k1, k2 in zip(opt_state1.keys(), opt_state2.keys()):
@@ -510,7 +510,7 @@ class Learner(nn.Module):
 
         save_state_snapshot = {
             "model": deepcopy(self.model.state_dict()),
-            "optimizer": deepcopy(self.trainer.optimizer),
+            "optimizer": deepcopy(self.trainer.optimizer.state_dict()),
         }
 
         self.model = self.accelerator.prepare(self.dummy_model)
@@ -522,7 +522,7 @@ class Learner(nn.Module):
 
         load_state_snapshot = {
             "model": self.model.state_dict(),
-            "optimizer": self.trainer.optimizer,
+            "optimizer": self.trainer.optimizer.state_dict(),
         }
 
         compare_models(
