@@ -5,7 +5,7 @@ from math import floor
 from typing import Any, Optional
 
 import torch
-from accelerate import Accelerator
+from accelerate import Accelerator, accelerator
 from hydra.core.config_store import ConfigStore
 from hydra_zen import MISSING, ZenField, builds, make_config
 from timm.scheduler import CosineLRScheduler
@@ -130,6 +130,7 @@ learner_config = builds(Learner, populate_full_signature=True)
 
 learner_config = learner_config(
     model=None,
+    accelerator=None,
     experiment_name=EXPERIMENT_NAME,
     experiment_dir=CHECKPOINT_DIR,
     resume=RESUME,
