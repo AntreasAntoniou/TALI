@@ -78,6 +78,9 @@ def run(cfg: BaseConfig) -> None:
     model: TALIModel = instantiate(cfg.model)
     model = accelerator.prepare(model)
 
+    dummy_model = instantiate(cfg.model)
+    dummy_model = accelerator.prepare(dummy_model)
+
     if ckpt_path is not None and cfg.resume is True:
         trainer_state = torch.load(
             pathlib.Path(ckpt_path) / "trainer_state.pt"
@@ -183,6 +186,10 @@ def run(cfg: BaseConfig) -> None:
         cfg.optimizer, params=model.parameters(), _partial_=False
     )
 
+    dummy_optimizer: torch.optim.Optimizer = instantiate(
+        cfg.optimizer, params=dummy_model.parameters(), _partial_=False
+    )
+
     scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = instantiate(
         cfg.scheduler,
         optimizer=optimizer,
@@ -190,12 +197,24 @@ def run(cfg: BaseConfig) -> None:
         _partial_=False,
     )
 
+    dummy_scheduler: Optional[
+        torch.optim.lr_scheduler._LRScheduler
+    ] = instantiate(
+        cfg.scheduler,
+        optimizer=dummy_optimizer,
+        t_initial=cfg.learner.train_iters,
+        _partial_=False,
+    )
+
     learner: Learner = instantiate(
         cfg.learner,
         model=model,
+        dummy_model=dummy_model,
         trainer=ClassificationTrainer(
             optimizer=optimizer,
+            dummy_optimizer=dummy_optimizer,
             scheduler=scheduler,
+            dummy_scheduler=dummy_scheduler,
             experiment_tracker=experiment_tracker,
             gradient_clipping=cfg.gradient_clipping,
         ),

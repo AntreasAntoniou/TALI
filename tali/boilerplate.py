@@ -3,6 +3,7 @@ import pathlib
 import time
 from pathlib import Path
 from typing import Any, List, Union
+import accelerate
 
 import torch
 import torch.nn as nn
@@ -10,6 +11,7 @@ from accelerate import Accelerator
 from neptune import Run
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from rich import print
 
 from tali.callbacks import Callback, CallbackHandler, Interval
 from tali.decorators import configurable
@@ -23,6 +25,49 @@ logger = get_logger(__name__)
 accelerate_logger = get_logger("accelerate", logging_level="ERROR")
 
 
+def compare_models(model1, model2, optimizer1, optimizer2):
+    """Compare parameters and optimizer states between two models."""
+
+    # Compare model parameters
+    for name1, param1 in model1.named_parameters():
+        param2 = model2.state_dict()[name1]
+        if not torch.equal(param1, param2):
+            print(f"Parameter {name1} is not identical between models.")
+            print("Model1 parameter:", param1)
+            print("Model2 parameter:", param2)
+
+    # Compare optimizer states
+    for i, (opt_state1, opt_state2) in enumerate(
+        zip(
+            optimizer1.state_dict()["state"].values(),
+            optimizer2.state_dict()["state"].values(),
+        )
+    ):
+        for k1, k2 in zip(opt_state1.keys(), opt_state2.keys()):
+            if not torch.equal(opt_state1[k1], opt_state2[k2]):
+                print(
+                    f"Optimizer state {k1} for parameter {i} is not identical between optimizers."
+                )
+                print("Optimizer1 state:", opt_state1[k1])
+                print("Optimizer2 state:", opt_state2[k2])
+
+
+def copy_optimizer_with_state(optimizer, model):
+    """Copy optimizer with state."""
+    # Get the type of the original optimizer
+    OptimType = type(optimizer)
+
+    # Get the arguments of the original optimizer
+    args = optimizer.defaults
+
+    # Create a new optimizer of the same type
+    optimizer_copy = OptimType(model.parameters(), **args)
+
+    # Copy the state of the original optimizer
+    optimizer_copy.load_state_dict(optimizer.state_dict())
+    return optimizer_copy
+
+
 @configurable
 class Learner(nn.Module):
     def __init__(
@@ -30,6 +75,7 @@ class Learner(nn.Module):
         experiment_name: str,
         experiment_dir: Union[str, Path],
         model: torch.nn.Module,
+        dummy_model: torch.nn.Module = None,
         resume: Union[bool, str] = False,
         evaluate_every_n_steps: int = None,
         checkpoint_every_n_steps: int = None,
@@ -68,6 +114,7 @@ class Learner(nn.Module):
         if not self.checkpoints_dir.exists():
             self.checkpoints_dir.mkdir(parents=True)
         self.model = model
+        self.dummy_model = dummy_model
         self.evaluate_every_n_steps = evaluate_every_n_steps
         self.checkpoint_every_n_steps = checkpoint_every_n_steps
         self.checkpoint_after_validation = checkpoint_after_validation
@@ -453,7 +500,42 @@ class Learner(nn.Module):
             obj=experiment_hyperparameters,
             f=ckpt_save_path / "trainer_state.pt",
         )
-        self.accelerator.save_state(ckpt_save_path)
+        save_location = self.accelerator.save_state(ckpt_save_path)
+
+        print(
+            f"save_location: {save_location}, ckpt_save_path: {ckpt_save_path}"
+        )
+
+        save_state_snapshot = {
+            "model": self.model.detach().cpu(),
+            "optimizer": copy_optimizer_with_state(
+                optimizer=self.trainer.optimizer,
+                model=self.model.detach().cpu(),
+            ),
+        }
+
+        self.model = self.accelerator.prepare(self.model)
+        self.trainer.optimizer = self.accelerator.prepare(
+            self.trainer.dummy_optimizer
+        )
+
+        self.accelerator.load_state(ckpt_save_path)
+
+        load_state_snapshot = {
+            "model": self.model.detach().cpu(),
+            "optimizer": copy_optimizer_with_state(
+                optimizer=self.trainer.optimizer,
+                model=self.model.detach().cpu(),
+            ),
+        }
+
+        compare_models(
+            model1=save_state_snapshot["model"],
+            model2=load_state_snapshot["model"],
+            optimizer1=save_state_snapshot["optimizer"],
+            optimizer2=load_state_snapshot["optimizer"],
+        )
+
         logger.info(f"Saved checkpoint to {ckpt_save_path}")
         self.callback_handler.on_save_checkpoint(
             model=self.model,
