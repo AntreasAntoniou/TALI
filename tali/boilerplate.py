@@ -1,9 +1,11 @@
+from copy import deepcopy
 import itertools
 import pathlib
 import time
 from pathlib import Path
 from typing import Any, List, Union
 import accelerate
+
 
 import torch
 import torch.nn as nn
@@ -507,10 +509,8 @@ class Learner(nn.Module):
         )
 
         save_state_snapshot = {
-            "model": self.model.state_dict(),
-            "optimizer": copy_optimizer_with_state(
-                optimizer=self.trainer.optimizer, model=self.model.to("cpu")
-            ),
+            "model": deepcopy(self.model.state_dict()),
+            "optimizer": deepcopy(self.trainer.optimizer),
         }
 
         self.model = self.accelerator.prepare(self.dummy_model)
@@ -522,9 +522,7 @@ class Learner(nn.Module):
 
         load_state_snapshot = {
             "model": self.model.state_dict(),
-            "optimizer": copy_optimizer_with_state(
-                optimizer=self.trainer.optimizer, model=self.model.to("cpu")
-            ),
+            "optimizer": self.trainer.optimizer,
         }
 
         compare_models(
