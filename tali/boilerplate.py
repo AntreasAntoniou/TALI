@@ -4,12 +4,11 @@ import pathlib
 import time
 from pathlib import Path
 from typing import Any, List, Union
-import accelerate
+from accelerate import Accelerator
 
 
 import torch
 import torch.nn as nn
-from accelerate import Accelerator
 from neptune import Run
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -22,9 +21,6 @@ from tali.trainers import Trainer
 from tali.utils import get_logger
 
 logger = get_logger(__name__)
-
-# silence logger for accelerate
-accelerate_logger = get_logger("accelerate", logging_level="ERROR")
 
 
 def compare_models(model1, model2, optimizer1, optimizer2):
@@ -74,6 +70,7 @@ def copy_optimizer_with_state(optimizer, model):
 class Learner(nn.Module):
     def __init__(
         self,
+        accelerator: Accelerator,
         experiment_name: str,
         experiment_dir: Union[str, Path],
         model: torch.nn.Module,
@@ -98,6 +95,7 @@ class Learner(nn.Module):
         dummy_batch_mode: bool = False,
     ):
         super().__init__()
+        self.accelerator = accelerator
         self.experiment_name = experiment_name
         self.experiment_dir = (
             experiment_dir
@@ -174,20 +172,6 @@ class Learner(nn.Module):
             val_dataloader=self.val_dataloader,
             test_dataloader=self.test_dataloader,
         )
-
-        self.accelerator = Accelerator()
-
-        self.trainer.optimizer = self.accelerator.prepare(
-            self.trainer.optimizer
-        )
-        if self.trainer.scheduler is not None:
-            self.trainer.scheduler = self.accelerator.prepare(
-                self.trainer.scheduler
-            )
-
-        self.train_dataloader = self.accelerator.prepare(self.train_dataloader)
-        self.val_dataloader = self.accelerator.prepare(self.val_dataloader)
-        self.test_dataloader = self.accelerator.prepare(self.test_dataloader)
 
         if isinstance(resume, str):
             checkpoint_path = Path(resume)

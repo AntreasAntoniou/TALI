@@ -157,6 +157,7 @@ def run(cfg: BaseConfig) -> None:
         shuffle=True,
         collate_fn=dataclass_collate,
     )
+    train_dataloader = accelerator.prepare(train_dataloader)
 
     val_dataset = CustomConcatDataset(val_datasets)
 
@@ -167,6 +168,7 @@ def run(cfg: BaseConfig) -> None:
         shuffle=False,
         collate_fn=dataclass_collate,
     )
+    val_dataloader = accelerator.prepare(val_dataloader)
 
     test_dataset = CustomConcatDataset(val_datasets)
 
@@ -177,6 +179,7 @@ def run(cfg: BaseConfig) -> None:
         shuffle=False,
         collate_fn=dataclass_collate,
     )
+    test_dataloader = accelerator.prepare(test_dataloader)
 
     experiment_tracker["num_parameters"] = sum(
         p.numel() for p in model.parameters() if p.requires_grad
@@ -185,10 +188,12 @@ def run(cfg: BaseConfig) -> None:
     optimizer: torch.optim.Optimizer = instantiate(
         cfg.optimizer, params=model.parameters(), _partial_=False
     )
+    optimizer = accelerator.prepare(optimizer)
 
     dummy_optimizer: torch.optim.Optimizer = instantiate(
         cfg.optimizer, params=dummy_model.parameters(), _partial_=False
     )
+    dummy_optimizer = accelerator.prepare(dummy_optimizer)
 
     scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = instantiate(
         cfg.scheduler,
@@ -196,6 +201,7 @@ def run(cfg: BaseConfig) -> None:
         t_initial=cfg.learner.train_iters,
         _partial_=False,
     )
+    scheduler = accelerator.prepare(scheduler)
 
     dummy_scheduler: Optional[
         torch.optim.lr_scheduler._LRScheduler
@@ -205,9 +211,11 @@ def run(cfg: BaseConfig) -> None:
         t_initial=cfg.learner.train_iters,
         _partial_=False,
     )
+    dummy_scheduler = accelerator.prepare(dummy_scheduler)
 
     learner: Learner = instantiate(
         cfg.learner,
+        accelerator=accelerator,
         model=model,
         dummy_model=dummy_model,
         trainer=ClassificationTrainer(
