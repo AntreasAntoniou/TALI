@@ -182,7 +182,7 @@ class BaseConfig:
     eval_num_samples_per_episode: int = 96
     num_workers: int = 2
     prefetch_factor: int = 1
-    persistent_workers: bool = True
+    persistent_workers: bool = False
     pin_memory: bool = True
     gradient_clipping: Optional[float] = None
 
