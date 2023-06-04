@@ -756,8 +756,8 @@ def collect_config_store():
             num_workers=NUM_WORKERS,
             pin_memory=PIN_MEMORY,
             shuffle=True,
-            prefetch_factor=PREFETCH_FACTOR,
-            persistent_workers=PERSISTENT_WORKERS,
+            prefetch_factor=1,
+            persistent_workers=False,
         ),
     )
 
