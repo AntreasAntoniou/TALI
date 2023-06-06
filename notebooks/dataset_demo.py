@@ -149,7 +149,7 @@ def load_sample(set_name, sample_index):
 
     wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
     youtube_image = (
-        T.ToTensor(sample["youtube_random_video_sample_image"])
+        T.ToTensor()(sample["youtube_random_video_sample_image"])
         .permute(1, 2, 0)
         .numpy()
         * 255.0
