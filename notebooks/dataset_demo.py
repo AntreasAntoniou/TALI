@@ -156,8 +156,6 @@ def load_sample(set_name, sample_index):
     video_path = sample["youtube_content_video"]
     audio_path = sample["youtube_content_video"]
 
-    video_path = f"../demo_cache/temp_data/video-{set_name}-{sample_index}.mp4"
-    audio_path = f"../demo_cache/temp_data/audio-{set_name}-{sample_index}.mp3"
     # if not pathlib.Path(video_path).parent.exists():
     #     pathlib.Path(video_path).parent.mkdir(parents=True, exist_ok=True)
 
