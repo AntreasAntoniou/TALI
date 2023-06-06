@@ -1,5 +1,7 @@
 import os
 
+import torch
+
 from tali.data.data import ModalityTypes
 
 os.environ["HYDRA_FULL_ERROR"] = "1"
@@ -17,6 +19,7 @@ install()
 import gradio as gr
 import torchaudio
 import torchvision
+import torchvision.transforms as T
 
 from tali.utils import get_logger
 
@@ -142,12 +145,13 @@ def load_sample(set_name, sample_index):
     sample = dataset[int(sample_index)]
     # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)
     subtitles = sample["youtube_description_text"]
-    print(
-        f"shapes {sample['youtube_content_video'].shape}, {sample['youtube_content_audio'].shape}, {sample['wikipedia_caption_image'].shape}, {sample['youtube_random_video_sample_image'].shape}"
-    )
+
     wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
     youtube_image = (
         sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
+    )
+    video = torch.stack(
+        [T.ToTensor()(frame) for frame in sample["youtube_content_video"]]
     )
     video = sample["youtube_content_video"].permute(0, 2, 3, 1).numpy() * 255
     audio = sample["youtube_content_audio"]
