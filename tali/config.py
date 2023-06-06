@@ -18,11 +18,7 @@ from tali.data.data_plus import TALIBase
 from tali.utils import get_hydra_config, get_logger
 from tali.wit import WITBase
 
-from .models import (
-    ModalityConfig,
-    MultiModalityConfig,
-    TALIModel,
-)
+from .models import ModalityConfig, MultiModalityConfig, TALIModel
 
 CHECKPOINT_DIR = "${hf_cache_dir}"
 NUM_WORKERS = "${num_workers}"

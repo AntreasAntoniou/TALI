@@ -1,16 +1,17 @@
+import multiprocessing as mp
 import os
 import pathlib
 import time
 from typing import Any, Callable, Dict, Optional
-import PIL
 
 import datasets
 import numpy as np
+import PIL
 import torch
 import tqdm
 from torch.utils.data import DataLoader, Dataset, Subset
 from transformers import CLIPProcessor, WhisperProcessor
-import multiprocessing as mp
+
 from tali.data.data import (
     ModalityTypes,
     dataclass_collate,

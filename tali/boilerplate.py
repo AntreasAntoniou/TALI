@@ -1,18 +1,17 @@
-from copy import deepcopy
 import itertools
 import pathlib
 import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, List, Union
-from accelerate import Accelerator
-
 
 import torch
 import torch.nn as nn
+from accelerate import Accelerator
 from neptune import Run
+from rich import print
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from rich import print
 
 from tali.callbacks import Callback, CallbackHandler, Interval
 from tali.decorators import configurable

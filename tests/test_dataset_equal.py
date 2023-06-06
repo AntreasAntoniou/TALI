@@ -1,13 +1,14 @@
 import os
-import torch
 
+import torch
+from rich import print
+from rich.traceback import install
 from tqdm.auto import tqdm
 from transformers import CLIPProcessor
+
 from tali.data.data import ModalityTypes
 from tali.data.data_plus import TALIBase
 from tali.wit import WITBase
-from rich import print
-from rich.traceback import install
 
 install()
 
@@ -138,12 +139,13 @@ def test_equal_wit_dataset():
 def test_video_equal():
     import os
 
-    from tqdm.auto import tqdm
-    from transformers import CLIPProcessor
-    from tali.data.data import ModalityTypes
-    from tali.data.data_plus import TALIBase
     from rich import print
     from rich.traceback import install
+    from tqdm.auto import tqdm
+    from transformers import CLIPProcessor
+
+    from tali.data.data import ModalityTypes
+    from tali.data.data_plus import TALIBase
 
     install()
 

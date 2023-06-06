@@ -1,9 +1,10 @@
-from pathlib import Path
 import subprocess
 import sys
-from tqdm import tqdm
-from rich import print
+from pathlib import Path
+
 import fire
+from rich import print
+from tqdm import tqdm
 
 
 def upload_lfs_files(target_dir, upload_batch_size: int = 10):

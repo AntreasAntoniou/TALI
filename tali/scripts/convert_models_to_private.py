@@ -1,11 +1,9 @@
 import requests
-
-
-from huggingface_hub import Repository, HfApi
-
+from huggingface_hub import HfApi, Repository
 
 if __name__ == "__main__":
     import os
+
     from rich import print
 
     huggingface_username = os.environ.get("HF_USERNAME")

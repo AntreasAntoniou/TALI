@@ -2,10 +2,10 @@ import os
 import pathlib
 
 import neptune
-import wandb
 from rich import print
 from rich.traceback import install
 
+import wandb
 from tali.ctools import get_max_supported_batch_size
 from tali.data.data import dataclass_collate
 from tali.data.data_plus import CustomConcatDataset
@@ -27,12 +27,12 @@ install()  # beautiful and clean tracebacks for debugging
 
 from typing import List, Optional
 
+import accelerate
 import hydra
 import torch
 from hydra_zen import instantiate
 from omegaconf import OmegaConf
 from torch.utils.data import Dataset, Subset
-import accelerate
 
 from tali.boilerplate import Learner
 from tali.callbacks import Callback

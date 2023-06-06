@@ -8,12 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional
 import torch.nn.functional as F
-from transformers import (
-    CLIPConfig,
-    CLIPModel,
-    WhisperConfig,
-    WhisperModel,
-)
+from transformers import CLIPConfig, CLIPModel, WhisperConfig, WhisperModel
 from transformers.models.clip.modeling_clip import contrastive_loss
 
 # 📋 Local modules

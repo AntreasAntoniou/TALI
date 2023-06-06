@@ -2,8 +2,9 @@ import functools
 from typing import Any, Callable
 
 import torch
-import wandb
 from hydra_zen import builds, instantiate
+
+import wandb
 
 
 def configurable(func: Callable) -> Callable:

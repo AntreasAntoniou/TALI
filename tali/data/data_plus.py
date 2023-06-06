@@ -7,10 +7,10 @@ import time
 from dataclasses import dataclass
 from math import floor
 from typing import Any, Callable, Dict, List, Optional, Union
-import PIL
 
 import datasets
 import numpy as np
+import PIL
 import torch
 import torchaudio.transforms as T
 import torchvision.transforms as VT

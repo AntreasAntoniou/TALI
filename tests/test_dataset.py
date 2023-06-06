@@ -1,9 +1,9 @@
 import os
 
 from transformers import CLIPProcessor
+
 from tali.data.data import ModalityTypes
 from tali.data.data_plus import TALIBase
-
 
 dataset = TALIBase(
     set_name="train",

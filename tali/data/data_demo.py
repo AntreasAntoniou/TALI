@@ -1,7 +1,9 @@
 import pathlib
 import time
 from typing import Any, Dict
+
 import numpy as np
+
 from tali.data.data import (
     ModalityTypes,
     default_image_transforms,

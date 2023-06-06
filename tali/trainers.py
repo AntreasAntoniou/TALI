@@ -3,9 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 import torch
-from rich import print
-from rich import traceback
 from accelerate import Accelerator
+from rich import print, traceback
 
 from tali.callbacks import Interval
 from tali.data.data_plus import generate_hierarchical_data_dict

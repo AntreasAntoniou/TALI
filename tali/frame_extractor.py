@@ -115,8 +115,8 @@ def duration_in_seconds_from_path(video_path, modality):
 # video_stream = next(s for s in container.streams if s.type == 'video')
 
 import contextlib
-import os
 import functools
+import os
 
 
 def suppress_stderr(func):
