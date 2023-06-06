@@ -159,13 +159,13 @@ def load_sample(set_name, sample_index):
 
     video_path = f"../demo_cache/temp_data/video-{set_name}-{sample_index}.mp4"
     audio_path = f"../demo_cache/temp_data/audio-{set_name}-{sample_index}.mp3"
-    if not pathlib.Path(video_path).parent.exists():
-        pathlib.Path(video_path).parent.mkdir(parents=True, exist_ok=True)
+    # if not pathlib.Path(video_path).parent.exists():
+    #     pathlib.Path(video_path).parent.mkdir(parents=True, exist_ok=True)
 
-    if not pathlib.Path(video_path).exists():
-        torchvision.io.write_video(video_path, video, fps=20)
-    if not pathlib.Path(audio_path).exists():
-        torchaudio.save(audio_path, audio.view(-1).unsqueeze(0), 16000)
+    # if not pathlib.Path(video_path).exists():
+    #     torchvision.io.write_video(video_path, video, fps=20)
+    # if not pathlib.Path(audio_path).exists():
+    #     torchaudio.save(audio_path, audio.view(-1).unsqueeze(0), 16000)
     return (
         *update_language_choices(set_name=set_name, sample_index=sample_index),
         subtitles,
