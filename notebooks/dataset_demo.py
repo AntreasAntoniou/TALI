@@ -53,14 +53,9 @@ dataset_dict = datasets.load_dataset(
     keep_in_memory=False,
     cache_dir=os.environ["HF_CACHE_DIR"],
 )
+dataset_dict = dataset_dict.with_transform(transform)
+
 num_samples = 0
-
-
-dataset_dict = {
-    "train": dataset_dict["train"],
-    "val": dataset_dict["val"],
-    "test": dataset_dict["test"],
-}
 
 
 # {
