@@ -1,7 +1,9 @@
 import multiprocessing as mp
 import pathlib
+from math import ceil
 
 import datasets
+import numpy as np
 from tqdm.auto import tqdm
 
 from tali.data.data import select_subtitles_between_timestamps
@@ -14,11 +16,16 @@ if __name__ == "__main__":
         "Antreas/TALI", num_proc=mp.cpu_count(), cache_dir=tali_dataset_dir
     )
 
-    def data_generator(set_name):
+    def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
 
         for item in tqdm(dataset):
             video_list = item["youtube_content_video"]
+            video_list = np.random.choice(
+                video_list, int(ceil(len(video_list) * percentage))
+            )
+            if len(video_list) == 0:
+                continue
             captions = item["youtube_subtitle_text"]
             captions = select_subtitles_between_timestamps(
                 subtitle_dict=load_json(
@@ -30,7 +37,7 @@ if __name__ == "__main__":
                 starting_timestamp=0,
                 ending_timestamp=100000000,
             )
-            updated_video_list = []
+
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
                 video_path_actual: pathlib.Path = pathlib.Path(temp_path)
