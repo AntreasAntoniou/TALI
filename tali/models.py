@@ -277,6 +277,9 @@ def get_similarities(
     return similarities
 
 
+import torch.nn as nn
+
+
 @configurable
 class TALIModel(nn.Module):
     def __init__(
@@ -284,15 +287,23 @@ class TALIModel(nn.Module):
         image_text_model_name: str = "openai/clip-vit-base-patch16",
         audio_model_name: str = "openai/whisper-small",
         multi_modality_config: MultiModalityConfig = MultiModalityConfig(),
+        dropout_rate: float = 0.0,
     ):
         super().__init__()
 
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
         self.multi_modality_config = multi_modality_config
+        self.dropout_rate = dropout_rate
 
         self.build_model()
         self.build_logit_scales()
+        self.modify_dropout(self, self.dropout_rate)
+
+    def modify_dropout(self, new_dropout_rate):
+        for module in self.modules():
+            if isinstance(module, nn.Dropout):
+                module.p = new_dropout_rate
 
     def build_model(self):
         self.model = nn.ModuleDict()
