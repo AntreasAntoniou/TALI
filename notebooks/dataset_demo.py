@@ -48,19 +48,18 @@ transform = TALIBaseTransform(
         deterministic_sampling=True,
     )
 )
-train_dataset = datasets.load_from_disk(data_root + "train-set")
-train_dataset = train_dataset.with_transform(transform)
-val_dataset = datasets.load_from_disk(data_root + "val-set")
-val_dataset = val_dataset.with_transform(transform)
-test_dataset = datasets.load_from_disk(data_root + "test-set")
-test_dataset = test_dataset.with_transform(transform)
+dataset_dict = = datasets.load_dataset(
+    path="Antreas/TALI",
+    keep_in_memory=False,
+    cache_dir=os.environ["HF_CACHE_DIR"],
+)
 num_samples = 0
 
 
 dataset_dict = {
-    "train": train_dataset,
-    "val": val_dataset,
-    "test": test_dataset,
+    "train": dataset_dict["train"],
+    "val": dataset_dict["val"],
+    "test": dataset_dict["test"],
 }
 
 
@@ -76,12 +75,6 @@ dataset_dict = {
 # really did change  </ysub>"
 # }
 
-
-dataset_dict = {
-    "train": train_dataset,
-    "val": val_dataset,
-    "test": test_dataset,
-}
 
 
 def update_length_options(set_name):
