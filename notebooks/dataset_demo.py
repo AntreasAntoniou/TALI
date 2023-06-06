@@ -159,7 +159,7 @@ def load_sample(set_name, sample_index):
     video = torch.stack(
         [T.ToTensor()(frame) for frame in sample["youtube_content_video"]]
     )
-    video = sample["youtube_content_video"].permute(0, 2, 3, 1).numpy() * 255
+    video = video.permute(0, 2, 3, 1).numpy() * 255
     audio = sample["youtube_content_audio"]
 
     video_path = f"../demo_cache/temp_data/video-{set_name}-{sample_index}.mp4"
