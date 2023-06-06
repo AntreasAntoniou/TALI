@@ -19,11 +19,10 @@ export HF_CACHE_DIR=$PYTEST_DIR
 
 export TOKENIZERS_PARALLELISM=False
 
-export CODE_DIR=/devcode/tali_wit
-export PROJECT_DIR=/devcode/tali_wit
-export EXPERIMENT_NAME_PREFIX="talis-base-16-witav-godzilla"
-export EXPERIMENTS_DIR=/data1/experiments/
-export EXPERIMENT_DIR=/data1/experiments/
-export TALI_DATASET_DIR=/data0/TALI-data/
-export WIT_DATASET_DIR=/data1/wit/
-export MODEL_DIR=/data1/model/
+export CODE_DIR=/devcode/TALI
+export PROJECT_DIR=/data/
+export EXPERIMENTS_DIR=/data/
+export EXPERIMENT_DIR=/data/
+export TALI_DATASET_DIR=/data/
+export WIT_DATASET_DIR=/data/wit/
+export MODEL_DIR=/data/

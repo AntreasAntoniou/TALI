@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 
 from tali.data.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig
 
-data_root = "/data-fast0/TALI-bak/TALI/"
+data_root = "/data/"
 transform = TALIBaseDemoTransform(
     config=TALIBaseTransformConfig(
         root_filepath=data_root,
