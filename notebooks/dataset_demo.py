@@ -48,7 +48,7 @@ transform = TALIBaseTransform(
         deterministic_sampling=True,
     )
 )
-dataset_dict = = datasets.load_dataset(
+dataset_dict = datasets.load_dataset(
     path="Antreas/TALI",
     keep_in_memory=False,
     cache_dir=os.environ["HF_CACHE_DIR"],
@@ -74,7 +74,6 @@ dataset_dict = {
 # isn't is in change i don't think shintomicho has much of a personality when they took away the kabuki theater it
 # really did change  </ysub>"
 # }
-
 
 
 def update_length_options(set_name):
