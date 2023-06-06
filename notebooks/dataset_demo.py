@@ -22,10 +22,10 @@ from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
-from tali.data.data_plus import TALIBaseDemoTransform, TALIBaseTransformConfig
+from tali.data.data_plus import TALIBaseTransform, TALIBaseTransformConfig
 
 data_root = "/data/"
-transform = TALIBaseDemoTransform(
+transform = TALIBaseTransform(
     config=TALIBaseTransformConfig(
         root_filepath=data_root,
         modality_list=[
