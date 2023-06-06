@@ -152,7 +152,6 @@ def load_sample(set_name, sample_index):
         T.ToTensor()(sample["youtube_random_video_sample_image"])
         .permute(1, 2, 0)
         .numpy()
-        * 255.0
     )
     video_path = sample["youtube_content_video"]
     audio_path = sample["youtube_content_video"]
