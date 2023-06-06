@@ -50,7 +50,7 @@ class WITBase(Dataset):
         self.dataset = datasets.load_dataset(
             "wikimedia/wit_base",
             split="train",
-            cache_dir=wit_dataset_dir,
+            cache_dir=os.environ["HF_CACHE_DIR"],
             num_proc=mp.cpu_count(),
         )
         self.num_samples_per_episode = num_samples_per_episode
@@ -296,47 +296,3 @@ class WITBaseTransform:
         ] = rng.choice(wit_text)
 
         return output_dict
-
-
-if __name__ == "__main__":
-    import cProfile
-    import pstats
-
-    import datasets
-    import tqdm
-    from rich.traceback import install
-
-    install()
-    os.environ["HYDRA_FULL_ERROR"] = "1"
-
-    def sample():
-        dataset = WITBase(
-            cache_dir="/data/wit_cache",
-            tali_dataset_dir="/data/",
-            image_size=224,
-            deterministic_sampling=True,
-            priority_caption_language="en",
-            set_name="train",
-            dummy_batch_mode=False,
-            image_text_model_name="openai/clip-vit-base-patch16",
-            audio_model_name="openai/whisper-base",
-        )
-        dataloader = DataLoader(
-            dataset,
-            batch_size=32,
-            num_workers=12,
-            shuffle=True,
-            collate_fn=dataclass_collate,
-        )
-        num_samples = 100
-        with tqdm.tqdm(total=len(dataloader)) as pbar:
-            for i, example in enumerate(dataloader):
-                pbar.set_description(f"Processing {i}th example")
-                pbar.update(1)
-
-    pr = cProfile.Profile()
-    pr.runcall(sample)
-
-    ps = pstats.Stats(pr).sort_stats("tottime")
-    ps.print_stats()
-# write a transform for the wit dataset, and, add an option for a youtube image sampling process
