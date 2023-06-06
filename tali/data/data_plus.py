@@ -78,6 +78,13 @@ def get_video_tensors(video_frames, image_size):
     return output_dict["video"].permute(1, 0, 2, 3) / 255.0
 
 
+def convert_to_pil(image):
+    image = image.numpy().transpose(1, 2, 0)
+    image = (image * 255).astype(np.uint8)
+    image = PIL.Image.fromarray(image)
+    return image
+
+
 def videoclip_to_video_audio_tensors(
     video_path: pathlib.Path,
     rng: np.random.Generator,
@@ -110,12 +117,6 @@ def videoclip_to_video_audio_tensors(
     """
     output = {}
     video = image = audio = None
-
-    def convert_to_pil(image):
-        image = image.numpy().transpose(1, 2, 0)
-        image = (image * 255).astype(np.uint8)
-        image = PIL.Image.fromarray(image)
-        return image
 
     if return_video:
         video = extract_frames_pyav(

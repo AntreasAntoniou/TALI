@@ -9,9 +9,12 @@ from tali.data.data import (
 )
 from tali.data.data_plus import (
     TALIBaseTransformConfig,
+    convert_to_pil,
     get_submodality_name,
+    get_video_tensors,
     videoclip_to_video_audio_tensors,
 )
+from tali.frame_extractor import FrameSelectionMethod, extract_frames_pyav
 from tali.utils import get_logger, load_json
 
 logger = get_logger(__name__)
@@ -129,12 +132,12 @@ class TALIBaseDemoTransform:
             video_starting_second = float(
                 choose_video.split("/")[-1].split("_")[1].replace(".mp4", "")
             )
-            clip_starting_second = rng.randint(
-                0, 30 - self.config.clip_duration_in_seconds
-            )
-            clip_ending_second = (
-                clip_starting_second + self.config.clip_duration_in_seconds
-            )
+            # clip_starting_second = rng.randint(
+            #     0, 30 - self.config.clip_duration_in_seconds
+            # )
+            # clip_ending_second = (
+            #     clip_starting_second + self.config.clip_duration_in_seconds
+            # )
             output_dict["youtube_video_id"] = video_id
 
             if (
@@ -143,27 +146,52 @@ class TALIBaseDemoTransform:
                 or get_submodality_name(ModalityTypes.youtube_audio.value)
                 in self.modality_list
             ):
-                youtube_media_data = self.video_transform(
-                    x=choose_video,
-                    start=clip_starting_second,
-                    end=clip_ending_second,
+                # youtube_media_data = self.video_transform(
+                #     x=choose_video,
+                #     start=clip_starting_second,
+                #     end=clip_ending_second,
+                #     rng=rng,
+                # )
+
+                # if "video" in youtube_media_data:
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_video.value)
+                ] = choose_video
+
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_audio.value)
+                ] = choose_video
+
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_image.value)
+                ] = extract_frames_pyav(
+                    video_path=choose_video,
+                    starting_second=0,
+                    ending_second=30,
+                    num_frames=1,
                     rng=rng,
+                    modality="video",
+                    frame_selection_method=FrameSelectionMethod.RANDOM,
+                    single_image_frame=True,
                 )
-
-                if "video" in youtube_media_data:
-                    output_dict[
-                        get_submodality_name(ModalityTypes.youtube_video.value)
-                    ] = youtube_media_data["video"]
-
-                if "audio" in youtube_media_data:
-                    output_dict[
-                        get_submodality_name(ModalityTypes.youtube_audio.value)
-                    ] = youtube_media_data["audio"]
-
-                if "image" in youtube_media_data:
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_image.value)
+                ] = get_video_tensors(
                     output_dict[
                         get_submodality_name(ModalityTypes.youtube_image.value)
-                    ] = youtube_media_data["image"]
+                    ],
+                    self.config.image_size,
+                )[
+                    0
+                ]
+
+                output_dict[
+                    get_submodality_name(ModalityTypes.youtube_image.value)
+                ] = convert_to_pil(
+                    output_dict[
+                        get_submodality_name(ModalityTypes.youtube_image.value)
+                    ]
+                )
 
             if (
                 get_submodality_name(ModalityTypes.youtube_description.value)
@@ -200,11 +228,8 @@ class TALIBaseDemoTransform:
                                 else self.config.root_filepath,
                             )
                         ),
-                        starting_timestamp=video_starting_second
-                        + clip_starting_second,
-                        ending_timestamp=video_starting_second
-                        + clip_starting_second
-                        + clip_ending_second,
+                        starting_timestamp=video_starting_second,
+                        ending_timestamp=video_starting_second + 30,
                     )
                     + " </ysub>"
                 )

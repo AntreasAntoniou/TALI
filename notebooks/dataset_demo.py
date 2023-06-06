@@ -2,8 +2,6 @@ import os
 
 import torch
 
-from tali.data.data import ModalityTypes
-from tali.data.data_demo import TALIBaseDemoTransform
 
 os.environ["HYDRA_FULL_ERROR"] = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -26,6 +24,8 @@ from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
+from tali.data.data import ModalityTypes
+from tali.data.data_demo import TALIBaseDemoTransform
 from tali.data.data_plus import TALIBaseTransformConfig
 
 data_root = "/data/"
@@ -151,9 +151,8 @@ def load_sample(set_name, sample_index):
     youtube_image = (
         sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
     )
-    video = sample["youtube_content_video"]
-    video = video.permute(0, 2, 3, 1).numpy() * 255
-    audio = sample["youtube_content_audio"]
+    video_path = sample["youtube_content_video"]
+    audio_path = sample["youtube_content_video"]
 
     video_path = f"../demo_cache/temp_data/video-{set_name}-{sample_index}.mp4"
     audio_path = f"../demo_cache/temp_data/audio-{set_name}-{sample_index}.mp3"
