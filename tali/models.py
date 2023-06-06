@@ -298,7 +298,7 @@ class TALIModel(nn.Module):
 
         self.build_model()
         self.build_logit_scales()
-        self.modify_dropout(self, self.dropout_rate)
+        self.modify_dropout(self.dropout_rate)
 
     def modify_dropout(self, new_dropout_rate):
         for module in self.modules():
