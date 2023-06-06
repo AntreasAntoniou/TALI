@@ -3,6 +3,7 @@ import os
 import torch
 
 from tali.data.data import ModalityTypes
+from tali.data.data_demo import TALIBaseDemoTransform
 
 os.environ["HYDRA_FULL_ERROR"] = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -25,10 +26,10 @@ from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
-from tali.data.data_plus import TALIBaseTransform, TALIBaseTransformConfig
+from tali.data.data_plus import TALIBaseTransformConfig
 
 data_root = "/data/"
-transform = TALIBaseTransform(
+transform = TALIBaseDemoTransform(
     config=TALIBaseTransformConfig(
         root_filepath=data_root,
         modality_list=[
@@ -146,19 +147,11 @@ def load_sample(set_name, sample_index):
     # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)
     subtitles = sample["youtube_description_text"]
 
-    wit_image = (
-        T.ToTensor()(sample["wikipedia_caption_image"])
-        .permute(1, 2, 0)
-        .numpy()
-    )
+    wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
     youtube_image = (
-        T.ToTensor()(sample["youtube_random_video_sample_image"])
-        .permute(1, 2, 0)
-        .numpy()
+        sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
     )
-    video = torch.stack(
-        [T.ToTensor()(frame) for frame in sample["youtube_content_video"]]
-    )
+    video = sample["youtube_content_video"]
     video = video.permute(0, 2, 3, 1).numpy() * 255
     audio = sample["youtube_content_audio"]
 
