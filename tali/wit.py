@@ -64,6 +64,7 @@ class WITBase(Dataset):
                 split="val",
                 keep_in_memory=False,
                 cache_dir=os.environ["HF_CACHE_DIR"],
+                num_proc=mp.cpu_count(),
             )
             tali_val_indices = [
                 sample["wit_idx"] for sample in tali_val_dataset
@@ -74,6 +75,7 @@ class WITBase(Dataset):
                 split="test",
                 keep_in_memory=False,
                 cache_dir=os.environ["HF_CACHE_DIR"],
+                num_proc=mp.cpu_count(),
             )
             tali_test_indices = [
                 sample["wit_idx"] for sample in tali_test_dataset
