@@ -146,9 +146,15 @@ def load_sample(set_name, sample_index):
     # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)
     subtitles = sample["youtube_description_text"]
 
-    wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
+    wit_image = (
+        T.ToTensor()(sample["wikipedia_caption_image"])
+        .permute(1, 2, 0)
+        .numpy()
+    )
     youtube_image = (
-        sample["youtube_random_video_sample_image"].permute(1, 2, 0).numpy()
+        T.ToTensor()(sample["youtube_random_video_sample_image"])
+        .permute(1, 2, 0)
+        .numpy()
     )
     video = torch.stack(
         [T.ToTensor()(frame) for frame in sample["youtube_content_video"]]
