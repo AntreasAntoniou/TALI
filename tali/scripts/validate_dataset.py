@@ -49,29 +49,29 @@ if __name__ == "__main__":
                     item["youtube_subtitle_text"] = captions
                     yield item
 
-    # train_generator = lambda: data_generator("train")
-    # val_generator = lambda: data_generator("val")
+    train_generator = lambda: data_generator("train", percentage=0.1)
+    val_generator = lambda: data_generator("val")
     test_generator = lambda: data_generator("test")
 
-    # train_data = datasets.Dataset.from_generator(
-    #     train_generator,
-    #     num_proc=64,
-    #     keep_in_memory=True,
-    #     writer_batch_size=10000,
-    # )
+    train_data = datasets.Dataset.from_generator(
+        train_generator,
+        num_proc=mp.cpu_count(),
+        writer_batch_size=10000,
+    )
 
-    # val_data = datasets.Dataset.from_generator(
-    #     val_generator, writer_batch_size=1000, num_proc=64, keep_in_memory=True
-    # )
+    val_data = datasets.Dataset.from_generator(
+        val_generator,
+        writer_batch_size=10000,
+        num_proc=mp.cpu_count(),
+    )
 
     test_data = datasets.Dataset.from_generator(
         test_generator,
         writer_batch_size=10000,
-        num_proc=64,
-        keep_in_memory=True,
+        num_proc=mp.cpu_count(),
     )
 
     dataset = datasets.DatasetDict(
-        {"test": test_data}  # "train": train_data, "val": val_data,
+        {"test": test_data, "train": train_data, "val": val_data}
     )
     dataset.push_to_hub(repo_id="Antreas/TALI-small")
