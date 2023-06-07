@@ -333,6 +333,9 @@ class TALIModel(nn.Module):
         ):
             logger.info("Reinitializing the audio model")
             config = WhisperConfig.from_pretrained(self.audio_model_name)
+            config.dropout = self.dropout_rate
+            config.attention_dropout = self.dropout_rate
+            config.activation_dropout = self.dropout_rate
             self.model["audio"] = WhisperModel(config)
         else:
             self.model["audio"] = WhisperModel.from_pretrained(self.audio_model_name)
@@ -350,7 +353,7 @@ class TALIModel(nn.Module):
             d_model=self.model["image"].config.projection_dim,
             nhead=8,
             dim_feedforward=self.model["image"].config.projection_dim * 4,
-            dropout=0.0,
+            dropout=self.dropout_rate,
             num_layers=8,
             batch_first=True,
             norm_first=False,
