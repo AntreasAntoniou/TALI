@@ -611,6 +611,9 @@ class TALIBase(Dataset):
         )
 
         # Load dataset
+        print(
+            f"path: Antreas/TALI, split: {set_name}, cache_dir: {os.environ['HF_CACHE_DIR']}"
+        )
         self.dataset = datasets.load_dataset(
             path="Antreas/TALI",
             split=set_name,
