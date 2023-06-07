@@ -13,7 +13,6 @@ import numpy as np
 import PIL
 import torch
 import torchaudio.transforms as T
-import torchvision.transforms as VT
 import tqdm
 from pytorchvideo.transforms import ApplyTransformToKey, ShortSideScale
 from rich import print
@@ -466,11 +465,11 @@ class TALIBaseTransform:
 
     def _get_youtube_description(self, input_dict):
         return (
-            f"<ydesc> " + input_dict["youtube_description_text"] + f" </ydesc>"
+            "<ydesc> " + input_dict["youtube_description_text"] + " </ydesc>"
         )
 
     def _get_youtube_title(self, input_dict):
-        return f"<ytitle> " + input_dict["youtube_title_text"] + f" </ytitle>"
+        return "<ytitle> " + input_dict["youtube_title_text"] + " </ytitle>"
 
     def _get_youtube_subtitles(
         self,
