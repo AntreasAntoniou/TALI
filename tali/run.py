@@ -207,9 +207,9 @@ def run(cfg: BaseConfig) -> None:
         },
     ]
 
-    for param_set in optimizer_grouped_parameters:
-        for key, value in param_set.items():
-            print(f"{key}: {value}")
+    # for param_set in optimizer_grouped_parameters:
+    #     for key, value in param_set.items():
+    #         print(f"{key}: {value}")
 
     optimizer: torch.optim.Optimizer = instantiate(
         cfg.optimizer, params=optimizer_grouped_parameters, _partial_=False

@@ -11,6 +11,7 @@ from hydra.core.config_store import ConfigStore
 from hydra_zen import MISSING, ZenField, builds, make_config
 from timm.scheduler import CosineLRScheduler
 from torch.utils.data import DataLoader
+from transformers import AdamW
 
 from tali.boilerplate import Learner
 from tali.callbacks import UploadCheckpointsToHuggingFace
@@ -740,7 +741,7 @@ def collect_config_store():
     )
 
     adamw_optimizer_config = builds(
-        torch.optim.AdamW,
+        AdamW,
         populate_full_signature=True,
         zen_partial=True,
     )
