@@ -1,5 +1,6 @@
 import itertools
 import pathlib
+import shutil
 import time
 from copy import deepcopy
 from pathlib import Path
@@ -96,9 +97,7 @@ class Learner(nn.Module):
         self.accelerator = accelerator
         self.experiment_name = experiment_name
         self.experiment_dir = (
-            experiment_dir
-            if isinstance(experiment_dir, Path)
-            else Path(experiment_dir)
+            experiment_dir if isinstance(experiment_dir, Path) else Path(experiment_dir)
         )
         self.hf_cache_dir = hf_cache_dir
         self.hf_repo_path = hf_repo_path
@@ -133,9 +132,7 @@ class Learner(nn.Module):
         for name, params in self.model.named_parameters():
             logger.info(f"{name}, {params.shape}")
 
-        self.callbacks = (
-            [callbacks] if isinstance(callbacks, Callback) else callbacks
-        )
+        self.callbacks = [callbacks] if isinstance(callbacks, Callback) else callbacks
 
         if self.callbacks is None:
             self.callbacks = []
@@ -286,9 +283,7 @@ class Learner(nn.Module):
                 print(f"Removing thread {thread} since it is done")
 
     def start_validation(self):
-        self.callback_handler.on_validation_start(
-            experiment=self, model=self.model
-        )
+        self.callback_handler.on_validation_start(experiment=self, model=self.model)
 
         self.evaluator.start_validation(
             global_step=self.global_step,
@@ -297,9 +292,7 @@ class Learner(nn.Module):
         logger.info("Starting validation 🧪")
 
     def end_validation(self):
-        self.callback_handler.on_validation_end(
-            experiment=self, model=self.model
-        )
+        self.callback_handler.on_validation_end(experiment=self, model=self.model)
 
         self.evaluator.end_validation(
             global_step=self.global_step,
@@ -312,9 +305,7 @@ class Learner(nn.Module):
         logger.info("Validation finished 🎉")
 
     def start_testing(self):
-        self.callback_handler.on_testing_start(
-            experiment=self, model=self.model
-        )
+        self.callback_handler.on_testing_start(experiment=self, model=self.model)
 
         self.evaluator.start_testing(
             epoch_idx=self.epoch_idx,
@@ -423,9 +414,7 @@ class Learner(nn.Module):
             if self.train_iters is None:
                 self.train_iters = len(train_dataloader)
 
-            with tqdm(
-                initial=self.step_idx, total=self.train_iters
-            ) as pbar_steps:
+            with tqdm(initial=self.step_idx, total=self.train_iters) as pbar_steps:
                 while self.step_idx < self.train_iters:
                     if self.limit_train_iters is not None:
                         if self.step_idx >= self.limit_train_iters:
@@ -444,8 +433,7 @@ class Learner(nn.Module):
 
                         if (
                             self.checkpoint_every_n_steps is not None
-                            and self.step_idx % self.checkpoint_every_n_steps
-                            == 0
+                            and self.step_idx % self.checkpoint_every_n_steps == 0
                             and self.step_idx > 0
                         ):
                             self.save_checkpoint(
@@ -536,9 +524,7 @@ class Learner(nn.Module):
         if not (pathlib.Path(checkpoint_path) / "trainer_state.pt").exists():
             return
         logger.info(f"Loading checkpoint from {checkpoint_path}")
-        trainer_state = torch.load(
-            pathlib.Path(checkpoint_path) / "trainer_state.pt"
-        )
+        trainer_state = torch.load(pathlib.Path(checkpoint_path) / "trainer_state.pt")
         self.step_idx = trainer_state["step_idx"]
         self.epoch_idx = trainer_state["epoch_idx"]
         self.global_step = trainer_state["global_step"]
@@ -555,6 +541,8 @@ class Learner(nn.Module):
             "state_dict",
             state_dict["eval"],
         )
+
+        shutil.rmtree(checkpoint_path / "optimizer.bin", ignore_errors=True)
 
         self.accelerator.load_state(checkpoint_path)
 
