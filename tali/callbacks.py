@@ -313,9 +313,7 @@ class CallbackHandler(Callback):
         checkpoint_path: Path,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_save_checkpoint(
-                model, optimizers, experiment, checkpoint_path
-            )
+            callback.on_save_checkpoint(model, optimizers, experiment, checkpoint_path)
 
     def on_load_checkpoint(
         self,
@@ -325,9 +323,7 @@ class CallbackHandler(Callback):
         checkpoint_path: Path,
     ) -> None:
         for callback in self.callbacks:
-            callback.on_load_checkpoint(
-                model, optimizers, experiment, checkpoint_path
-            )
+            callback.on_load_checkpoint(model, optimizers, experiment, checkpoint_path)
 
 
 class UploadCheckpointToHuggingFaceBackground(threading.Thread):
@@ -335,6 +331,7 @@ class UploadCheckpointToHuggingFaceBackground(threading.Thread):
         from huggingface_hub import HfApi
 
         super().__init__()
+        self.daemon = True
         self.repo_name = repo_name
         self.repo_owner = repo_owner
         self.checkpoint_path = checkpoint_path
