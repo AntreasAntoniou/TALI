@@ -4,6 +4,7 @@ import pathlib
 import neptune
 from rich import print
 from rich.traceback import install
+from transformers import AdamW
 
 import wandb
 from tali.ctools import get_max_supported_batch_size
@@ -211,8 +212,12 @@ def run(cfg: BaseConfig) -> None:
     #     for key, value in param_set.items():
     #         print(f"{key}: {value}")
 
-    optimizer: torch.optim.Optimizer = instantiate(
-        cfg.optimizer, params=optimizer_grouped_parameters, _partial_=False
+    optimizer: torch.optim.Optimizer = AdamW(
+        params=optimizer_grouped_parameters,
+        lr=5e-4,
+        weight_decay=0.2,
+        betas=(0.9, 0.98),
+        eps=1e-6,
     )
     optimizer = accelerator.prepare(optimizer)
 
