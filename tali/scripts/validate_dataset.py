@@ -75,7 +75,13 @@ if __name__ == "__main__":
     dataset = datasets.DatasetDict(
         {"test": test_data, "train": train_data, "val": val_data}
     )
-    dataset.push_to_hub(repo_id="Antreas/TALI-small")
+    succesful_competion = False
+    while not succesful_competion:
+        try:
+            dataset.push_to_hub(repo_id="Antreas/TALI-small")
+            succesful_competion = True
+        except Exception as e:
+            print(e)
 
     train_generator = lambda: data_generator("train", percentage=0.5)
 
@@ -89,7 +95,13 @@ if __name__ == "__main__":
     dataset = datasets.DatasetDict(
         {"test": test_data, "train": train_data, "val": val_data}
     )
-    dataset.push_to_hub(repo_id="Antreas/TALI-base")
+    succesful_competion = False
+    while not succesful_competion:
+        try:
+            dataset.push_to_hub(repo_id="Antreas/TALI-base")
+            succesful_competion = True
+        except Exception as e:
+            print(e)
 
     train_generator = lambda: data_generator("train", percentage=1.0)
 
@@ -103,4 +115,10 @@ if __name__ == "__main__":
     dataset = datasets.DatasetDict(
         {"test": test_data, "train": train_data, "val": val_data}
     )
-    dataset.push_to_hub(repo_id="Antreas/TALI-large")
+    succesful_competion = False
+    while not succesful_competion:
+        try:
+            dataset.push_to_hub(repo_id="Antreas/TALI-large")
+            succesful_competion = True
+        except Exception as e:
+            print(e)
