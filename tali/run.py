@@ -56,6 +56,22 @@ def instantiate_callbacks(callback_dict: dict) -> List[Callback]:
     return callbacks
 
 
+def get_parameter_names(model, forbidden_layer_types):
+    """
+    Returns the names of the model parameters that are not inside a forbidden layer.
+    """
+    result = []
+    for name, child in model.named_children():
+        result += [
+            f"{name}.{n}"
+            for n in get_parameter_names(child, forbidden_layer_types)
+            if not isinstance(child, tuple(forbidden_layer_types))
+        ]
+    # Add model specific parameters (defined with nn.Parameter) since they are not in any child.
+    result += list(model._parameters.keys())
+    return result
+
+
 @hydra.main(config_path=None, config_name="config", version_base=None)
 def run(cfg: BaseConfig) -> None:
     ckpt_path, repo_url = create_hf_model_repo_and_download_maybe(cfg)
@@ -79,14 +95,10 @@ def run(cfg: BaseConfig) -> None:
     model = accelerator.prepare(model)
 
     if ckpt_path is not None and cfg.resume is True:
-        trainer_state = torch.load(
-            pathlib.Path(ckpt_path) / "trainer_state.pt"
-        )
+        trainer_state = torch.load(pathlib.Path(ckpt_path) / "trainer_state.pt")
         global_step = trainer_state["global_step"]
         neptune_id = (
-            trainer_state["neptune_id"]
-            if "neptune_id" in trainer_state
-            else None
+            trainer_state["neptune_id"] if "neptune_id" in trainer_state else None
         )
         experiment_tracker = neptune.init_run(
             source_files=["tali/*.py", "kubernetes/*.py"],
@@ -143,9 +155,7 @@ def run(cfg: BaseConfig) -> None:
     train_dataset = CustomConcatDataset(train_datasets)
 
     if global_step > 0:
-        train_dataset = Subset(
-            train_dataset, range(global_step, len(train_dataset))
-        )
+        train_dataset = Subset(train_dataset, range(global_step, len(train_dataset)))
 
     train_dataloader = instantiate(
         cfg.dataloader,
@@ -182,8 +192,23 @@ def run(cfg: BaseConfig) -> None:
         p.numel() for p in model.parameters() if p.requires_grad
     )
 
+    decay_parameters = get_parameter_names(model, [torch.nn.LayerNorm])
+    decay_parameters = [name for name in decay_parameters if "bias" not in name]
+    optimizer_grouped_parameters = [
+        {
+            "params": [p for n, p in model.named_parameters() if n in decay_parameters],
+            "weight_decay": cfg.optimizer.weight_decay,
+        },
+        {
+            "params": [
+                p for n, p in model.named_parameters() if n not in decay_parameters
+            ],
+            "weight_decay": 0.0,
+        },
+    ]
+
     optimizer: torch.optim.Optimizer = instantiate(
-        cfg.optimizer, params=model.parameters(), _partial_=False
+        cfg.optimizer, params=optimizer_grouped_parameters, _partial_=False
     )
     optimizer = accelerator.prepare(optimizer)
 
@@ -205,9 +230,7 @@ def run(cfg: BaseConfig) -> None:
             experiment_tracker=experiment_tracker,
             gradient_clipping=cfg.gradient_clipping,
         ),
-        evaluator=ClassificationEvaluator(
-            experiment_tracker=experiment_tracker
-        ),
+        evaluator=ClassificationEvaluator(experiment_tracker=experiment_tracker),
         train_dataloader=train_dataloader,
         val_dataloader=val_dataloader,
         callbacks=instantiate_callbacks(cfg.callbacks),
