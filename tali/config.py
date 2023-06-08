@@ -54,22 +54,9 @@ HFModelUploadConfig = builds(
 
 hf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)
 
-adamw_optimizer_config = builds(
-    torch.optim.AdamW,
-    populate_full_signature=True,
-    zen_partial=True,
-)
-
-
-cosine_learning_rate_scheduler_config = builds(
-    CosineLRScheduler,
-    populate_full_signature=True,
-    zen_partial=True,
-)
 
 accelerator_config = builds(Accelerator, populate_full_signature=True)
 
-cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()
 
 model_config = TALIModel.build_config(populate_full_signature=True)
 
@@ -752,11 +739,29 @@ def collect_config_store():
         ),
     )
 
+    adamw_optimizer_config = builds(
+        torch.optim.AdamW,
+        populate_full_signature=True,
+        zen_partial=True,
+    )
+
+    cosine_learning_rate_scheduler_config = builds(
+        CosineLRScheduler,
+        populate_full_signature=True,
+        zen_partial=True,
+    )
+
+    cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()
+
     config_store.store(
         group="optimizer",
         name="adamw",
-        node=adamw_optimizer_config(lr=5e-4, weight_decay=0.2, betas=(0.9, 0.98)),
-        eps=1e-6,
+        node=adamw_optimizer_config(
+            lr=5e-4,
+            weight_decay=0.2,
+            betas=(0.9, 0.98),
+            eps=1e-6,
+        ),
     )
 
     config_store.store(
