@@ -219,7 +219,7 @@ def run(cfg: BaseConfig) -> None:
         betas=(0.9, 0.98),
         eps=1e-6,
     )
-    optimizer = accelerator.prepare(optimizer)
+    # optimizer = accelerator.prepare(optimizer)
 
     scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = instantiate(
         cfg.scheduler,
