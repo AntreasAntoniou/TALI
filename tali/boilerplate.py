@@ -542,12 +542,12 @@ class Learner(nn.Module):
             state_dict["eval"],
         )
 
-        if (checkpoint_path / "optimizer.bin").exists():
-            (checkpoint_path / "optimizer.bin").unlink()
+        # if (checkpoint_path / "optimizer.bin").exists():
+        #     (checkpoint_path / "optimizer.bin").unlink()
 
         self.accelerator.load_state(checkpoint_path)
 
-        self.trainer.optimizer = self.accelerator.prepare(self.trainer.optimizer)
+        # self.trainer.optimizer = self.accelerator.prepare(self.trainer.optimizer)
 
         self.callback_handler.on_load_checkpoint(
             model=self.model,
