@@ -542,7 +542,7 @@ class Learner(nn.Module):
             state_dict["eval"],
         )
 
-        shutil.rmtree(checkpoint_path / "optimizer.bin", ignore_errors=True)
+        (checkpoint_path / "optimizer.bin").unlink()
 
         self.accelerator.load_state(checkpoint_path)
 
