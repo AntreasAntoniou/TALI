@@ -214,8 +214,8 @@ def run(cfg: BaseConfig) -> None:
 
     optimizer: torch.optim.Optimizer = AdamW(
         params=optimizer_grouped_parameters,
-        lr=cfg.optimizer.lr,
-        weight_decay=cfg.optimizer.weight_decay,
+        lr=1e-5,
+        weight_decay=0.001,
         betas=(0.9, 0.98),
         eps=1e-6,
     )
