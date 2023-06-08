@@ -76,3 +76,31 @@ if __name__ == "__main__":
         {"test": test_data, "train": train_data, "val": val_data}
     )
     dataset.push_to_hub(repo_id="Antreas/TALI-small")
+
+    train_generator = lambda: data_generator("train", percentage=0.5)
+
+    train_data = datasets.Dataset.from_generator(
+        train_generator,
+        num_proc=mp.cpu_count(),
+        writer_batch_size=5000,
+        cache_dir=tali_dataset_dir,
+    )
+
+    dataset = datasets.DatasetDict(
+        {"test": test_data, "train": train_data, "val": val_data}
+    )
+    dataset.push_to_hub(repo_id="Antreas/TALI-base")
+
+    train_generator = lambda: data_generator("train", percentage=1.0)
+
+    train_data = datasets.Dataset.from_generator(
+        train_generator,
+        num_proc=mp.cpu_count(),
+        writer_batch_size=5000,
+        cache_dir=tali_dataset_dir,
+    )
+
+    dataset = datasets.DatasetDict(
+        {"test": test_data, "train": train_data, "val": val_data}
+    )
+    dataset.push_to_hub(repo_id="Antreas/TALI-large")
