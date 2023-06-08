@@ -43,9 +43,7 @@ if __name__ == "__main__":
                 video_path_actual: pathlib.Path = pathlib.Path(temp_path)
 
                 if video_path_actual.exists():
-                    item["youtube_content_video"] = open(
-                        video_path_actual, "rb"
-                    ).read()
+                    item["youtube_content_video"] = open(video_path_actual, "rb").read()
                     item["youtube_subtitle_text"] = captions
                     yield item
 
@@ -56,19 +54,22 @@ if __name__ == "__main__":
     train_data = datasets.Dataset.from_generator(
         train_generator,
         num_proc=mp.cpu_count(),
-        writer_batch_size=10000,
+        writer_batch_size=5000,
+        cache_dir=tali_dataset_dir,
     )
 
     val_data = datasets.Dataset.from_generator(
         val_generator,
-        writer_batch_size=10000,
+        writer_batch_size=5000,
         num_proc=mp.cpu_count(),
+        cache_dir=tali_dataset_dir,
     )
 
     test_data = datasets.Dataset.from_generator(
         test_generator,
-        writer_batch_size=10000,
+        writer_batch_size=5000,
         num_proc=mp.cpu_count(),
+        cache_dir=tali_dataset_dir,
     )
 
     dataset = datasets.DatasetDict(
