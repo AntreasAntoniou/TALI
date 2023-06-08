@@ -10,7 +10,8 @@ export WANDB_PROJECT=tali-godzilla
 export KAGGLE_USERNAME="antreasantoniou"
 export KAGGLE_KEY="d14aab63e71334cfa118bd5251bf85da"
 
-export PYTEST_DIR="/data/"
+export PROJECT_DIR=/data1/
+export PYTEST_DIR=$PROJECT_DIR
 
 export EXPERIMENT_NAME=tali-godzilla
 export HF_USERNAME="Antreas"
@@ -20,9 +21,9 @@ export HF_CACHE_DIR=$PYTEST_DIR
 export TOKENIZERS_PARALLELISM=False
 
 export CODE_DIR=/devcode/TALI
-export PROJECT_DIR=/data/
-export EXPERIMENTS_DIR=/data/
-export EXPERIMENT_DIR=/data/
-export TALI_DATASET_DIR=/data/
-export WIT_DATASET_DIR=/data/wit/
-export MODEL_DIR=/data/
+
+export EXPERIMENTS_DIR=$PROJECT_DIR
+export EXPERIMENT_DIR=$PROJECT_DIR
+export TALI_DATASET_DIR=$PROJECT_DIR
+export WIT_DATASET_DIR=$PROJECT_DIR/wit/
+export MODEL_DIR=$PROJECT_DIR
