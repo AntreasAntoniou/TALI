@@ -129,22 +129,27 @@ class PositionalEncoding(nn.Module):
         self,
     ):
         super().__init__()
+        self.positional_encoding = None
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Args:
             x: Tensor, shape [batch_size, seq_len, embedding_dim]
         """
-        max_len = x.shape[1]
-        d_model = x.shape[2]
-        position = torch.arange(max_len).unsqueeze(1).to(x.device)
-        div_term = torch.exp(
-            torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model)
-        ).to(x.device)
-        pe = torch.zeros(1, max_len, d_model).to(x.device)
-        pe[0, :, 0::2] = torch.sin(position * div_term).to(x.device)
-        pe[0, :, 1::2] = torch.cos(position * div_term).to(x.device)
-        x = x + pe[: x.size(0)]
+        if self.positional_encoding is None:
+            max_len = x.shape[1]
+            d_model = x.shape[2]
+            position = torch.arange(max_len).unsqueeze(1).to(x.device)
+            div_term = torch.exp(
+                torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model)
+            ).to(x.device)
+            pe = torch.zeros(1, max_len, d_model).to(x.device)
+            pe[0, :, 0::2] = torch.sin(position * div_term).to(x.device)
+            pe[0, :, 1::2] = torch.cos(position * div_term).to(x.device)
+            self.positional_encoding = pe
+
+        self.positional_encoding = self.positional_encoding.to(x.device)
+        x = x + self.positional_encoding.repeat(x.shape[0], 1, 1)
         return x
 
 

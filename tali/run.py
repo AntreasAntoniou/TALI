@@ -211,11 +211,11 @@ def run(cfg: BaseConfig) -> None:
     # for param_set in optimizer_grouped_parameters:
     #     for key, value in param_set.items():
     #         print(f"{key}: {value}")
-
+    logger.info(f"Optimizer hyperparameters: {cfg.optimizer}")
     optimizer: torch.optim.Optimizer = AdamW(
         params=optimizer_grouped_parameters,
-        lr=1e-5,
-        weight_decay=0.0001,
+        lr=cfg.optimizer.lr,
+        weight_decay=cfg.optimizer.weight_decay,
         betas=(0.9, 0.98),
         eps=1e-6,
     )
