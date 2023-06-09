@@ -73,7 +73,11 @@ if __name__ == "__main__":
     )
 
     dataset = datasets.DatasetDict(
-        {"test": test_data, "train": train_data, "val": val_data}
+        {
+            "train": train_data,
+            "val": val_data,
+            "test": test_data,
+        }
     )
     succesful_competion = False
     while not succesful_competion:
