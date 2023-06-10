@@ -102,7 +102,7 @@ if __name__ == "__main__":
     succesful_competion = False
     while not succesful_competion:
         try:
-            dataset.push_to_hub(repo_id="Antreas/TALI-base")
+            dataset.push_to_hub(repo_id="Antreas/TALI-base", max_shard_size="5GB")
             succesful_competion = True
         except Exception as e:
             print(e)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     succesful_competion = False
     while not succesful_competion:
         try:
-            dataset.push_to_hub(repo_id="Antreas/TALI-large")
+            dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="5GB")
             succesful_competion = True
         except Exception as e:
             print(e)
