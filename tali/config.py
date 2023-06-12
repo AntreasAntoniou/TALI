@@ -740,6 +740,124 @@ def collect_config_store():
     )
 
     config_store.store(
+        group="dataset",
+        name="wit_image_text_separate_tali_image_text_audio_video",
+        node={
+            "wit_dataset_image_text": (
+                int(floor(240 * batch_size_multiplier)),
+                wit_dataset_image_text_config,
+            ),
+            "tali_dataset_image_audio_text": (
+                int(floor(8 * batch_size_multiplier)),
+                tali_dataset_config(
+                    modality_list=[
+                        # ModalityTypes.wit_image.value,
+                        # ModalityTypes.wit_caption.value,
+                        # ModalityTypes.wit_title.value,
+                        # ModalityTypes.wit_main_body.value,
+                        # ModalityTypes.youtube_video.value,
+                        ModalityTypes.youtube_image.value,
+                        ModalityTypes.youtube_subtitles.value,
+                        ModalityTypes.youtube_audio.value,
+                        ModalityTypes.youtube_description.value,
+                    ],
+                ),
+            ),
+            "tali_dataset_image_video_text": (
+                int(floor(4 * batch_size_multiplier)),
+                tali_dataset_config(
+                    modality_list=[
+                        # ModalityTypes.wit_image.value,
+                        # ModalityTypes.wit_caption.value,
+                        # ModalityTypes.wit_title.value,
+                        # ModalityTypes.wit_main_body.value,
+                        ModalityTypes.youtube_video.value,
+                        ModalityTypes.youtube_image.value,
+                        ModalityTypes.youtube_subtitles.value,
+                        # ModalityTypes.youtube_audio.value,
+                        ModalityTypes.youtube_description.value,
+                    ],
+                ),
+            ),
+            "tali_dataset_audio_video": (
+                int(floor(4 * batch_size_multiplier)),
+                tali_dataset_config(
+                    modality_list=[
+                        # ModalityTypes.wit_image.value,
+                        # ModalityTypes.wit_caption.value,
+                        # ModalityTypes.wit_title.value,
+                        # ModalityTypes.wit_main_body.value,
+                        ModalityTypes.youtube_video.value,
+                        # ModalityTypes.youtube_image.value,
+                        ModalityTypes.youtube_subtitles.value,
+                        ModalityTypes.youtube_audio.value,
+                        ModalityTypes.youtube_description.value,
+                    ],
+                ),
+            ),
+        },
+    )
+
+    config_store.store(
+        group="dataset",
+        name="wit_image_text_tali_image_text_audio_video",
+        node={
+            "wit_dataset_image_text": (
+                int(floor(240 * batch_size_multiplier)),
+                wit_dataset_image_text_config,
+            ),
+            "tali_dataset_image_audio_text": (
+                int(floor(8 * batch_size_multiplier)),
+                tali_dataset_config(
+                    modality_list=[
+                        ModalityTypes.wit_image.value,
+                        ModalityTypes.wit_caption.value,
+                        ModalityTypes.wit_title.value,
+                        ModalityTypes.wit_main_body.value,
+                        # ModalityTypes.youtube_video.value,
+                        ModalityTypes.youtube_image.value,
+                        ModalityTypes.youtube_subtitles.value,
+                        ModalityTypes.youtube_audio.value,
+                        ModalityTypes.youtube_description.value,
+                    ],
+                ),
+            ),
+            "tali_dataset_image_video_text": (
+                int(floor(4 * batch_size_multiplier)),
+                tali_dataset_config(
+                    modality_list=[
+                        # ModalityTypes.wit_image.value,
+                        ModalityTypes.wit_caption.value,
+                        ModalityTypes.wit_title.value,
+                        ModalityTypes.wit_main_body.value,
+                        ModalityTypes.youtube_video.value,
+                        ModalityTypes.youtube_image.value,
+                        ModalityTypes.youtube_subtitles.value,
+                        # ModalityTypes.youtube_audio.value,
+                        ModalityTypes.youtube_description.value,
+                    ],
+                ),
+            ),
+            "tali_dataset_audio_video": (
+                int(floor(4 * batch_size_multiplier)),
+                tali_dataset_config(
+                    modality_list=[
+                        # ModalityTypes.wit_image.value,
+                        # ModalityTypes.wit_caption.value,
+                        # ModalityTypes.wit_title.value,
+                        # ModalityTypes.wit_main_body.value,
+                        ModalityTypes.youtube_video.value,
+                        # ModalityTypes.youtube_image.value,
+                        ModalityTypes.youtube_subtitles.value,
+                        ModalityTypes.youtube_audio.value,
+                        ModalityTypes.youtube_description.value,
+                    ],
+                ),
+            ),
+        },
+    )
+
+    config_store.store(
         group="dataloader",
         name="default",
         node=dataloader_config(
