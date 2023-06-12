@@ -416,19 +416,6 @@ def collect_config_store():
         name="tali_image_text_video_base_patch16_224_scratch",
         node=tali_vit_image_text_video_model_scratch_config,
     )
-    # tali_dataset_config(
-    #     modality_list=[
-    #         ModalityTypes.wit_image.value,
-    #         ModalityTypes.wit_caption.value,
-    #         ModalityTypes.wit_title.value,
-    #         ModalityTypes.wit_main_body.value,
-    #         # ModalityTypes.youtube_video.value,
-    #         ModalityTypes.youtube_image.value,
-    #         ModalityTypes.youtube_subtitles.value,
-    #         # ModalityTypes.youtube_audio.value,
-    #         ModalityTypes.youtube_description.value,
-    #     ],
-    # )
 
     ###################################################################################
 

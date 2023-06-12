@@ -51,44 +51,35 @@ class WITBase(Dataset):
         self.dataset = datasets.load_dataset(
             "wikimedia/wit_base",
             split="train",
-            cache_dir=os.environ["HF_CACHE_DIR"],
+            cache_dir=wit_dataset_dir,
             num_proc=mp.cpu_count(),
         )
         self.num_samples_per_episode = num_samples_per_episode
-        self.indices_filepath = (
-            pathlib.Path(wit_dataset_dir) / "wit_indices.json"
-        )
+        self.indices_filepath = pathlib.Path(wit_dataset_dir) / "wit_indices.json"
 
         if not self.indices_filepath.exists():
             tali_val_dataset = datasets.load_dataset(
                 path="Antreas/TALI",
                 split="val",
                 keep_in_memory=False,
-                cache_dir=os.environ["HF_CACHE_DIR"],
+                cache_dir=wit_dataset_dir,
                 num_proc=mp.cpu_count(),
             )
-            tali_val_indices = [
-                sample["wit_idx"] for sample in tali_val_dataset
-            ]
+            tali_val_indices = [sample["wit_idx"] for sample in tali_val_dataset]
 
             tali_test_dataset = datasets.load_dataset(
                 path="Antreas/TALI",
                 split="test",
                 keep_in_memory=False,
-                cache_dir=os.environ["HF_CACHE_DIR"],
+                cache_dir=wit_dataset_dir,
                 num_proc=mp.cpu_count(),
             )
-            tali_test_indices = [
-                sample["wit_idx"] for sample in tali_test_dataset
-            ]
+            tali_test_indices = [sample["wit_idx"] for sample in tali_test_dataset]
 
             train_wit_indices = []
             with tqdm.tqdm(total=len(self.dataset)) as pbar:
                 for i in range(len(self.dataset)):
-                    if (
-                        i not in tali_val_indices
-                        and i not in tali_test_indices
-                    ):
+                    if i not in tali_val_indices and i not in tali_test_indices:
                         train_wit_indices.append(i)
                     pbar.update(1)
 
@@ -98,9 +89,7 @@ class WITBase(Dataset):
                 "test": tali_test_indices,
             }
             save_json(
-                filepath=os.path.join(
-                    self.wit_dataset_dir, "wit_indices.json"
-                ),
+                filepath=os.path.join(self.wit_dataset_dir, "wit_indices.json"),
                 dict_to_store=self.indices,
             )
         else:
@@ -111,9 +100,7 @@ class WITBase(Dataset):
         self.dummy_batch = None
 
         self.num_samples = (
-            total_num_samples
-            if total_num_samples is not None
-            else len(self.dataset)
+            total_num_samples if total_num_samples is not None else len(self.dataset)
         )
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
@@ -132,9 +119,7 @@ class WITBase(Dataset):
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
         )
-        self.audio_processor = WhisperProcessor.from_pretrained(
-            self.audio_model_name
-        )
+        self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
 
         def image_transforms(x):
             if isinstance(x, PIL.Image.Image):
@@ -266,9 +251,9 @@ class WITBaseTransform:
         wit_sample = input_dict["wit_features"]
         output_dict["wit_idx"] = input_dict["wit_idx"]
 
-        output_dict[
-            get_submodality_name(ModalityTypes.wit_image.value)
-        ] = input_dict["image"]
+        output_dict[get_submodality_name(ModalityTypes.wit_image.value)] = input_dict[
+            "image"
+        ]
 
         if self.priority_caption_language is None:
             choose_language = rng.choice(wit_sample["language"])
@@ -294,8 +279,8 @@ class WITBaseTransform:
             ]
             if wit_sample[key][language_idx] is not None
         ]
-        output_dict[
-            get_submodality_name(ModalityTypes.wit_caption.value)
-        ] = rng.choice(wit_text)
+        output_dict[get_submodality_name(ModalityTypes.wit_caption.value)] = rng.choice(
+            wit_text
+        )
 
         return output_dict
