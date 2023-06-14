@@ -72,6 +72,8 @@ if __name__ == "__main__":
         cache_dir=tali_dataset_dir,
     )
 
+    print(f"Pushing TALI-small to hub")
+
     dataset = datasets.DatasetDict(
         {
             "train": train_data,
@@ -95,6 +97,8 @@ if __name__ == "__main__":
         writer_batch_size=5000,
         cache_dir=tali_dataset_dir,
     )
+
+    print(f"Pushing TALI-base to hub")
 
     train_dataset = datasets.DatasetDict({"train": train_data})
     val_dataset = datasets.DatasetDict({"val": val_data})
@@ -134,6 +138,8 @@ if __name__ == "__main__":
         writer_batch_size=5000,
         cache_dir=tali_dataset_dir,
     )
+
+    print(f"Pushing TALI-large to hub")
 
     train_dataset = datasets.DatasetDict({"train": train_data})
     val_dataset = datasets.DatasetDict({"val": val_data})
