@@ -74,37 +74,37 @@ if __name__ == "__main__":
 
     print(f"Pushing TALI-small to hub")
 
-    train_dataset = datasets.DatasetDict({"train": train_data})
-    val_dataset = datasets.DatasetDict({"val": val_data})
-    test_dataset = datasets.DatasetDict({"test": test_data})
+    # train_dataset = datasets.DatasetDict({"train": train_data})
+    # val_dataset = datasets.DatasetDict({"val": val_data})
+    # test_dataset = datasets.DatasetDict({"test": test_data})
     succesful_competion = False
 
-    while not succesful_competion:
-        try:
-            train_dataset.push_to_hub(
-                repo_id="Antreas/TALI-small", max_shard_size="5GB"
-            )
-            succesful_competion = True
-        except Exception as e:
-            print(e)
+    # while not succesful_competion:
+    #     try:
+    #         train_dataset.push_to_hub(
+    #             repo_id="Antreas/TALI-small", max_shard_size="5GB"
+    #         )
+    #         succesful_competion = True
+    #     except Exception as e:
+    #         print(e)
 
-    succesful_competion = False
+    # succesful_competion = False
 
-    while not succesful_competion:
-        try:
-            val_dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="5GB")
-            succesful_competion = True
-        except Exception as e:
-            print(e)
+    # while not succesful_competion:
+    #     try:
+    #         val_dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="5GB")
+    #         succesful_competion = True
+    #     except Exception as e:
+    #         print(e)
 
-    succesful_competion = False
+    # succesful_competion = False
 
-    while not succesful_competion:
-        try:
-            test_dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="5GB")
-            succesful_competion = True
-        except Exception as e:
-            print(e)
+    # while not succesful_competion:
+    #     try:
+    #         test_dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="5GB")
+    #         succesful_competion = True
+    #     except Exception as e:
+    #         print(e)
 
     train_generator = lambda: data_generator("train", percentage=0.5)
 
