@@ -202,9 +202,9 @@ class BaseConfig:
 # Using hydra might look a bit more verbose but it saves having to manually define
 # future args, and makes it a lot easier to add whatever we need from the command line
 batch_size_multiplier = 2
-default_video_batch_size = 8
+default_video_batch_size = 16
 default_audio_batch_size = 16
-default_image_text_batch_size = default_image_text_batch_size
+default_image_text_batch_size = 240
 
 
 def collect_config_store():
