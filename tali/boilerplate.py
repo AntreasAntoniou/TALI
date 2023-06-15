@@ -427,9 +427,9 @@ class Learner(nn.Module):
                                 batch=batch,
                             )
 
-                        # if self.step_idx % self.evaluate_every_n_steps == 0:
-                        #     self._validation_loop()
-                        #     self.check_manage_background_threads()
+                        if self.step_idx % self.evaluate_every_n_steps == 0:
+                            self._validation_loop()
+                            self.check_manage_background_threads()
 
                         if (
                             self.checkpoint_every_n_steps is not None
