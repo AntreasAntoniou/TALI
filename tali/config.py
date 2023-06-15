@@ -203,7 +203,7 @@ class BaseConfig:
 # future args, and makes it a lot easier to add whatever we need from the command line
 batch_size_multiplier = 2
 default_video_batch_size = 16
-default_audio_batch_size = 16
+default_audio_batch_size = 32
 default_image_text_batch_size = 240
 
 
