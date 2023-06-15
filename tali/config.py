@@ -676,7 +676,7 @@ def collect_config_store():
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
-                int(floor(8 * batch_size_multiplier)),
+                int(floor(12 * batch_size_multiplier)),
                 tali_dataset_config(
                     modality_list=[
                         ModalityTypes.wit_image.value,
@@ -692,7 +692,7 @@ def collect_config_store():
                 ),
             ),
             "tali_dataset_image_video": (
-                int(floor(4 * batch_size_multiplier)),
+                int(floor(8 * batch_size_multiplier)),
                 tali_dataset_config(
                     modality_list=[
                         ModalityTypes.wit_image.value,
@@ -708,7 +708,7 @@ def collect_config_store():
                 ),
             ),
             "tali_dataset_audio_video": (
-                int(floor(4 * batch_size_multiplier)),
+                int(floor(8 * batch_size_multiplier)),
                 tali_dataset_config(
                     modality_list=[
                         # ModalityTypes.wit_image.value,
