@@ -470,17 +470,20 @@ class TALIModel(nn.Module):
         if len(x.shape) == 5:
             x = x.squeeze(1)
         x = x.to(self.image_linear_layer.weight.device)
-        out = self.model["image"](pixel_values=x)
-        features = out.pooler_output
-        raw_features = out.last_hidden_state
+        out = self.model["image"](
+            pixel_values=x, return_dict=False, output_hidden_states=True
+        )
+        (last_hidden_state, pooled_output, encoder_outputs) = out
+        encoder_outputs = [f for f in encoder_outputs]
+
+        features = pooled_output
+        raw_features = last_hidden_state
         projection_output = self.image_linear_layer(features)
-        # projection_output = projection_output / projection_output.norm(
-        #     p=2, dim=-1, keepdim=True
-        # )
 
         return {
-            "features": features,
+            "features": pooled_output,
             "raw_features": raw_features,
+            "per_layer_raw_features": encoder_outputs,
             "projection_output": projection_output,
         }
 
