@@ -47,7 +47,7 @@ if __name__ == "__main__":
                     item["youtube_subtitle_text"] = captions
                     yield item
 
-    train_generator = lambda: data_generator("train", percentage=0.1)
+    train_generator = lambda: data_generator("train", percentage=1.0)
     val_generator = lambda: data_generator("val")
     test_generator = lambda: data_generator("test")
 
@@ -72,100 +72,18 @@ if __name__ == "__main__":
         cache_dir=tali_dataset_dir,
     )
 
-    print(f"Pushing TALI-small to hub")
-
-    # train_dataset = datasets.DatasetDict({"train": train_data})
-    # val_dataset = datasets.DatasetDict({"val": val_data})
-    # test_dataset = datasets.DatasetDict({"test": test_data})
-    succesful_competion = False
-
-    # while not succesful_competion:
-    #     try:
-    #         train_dataset.push_to_hub(
-    #             repo_id="Antreas/TALI-small", max_shard_size="5GB"
-    #         )
-    #         succesful_competion = True
-    #     except Exception as e:
-    #         print(e)
-
-    # succesful_competion = False
-
-    # while not succesful_competion:
-    #     try:
-    #         val_dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="5GB")
-    #         succesful_competion = True
-    #     except Exception as e:
-    #         print(e)
-
-    # succesful_competion = False
-
-    # while not succesful_competion:
-    #     try:
-    #         test_dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="5GB")
-    #         succesful_competion = True
-    #     except Exception as e:
-    #         print(e)
-
-    train_generator = lambda: data_generator("train", percentage=0.5)
-
-    train_data = datasets.Dataset.from_generator(
-        train_generator,
-        num_proc=mp.cpu_count(),
-        writer_batch_size=5000,
-        cache_dir=tali_dataset_dir,
-    )
-
-    print(f"Pushing TALI-base to hub")
-
-    train_dataset = datasets.DatasetDict({"train": train_data})
-    val_dataset = datasets.DatasetDict({"val": val_data})
-    test_dataset = datasets.DatasetDict({"test": test_data})
-    succesful_competion = False
-
-    while not succesful_competion:
-        try:
-            train_dataset.push_to_hub(repo_id="Antreas/TALI-base", max_shard_size="5GB")
-            succesful_competion = True
-        except Exception as e:
-            print(e)
-
-    succesful_competion = False
-
-    while not succesful_competion:
-        try:
-            val_dataset.push_to_hub(repo_id="Antreas/TALI-base", max_shard_size="5GB")
-            succesful_competion = True
-        except Exception as e:
-            print(e)
-
-    succesful_competion = False
-
-    while not succesful_competion:
-        try:
-            test_dataset.push_to_hub(repo_id="Antreas/TALI-base", max_shard_size="5GB")
-            succesful_competion = True
-        except Exception as e:
-            print(e)
-
-    train_generator = lambda: data_generator("train", percentage=1.0)
-
-    train_data = datasets.Dataset.from_generator(
-        train_generator,
-        num_proc=mp.cpu_count(),
-        writer_batch_size=5000,
-        cache_dir=tali_dataset_dir,
-    )
-
     print(f"Pushing TALI-large to hub")
 
     train_dataset = datasets.DatasetDict({"train": train_data})
     val_dataset = datasets.DatasetDict({"val": val_data})
     test_dataset = datasets.DatasetDict({"test": test_data})
 
+    succesful_competion = False
+
     while not succesful_competion:
         try:
             train_dataset.push_to_hub(
-                repo_id="Antreas/TALI-large", max_shard_size="5GB"
+                repo_id="Antreas/TALI-large", max_shard_size="2GB"
             )
             succesful_competion = True
         except Exception as e:
@@ -175,7 +93,7 @@ if __name__ == "__main__":
 
     while not succesful_competion:
         try:
-            val_dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="5GB")
+            val_dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="2GB")
             succesful_competion = True
         except Exception as e:
             print(e)
@@ -184,7 +102,7 @@ if __name__ == "__main__":
 
     while not succesful_competion:
         try:
-            test_dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="5GB")
+            test_dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="2GB")
             succesful_competion = True
         except Exception as e:
             print(e)
