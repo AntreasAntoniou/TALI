@@ -12,6 +12,34 @@ from tali.utils import load_json
 
 tali_dataset_dir = "/data/"
 
+import concurrent.futures
+
+
+def process_item(item, percentage):
+    video_list = item["youtube_content_video"]
+    video_list = np.random.choice(video_list, int(ceil(len(video_list) * percentage)))
+    if len(video_list) == 0:
+        return None
+    captions = item["youtube_subtitle_text"]
+
+    new_captions = {}
+    for key, value in captions.items():
+        new_captions[int(key)] = " ".join(value)
+
+    for video_path in video_list:
+        temp_path = video_path.replace("/data/", tali_dataset_dir)
+        video_path_actual: pathlib.Path = pathlib.Path(temp_path)
+
+        if video_path_actual.exists():
+            item["youtube_content_video"] = open(video_path_actual, "rb").read()
+            item["youtube_content_video_start_time"] = (
+                video_path.split("/")[-1].split("_")[1].split(".")[0]
+            )
+            item["youtube_subtitle_text"] = captions
+            return item
+
+    return None
+
 
 def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB"):
     full_dataset = datasets.load_dataset(
@@ -20,27 +48,14 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
-        for item in tqdm(dataset):
-            video_list = item["youtube_content_video"]
-            video_list = np.random.choice(
-                video_list, int(ceil(len(video_list) * percentage))
-            )
-            if len(video_list) == 0:
-                continue
-            captions = load_json(item["youtube_subtitle_text"])
 
-            for video_path in video_list:
-                temp_path = video_path.replace("/data/", tali_dataset_dir)
-                video_path_actual: pathlib.Path = pathlib.Path(temp_path)
-
-                if video_path_actual.exists():
-                    # video actual looks like this /data/video_data.parquet/10/10000/LfjW3emXfMU/360p_2220.mp4
-                    item["youtube_content_video"] = open(video_path_actual, "rb").read()
-                    item["youtube_content_video_start_time"] = (
-                        video_path.split("/")[-1].split("_")[1].split(".")[0]
-                    )
-                    item["youtube_subtitle_text"] = captions
-
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for item in executor.map(
+                process_item,
+                tqdm(dataset),
+                [percentage] * len(dataset),
+            ):
+                if item is not None:
                     yield item
 
     print(data_generator("train", percentage=train_percentage).__next__())
