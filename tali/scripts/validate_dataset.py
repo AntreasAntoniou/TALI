@@ -29,6 +29,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
             if len(video_list) == 0:
                 continue
             captions = load_json(item["youtube_subtitle_text"])
+            print(captions)
 
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
