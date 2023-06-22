@@ -20,7 +20,6 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
-
         for item in tqdm(dataset):
             video_list = item["youtube_content_video"]
             video_list = np.random.choice(
@@ -29,7 +28,6 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
             if len(video_list) == 0:
                 continue
             captions = load_json(item["youtube_subtitle_text"])
-            print(captions)
 
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
@@ -42,7 +40,10 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
                         video_path.split("/")[-1].split("_")[1].split(".")[0]
                     )
                     item["youtube_subtitle_text"] = captions
+
                     yield item
+
+    print(data_generator("train", percentage=train_percentage).__next__())
 
     train_generator = lambda: data_generator("train", percentage=train_percentage)
     val_generator = lambda: data_generator("val")
