@@ -5,6 +5,7 @@ from math import ceil
 import datasets
 import numpy as np
 from tqdm.auto import tqdm
+from rich import print
 
 from tali.data.data import select_subtitles_between_timestamps
 from tali.utils import load_json
@@ -81,7 +82,7 @@ if __name__ == "__main__":
 
     while not succesful_competion:
         try:
-            dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="2GB")
+            dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="10GB")
             succesful_competion = True
         except Exception as e:
             print(e)
