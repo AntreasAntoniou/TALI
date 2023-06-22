@@ -68,7 +68,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
         cache_dir=tali_dataset_dir,
     )
 
-    print(f"Pushing {dataset_name}-small to hub")
+    print(f"Pushing {dataset_name} to hub")
 
     dataset = datasets.DatasetDict(
         {"train": train_data, "val": val_data, "test": test_data}
