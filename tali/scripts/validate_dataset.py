@@ -28,27 +28,21 @@ if __name__ == "__main__":
             if len(video_list) == 0:
                 continue
             captions = item["youtube_subtitle_text"]
-            captions = select_subtitles_between_timestamps(
-                subtitle_dict=load_json(
-                    captions.replace(
-                        "/data/",
-                        tali_dataset_dir,
-                    )
-                ),
-                starting_timestamp=0,
-                ending_timestamp=100000000,
-            )
 
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
                 video_path_actual: pathlib.Path = pathlib.Path(temp_path)
 
                 if video_path_actual.exists():
+                    # video actual looks like this /data/video_data.parquet/10/10000/LfjW3emXfMU/360p_2220.mp4
                     item["youtube_content_video"] = open(video_path_actual, "rb").read()
+                    item["youtube_content_video_start_time"] = (
+                        video_path.split("/")[-1].split("_")[1].split(".")[0]
+                    )
                     item["youtube_subtitle_text"] = captions
                     yield item
 
-    train_generator = lambda: data_generator("train", percentage=1.0)
+    train_generator = lambda: data_generator("train", percentage=0.1)
     val_generator = lambda: data_generator("val")
     test_generator = lambda: data_generator("test")
 
@@ -73,7 +67,7 @@ if __name__ == "__main__":
         cache_dir=tali_dataset_dir,
     )
 
-    print(f"Pushing TALI-large to hub")
+    print(f"Pushing TALI-small to hub")
 
     dataset = datasets.DatasetDict(
         {"train": train_data, "val": val_data, "test": test_data}
@@ -82,7 +76,7 @@ if __name__ == "__main__":
 
     while not succesful_competion:
         try:
-            dataset.push_to_hub(repo_id="Antreas/TALI-large", max_shard_size="10GB")
+            dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="10GB")
             succesful_competion = True
         except Exception as e:
             print(e)
