@@ -6,13 +6,14 @@ import datasets
 import numpy as np
 from tqdm.auto import tqdm
 from rich import print
+import fire
 
-from tali.data.data import select_subtitles_between_timestamps
 from tali.utils import load_json
 
 tali_dataset_dir = "/data/"
 
-if __name__ == "__main__":
+
+def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB"):
     full_dataset = datasets.load_dataset(
         "Antreas/TALI", num_proc=mp.cpu_count(), cache_dir=tali_dataset_dir
     )
@@ -27,7 +28,7 @@ if __name__ == "__main__":
             )
             if len(video_list) == 0:
                 continue
-            captions = item["youtube_subtitle_text"]
+            captions = load_json(item["youtube_subtitle_text"])
 
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
@@ -42,7 +43,7 @@ if __name__ == "__main__":
                     item["youtube_subtitle_text"] = captions
                     yield item
 
-    train_generator = lambda: data_generator("train", percentage=0.1)
+    train_generator = lambda: data_generator("train", percentage=train_percentage)
     val_generator = lambda: data_generator("val")
     test_generator = lambda: data_generator("test")
 
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         cache_dir=tali_dataset_dir,
     )
 
-    print(f"Pushing TALI-small to hub")
+    print(f"Pushing {dataset_name}-small to hub")
 
     dataset = datasets.DatasetDict(
         {"train": train_data, "val": val_data, "test": test_data}
@@ -76,7 +77,13 @@ if __name__ == "__main__":
 
     while not succesful_competion:
         try:
-            dataset.push_to_hub(repo_id="Antreas/TALI-small", max_shard_size="10GB")
+            dataset.push_to_hub(
+                repo_id=f"{dataset_name}", max_shard_size=max_shard_size
+            )
             succesful_competion = True
         except Exception as e:
             print(e)
+
+
+if __name__ == "__main__":
+    fire.Fire(main)
