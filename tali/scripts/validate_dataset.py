@@ -50,7 +50,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
-        dataset = [dataset[idx] for idx in range(100)]
+        dataset = [dataset[idx] for idx in tqdm(len(dataset))]
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
             for item in executor.map(
@@ -105,7 +105,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
         except Exception as e:
             print(e)
             print("Push failed, retrying")
-            
+
 
 if __name__ == "__main__":
     fire.Fire(main)
