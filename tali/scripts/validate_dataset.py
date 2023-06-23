@@ -96,12 +96,14 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     while not succesful_competion:
         try:
+            print("Attempting to push to hub")
             dataset.push_to_hub(
                 repo_id=f"{dataset_name}", max_shard_size=max_shard_size
             )
             succesful_competion = True
         except Exception as e:
             # print(e)
+            print("Push failed, retrying")
             pass
 
 
