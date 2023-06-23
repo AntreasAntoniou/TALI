@@ -13,36 +13,6 @@ from tali.utils import load_json
 
 tali_dataset_dir = "/data/"
 
-import concurrent.futures
-
-
-def process_item(item, percentage):
-    video_list = item["youtube_content_video"]
-    video_list = np.random.choice(video_list, int(ceil(len(video_list) * percentage)))
-    if len(video_list) == 0:
-        return None
-    captions = load_json(item["youtube_subtitle_text"])
-
-    new_captions = {}
-    for key, value in captions.items():
-        new_captions[str(key)] = "".join(value)
-    captions = yaml.dump(new_captions)
-
-    for video_path in video_list:
-        temp_path = video_path.replace("/data/", tali_dataset_dir)
-        video_path_actual: pathlib.Path = pathlib.Path(temp_path)
-
-        if video_path_actual.exists():
-            item["youtube_content_video"] = open(video_path_actual, "rb").read()
-            item["youtube_content_video_start_time"] = (
-                video_path.split("/")[-1].split("_")[1].split(".")[0]
-            )
-            item["youtube_subtitle_text"] = captions
-            return item
-
-    return None
-
-
 np.random.seed(42)
 
 
