@@ -52,7 +52,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
         with concurrent.futures.ProcessPoolExecutor() as executor:
             for item in executor.map(
                 process_item,
-                tqdm(dataset[100]),
+                tqdm(dataset[:100]),
                 [percentage] * len(dataset),
             ):
                 if item is not None:
