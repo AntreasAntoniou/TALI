@@ -24,7 +24,7 @@ def process_item(item, percentage):
 
     new_captions = {}
     for key, value in captions.items():
-        new_captions[int(key)] = " ".join(value)
+        new_captions[key] = " ".join(value)
 
     for video_path in video_list:
         temp_path = video_path.replace("/data/", tali_dataset_dir)
