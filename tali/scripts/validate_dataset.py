@@ -24,7 +24,7 @@ def process_item(item, percentage):
 
     new_captions = {}
     for key, value in captions.items():
-        new_captions[float(key)] = "".join(value)
+        new_captions[str(key)] = "".join(value)
     captions = new_captions
 
     for video_path in video_list:
