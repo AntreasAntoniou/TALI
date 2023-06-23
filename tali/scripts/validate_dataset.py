@@ -16,7 +16,6 @@ import concurrent.futures
 
 
 def process_item(item, percentage):
-    print(item)
     video_list = item["youtube_content_video"]
     video_list = np.random.choice(video_list, int(ceil(len(video_list) * percentage)))
     if len(video_list) == 0:
