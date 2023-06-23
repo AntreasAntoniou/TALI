@@ -43,6 +43,9 @@ def process_item(item, percentage):
     return None
 
 
+np.random.seed(42)
+
+
 def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB"):
     full_dataset = datasets.load_dataset(
         "Antreas/TALI", num_proc=mp.cpu_count(), cache_dir=tali_dataset_dir
@@ -50,18 +53,31 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
-        dataset = tqdm(dataset)
-        percentage_list = [percentage] * len(dataset)
 
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=mp.cpu_count()
-        ) as executor:
-            for item in executor.map(
-                process_item,
-                dataset,
-                percentage_list,
-            ):
-                if item is not None:
+        for item in tqdm(dataset):
+            video_list = item["youtube_content_video"]
+            video_list = np.random.choice(
+                video_list, int(ceil(len(video_list) * percentage))
+            )
+            if len(video_list) == 0:
+                return None
+            captions = load_json(item["youtube_subtitle_text"])
+
+            new_captions = {}
+            for key, value in captions.items():
+                new_captions[str(key)] = "".join(value)
+            captions = yaml.dump(new_captions)
+
+            for video_path in video_list:
+                temp_path = video_path.replace("/data/", tali_dataset_dir)
+                video_path_actual: pathlib.Path = pathlib.Path(temp_path)
+
+                if video_path_actual.exists():
+                    item["youtube_content_video"] = open(video_path_actual, "rb").read()
+                    item["youtube_content_video_start_time"] = (
+                        video_path.split("/")[-1].split("_")[1].split(".")[0]
+                    )
+                    item["youtube_subtitle_text"] = captions
                     yield item
 
     print(data_generator("train", percentage=train_percentage).__next__())
