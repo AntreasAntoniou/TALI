@@ -84,7 +84,7 @@ def convert_to_pil(image):
 
 def videoclip_to_video_audio_tensors(
     video_path: pathlib.Path,
-    rng: np.random.Generator,
+    rng: Optional[np.random.Generator] = None,
     return_video: bool = True,
     return_audio: bool = False,
     return_image: bool = False,
@@ -114,6 +114,9 @@ def videoclip_to_video_audio_tensors(
     """
     output = {}
     video = image = audio = None
+
+    if rng is None:
+        rng = np.random.default_rng()
 
     if return_video:
         video = extract_frames_pyav(
