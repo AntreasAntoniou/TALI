@@ -16,6 +16,7 @@ import concurrent.futures
 
 
 def process_item(item, percentage):
+    print(item)
     video_list = item["youtube_content_video"]
     video_list = np.random.choice(video_list, int(ceil(len(video_list) * percentage)))
     if len(video_list) == 0:
@@ -48,11 +49,12 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
+        dataset = dataset[0:100]
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
             for item in executor.map(
                 process_item,
-                tqdm(dataset[:100]),
+                tqdm(dataset),
                 [percentage] * len(dataset),
             ):
                 if item is not None:
