@@ -16,8 +16,7 @@ tali_dataset_dir = "/data/"
 import concurrent.futures
 
 
-def process_item(data, item_idx, percentage):
-    item = data[item_idx]
+def process_item(item, percentage):
     video_list = item["youtube_content_video"]
     video_list = np.random.choice(video_list, int(ceil(len(video_list) * percentage)))
     if len(video_list) == 0:
@@ -51,11 +50,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
-        print(f"Building dataset list for {set_name}")
-        dataset_list = [dataset] * len(dataset)
-        print(f"Building dataset idx for {set_name}")
-        dataset_idx = [idx for idx in range(len(dataset))]
-        print(f"Building percentage list for {set_name}")
+        dataset = tqdm(dataset)
         percentage_list = [percentage] * len(dataset)
 
         with concurrent.futures.ThreadPoolExecutor(
@@ -63,8 +58,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
         ) as executor:
             for item in executor.map(
                 process_item,
-                dataset_list,
-                dataset_idx,
+                dataset,
                 percentage_list,
             ):
                 if item is not None:
