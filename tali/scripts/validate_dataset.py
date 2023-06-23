@@ -7,6 +7,7 @@ import numpy as np
 from tqdm.auto import tqdm
 from rich import print
 import fire
+import yaml
 
 from tali.utils import load_json
 
@@ -25,7 +26,7 @@ def process_item(item, percentage):
     new_captions = {}
     for key, value in captions.items():
         new_captions[str(key)] = "".join(value)
-    captions = new_captions
+    captions = yaml.dump(new_captions)
 
     for video_path in video_list:
         temp_path = video_path.replace("/data/", tali_dataset_dir)
