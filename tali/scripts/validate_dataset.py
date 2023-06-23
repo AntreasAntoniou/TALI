@@ -58,7 +58,9 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
         print(f"Building percentage list for {set_name}")
         percentage_list = [percentage] * len(dataset)
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=mp.cpu_count()
+        ) as executor:
             for item in executor.map(
                 process_item,
                 dataset_list,
