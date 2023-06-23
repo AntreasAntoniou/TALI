@@ -103,10 +103,9 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
             )
             succesful_competion = True
         except Exception as e:
-            # print(e)
+            print(e)
             print("Push failed, retrying")
-            pass
-
+            
 
 if __name__ == "__main__":
     fire.Fire(main)
