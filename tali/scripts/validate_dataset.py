@@ -51,8 +51,11 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
+        print(f"Building dataset list for {set_name}")
         dataset_list = [dataset] * len(dataset)
+        print(f"Building dataset idx for {set_name}")
         dataset_idx = [idx for idx in range(len(dataset))]
+        print(f"Building percentage list for {set_name}")
         percentage_list = [percentage] * len(dataset)
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
