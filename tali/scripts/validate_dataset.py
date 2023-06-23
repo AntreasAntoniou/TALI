@@ -20,7 +20,7 @@ def process_item(item, percentage):
     video_list = np.random.choice(video_list, int(ceil(len(video_list) * percentage)))
     if len(video_list) == 0:
         return None
-    captions = item["youtube_subtitle_text"]
+    captions = load_json(item["youtube_subtitle_text"])
 
     new_captions = {}
     for key, value in captions.items():
