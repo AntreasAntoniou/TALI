@@ -82,18 +82,23 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
     dataset = datasets.DatasetDict(
         {"train": train_data, "val": val_data, "test": test_data}
     )
-    succesful_competion = False
+    dataset.save_to_disk(
+        f"{tali_dataset_dir}/{dataset_name}",
+        num_proc=mp.cpu_count(),
+        max_shard_size="10GB",
+    )
+    # succesful_competion = False
 
-    while not succesful_competion:
-        try:
-            print("Attempting to push to hub")
-            dataset.push_to_hub(
-                repo_id=f"{dataset_name}", max_shard_size=max_shard_size
-            )
-            succesful_competion = True
-        except Exception as e:
-            print(e)
-            print("Push failed, retrying")
+    # while not succesful_competion:
+    #     try:
+    #         print("Attempting to push to hub")
+    #         dataset.push_to_hub(
+    #             repo_id=f"{dataset_name}", max_shard_size=max_shard_size
+    #         )
+    #         succesful_competion = True
+    #     except Exception as e:
+    #         print(e)
+    #         print("Push failed, retrying")
 
 
 if __name__ == "__main__":
