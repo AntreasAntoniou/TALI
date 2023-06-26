@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 import pathlib
 from math import ceil
 
@@ -92,7 +93,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     api = hub.HfApi()
     print(f"Creating repo {dataset_name}")
-    api.create_repo(dataset_name, token=hub.HfFolder.get_token(), exist_ok=True)
+    api.create_repo(dataset_name, token=os.environ.get("HF_TOKEN"), exist_ok=True)
     print(f"Uploading {dataset_path} to {dataset_name}")
     api.upload_folder(
         folder_path=dataset_path,
