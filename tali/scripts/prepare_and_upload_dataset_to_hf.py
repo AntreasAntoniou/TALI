@@ -3,6 +3,7 @@ import pathlib
 from math import ceil
 
 import datasets
+import huggingface_hub as hub
 import numpy as np
 from tqdm.auto import tqdm
 from rich import print
@@ -52,41 +53,51 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     print(data_generator("train", percentage=train_percentage).__next__())
 
-    train_generator = lambda: data_generator("train", percentage=train_percentage)
-    val_generator = lambda: data_generator("val")
-    test_generator = lambda: data_generator("test")
+    # train_generator = lambda: data_generator("train", percentage=train_percentage)
+    # val_generator = lambda: data_generator("val")
+    # test_generator = lambda: data_generator("test")
 
-    train_data = datasets.Dataset.from_generator(
-        train_generator,
-        num_proc=mp.cpu_count(),
-        writer_batch_size=5000,
-        cache_dir=tali_dataset_dir,
+    # train_data = datasets.Dataset.from_generator(
+    #     train_generator,
+    #     num_proc=mp.cpu_count(),
+    #     writer_batch_size=5000,
+    #     cache_dir=tali_dataset_dir,
+    # )
+
+    # val_data = datasets.Dataset.from_generator(
+    #     val_generator,
+    #     writer_batch_size=5000,
+    #     num_proc=mp.cpu_count(),
+    #     cache_dir=tali_dataset_dir,
+    # )
+
+    # test_data = datasets.Dataset.from_generator(
+    #     test_generator,
+    #     writer_batch_size=5000,
+    #     num_proc=mp.cpu_count(),
+    #     cache_dir=tali_dataset_dir,
+    # )
+
+    # print(f"Pushing {dataset_name} to hub")
+
+    # dataset = datasets.DatasetDict(
+    #     {"train": train_data, "val": val_data, "test": test_data}
+    # )
+    dataset_path = pathlib.Path(tali_dataset_dir) / dataset_name
+    # dataset.save_to_disk(
+    #     dataset_path,
+    #     num_proc=mp.cpu_count(),
+    #     max_shard_size="10GB",
+    # )
+
+    api = hub.HfApi()
+    api.upload_folder(
+        folder_path=dataset_path,
+        path_in_repo="data/",
+        repo_id=dataset_name,
+        repo_type="dataset",
     )
 
-    val_data = datasets.Dataset.from_generator(
-        val_generator,
-        writer_batch_size=5000,
-        num_proc=mp.cpu_count(),
-        cache_dir=tali_dataset_dir,
-    )
-
-    test_data = datasets.Dataset.from_generator(
-        test_generator,
-        writer_batch_size=5000,
-        num_proc=mp.cpu_count(),
-        cache_dir=tali_dataset_dir,
-    )
-
-    print(f"Pushing {dataset_name} to hub")
-
-    dataset = datasets.DatasetDict(
-        {"train": train_data, "val": val_data, "test": test_data}
-    )
-    dataset.save_to_disk(
-        f"{tali_dataset_dir}/{dataset_name}",
-        num_proc=mp.cpu_count(),
-        max_shard_size="10GB",
-    )
     # succesful_competion = False
 
     # while not succesful_competion:
