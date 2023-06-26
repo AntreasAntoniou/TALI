@@ -91,36 +91,20 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
     #     max_shard_size="10GB",
     # )
 
-    print(f"Creating repo {dataset_name}")
-    hub.create_repo(
-        dataset_name,
-        token=os.environ.get("HF_TOKEN"),
-        repo_type="dataset",
-        exist_ok=True,
-    )
-    print(f"Uploading {dataset_path} to {dataset_name}")
-    hub.upload_folder(
-        folder_path=dataset_path,
-        path_in_repo="data/",
-        repo_id=dataset_name,
-        repo_type="dataset",
-        token=os.environ.get("HF_TOKEN"),
-        multi_commits=True,
-        multi_commits_verbose=True,
-    )
+    dataset = datasets.load_from_disk(dataset_path)
 
-    # succesful_competion = False
+    succesful_competion = False
 
-    # while not succesful_competion:
-    #     try:
-    #         print("Attempting to push to hub")
-    #         dataset.push_to_hub(
-    #             repo_id=f"{dataset_name}", max_shard_size=max_shard_size
-    #         )
-    #         succesful_competion = True
-    #     except Exception as e:
-    #         print(e)
-    #         print("Push failed, retrying")
+    while not succesful_competion:
+        try:
+            print("Attempting to push to hub")
+            dataset.push_to_hub(
+                repo_id=f"{dataset_name}", max_shard_size=max_shard_size
+            )
+            succesful_competion = True
+        except Exception as e:
+            print(e)
+            print("Push failed, retrying")
 
 
 if __name__ == "__main__":
