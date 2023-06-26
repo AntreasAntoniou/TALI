@@ -105,6 +105,8 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
         repo_id=dataset_name,
         repo_type="dataset",
         token=os.environ.get("HF_TOKEN"),
+        multi_commits=True,
+        multi_commits_verbose=True,
     )
 
     # succesful_competion = False
