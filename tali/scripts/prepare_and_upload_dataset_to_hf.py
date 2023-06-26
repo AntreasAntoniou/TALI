@@ -91,15 +91,20 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
     #     max_shard_size="10GB",
     # )
 
-    api = hub.HfApi()
     print(f"Creating repo {dataset_name}")
-    api.create_repo(dataset_name, token=os.environ.get("HF_TOKEN"), exist_ok=True)
+    hub.create_repo(
+        dataset_name,
+        token=os.environ.get("HF_TOKEN"),
+        repo_type="dataset",
+        exist_ok=True,
+    )
     print(f"Uploading {dataset_path} to {dataset_name}")
-    api.upload_folder(
+    hub.upload_folder(
         folder_path=dataset_path,
         path_in_repo="data/",
         repo_id=dataset_name,
         repo_type="dataset",
+        token=os.environ.get("HF_TOKEN"),
     )
 
     # succesful_competion = False
