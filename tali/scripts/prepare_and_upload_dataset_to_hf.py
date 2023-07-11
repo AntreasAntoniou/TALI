@@ -43,6 +43,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
                 video_path_actual: pathlib.Path = pathlib.Path(temp_path)
+                print(video_path_actual)
 
                 if video_path_actual.exists():
                     item["youtube_content_video"] = open(video_path_actual, "rb").read()
