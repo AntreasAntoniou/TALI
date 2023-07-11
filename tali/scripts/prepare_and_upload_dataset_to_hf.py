@@ -28,9 +28,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
         for item in tqdm(dataset):
             video_list = item["youtube_content_video"]
-            video_list = np.random.choice(
-                video_list, int(ceil(len(video_list) * percentage))
-            )
+            video_list = video_list[:int(ceil(len(video_list) * percentage))]
             if len(video_list) == 0:
                 return None
             captions = load_json(item["youtube_subtitle_text"])
