@@ -18,10 +18,10 @@ tali_dataset_dir = "/data/"
 np.random.seed(42)
 
 
-def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB"):
+def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB", num_workers: Optional[int] = None):
     print(f"Starting preparation and upload with arguments {dataset_name}, {train_percentage}, {max_shard_size}")
     full_dataset = datasets.load_dataset(
-        "Antreas/TALI", num_proc=mp.cpu_count(), cache_dir=tali_dataset_dir
+        "Antreas/TALI", num_proc=mp.cpu_count() if num_workers is None else num_workers, cache_dir=tali_dataset_dir
     )
 
     def data_generator(set_name, percentage: float = 1.0):
