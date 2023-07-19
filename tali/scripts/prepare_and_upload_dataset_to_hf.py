@@ -1,5 +1,4 @@
 import multiprocessing as mp
-import os
 import pathlib
 from math import ceil
 from typing import Optional
