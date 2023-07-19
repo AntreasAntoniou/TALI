@@ -40,7 +40,7 @@ def main(
     )
     full_dataset = datasets.load_dataset(
         "Antreas/TALI",
-        num_proc=mp.cpu_count() if num_workers is None else num_workers,
+        num_proc=mp.cpu_count() if num_workers is None else str(num_workers),
         cache_dir=tali_dataset_dir,
     )
 
