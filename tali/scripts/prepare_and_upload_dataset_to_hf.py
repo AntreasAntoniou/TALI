@@ -2,6 +2,7 @@ import multiprocessing as mp
 import os
 import pathlib
 from math import ceil
+from typing import Optional
 
 import datasets
 import huggingface_hub as hub
@@ -18,10 +19,30 @@ tali_dataset_dir = "/data/"
 np.random.seed(42)
 
 
-def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB", num_workers: Optional[int] = None):
-    print(f"Starting preparation and upload with arguments {dataset_name}, {train_percentage}, {max_shard_size}")
+def main(
+    dataset_name: str = "Antreas/TALI",  # Name of the dataset to be uploaded to the Hub
+    train_percentage: float = 1.0,  # Percentage of training data to use
+    max_shard_size: str = "10GB",  # Maximum size of each dataset shard
+    num_workers: Optional[
+        int
+    ] = None,  # Number of worker processes to use for loading the dataset
+):
+    """
+    Prepares and uploads a dataset to the Hugging Face Hub.
+
+    Args:
+        dataset_name (str, optional): Name of the dataset to be uploaded to the Hub. Defaults to "Antreas/TALI".
+        train_percentage (float, optional): Percentage of training data to use. Defaults to 1.0.
+        max_shard_size (str, optional): Maximum size of each dataset shard. Defaults to "10GB".
+        num_workers (int, optional): Number of worker processes to use for loading the dataset. Defaults to None.
+    """
+    print(
+        f"Starting preparation and upload with arguments {dataset_name}, {train_percentage}, {max_shard_size}"
+    )
     full_dataset = datasets.load_dataset(
-        "Antreas/TALI", num_proc=mp.cpu_count() if num_workers is None else num_workers, cache_dir=tali_dataset_dir
+        "Antreas/TALI",
+        num_proc=mp.cpu_count() if num_workers is None else num_workers,
+        cache_dir=tali_dataset_dir,
     )
 
     def data_generator(set_name, percentage: float = 1.0):
@@ -29,7 +50,7 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
         for item in tqdm(dataset):
             video_list = item["youtube_content_video"]
-            video_list = video_list[:int(ceil(len(video_list) * percentage))]
+            video_list = video_list[: int(ceil(len(video_list) * percentage))]
             video_list = sorted(video_list)
             if len(video_list) == 0:
                 return None
@@ -46,7 +67,9 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
                 print(video_path_actual)
 
                 if video_path_actual.exists():
-                    item["youtube_content_video"] = open(video_path_actual, "rb").read()
+                    item["youtube_content_video"] = open(
+                        video_path_actual, "rb"
+                    ).read()
                     item["youtube_content_video_start_time"] = (
                         video_path.split("/")[-1].split("_")[1].split(".")[0]
                     )
@@ -55,7 +78,9 @@ def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB
 
     print(data_generator("train", percentage=train_percentage).__next__())
 
-    train_generator = lambda: data_generator("train", percentage=train_percentage)
+    train_generator = lambda: data_generator(
+        "train", percentage=train_percentage
+    )
     val_generator = lambda: data_generator("val")
     test_generator = lambda: data_generator("test")
 
