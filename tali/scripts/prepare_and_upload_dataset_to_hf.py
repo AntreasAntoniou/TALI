@@ -19,7 +19,7 @@ np.random.seed(42)
 
 
 def main(dataset_name="Antreas/TALI", train_percentage=1.0, max_shard_size="10GB"):
-    logger.info(f"Starting preparation and upload with arguments {dataset_name}, {train_percentage}, {max_shard_size}")
+    print(f"Starting preparation and upload with arguments {dataset_name}, {train_percentage}, {max_shard_size}")
     full_dataset = datasets.load_dataset(
         "Antreas/TALI", num_proc=mp.cpu_count(), cache_dir=tali_dataset_dir
     )
