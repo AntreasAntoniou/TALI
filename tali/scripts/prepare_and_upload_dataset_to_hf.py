@@ -22,6 +22,10 @@ tali_dataset_dir = "/data/"
 
 np.random.seed(42)
 
+from rich.console import Console
+
+console = Console()
+
 
 def main(
     dataset_name: str = "Antreas/TALI",  # Name of the dataset to be uploaded to the Hub
@@ -144,8 +148,7 @@ def main(
 
         except Exception as e:
             print("🚨 Full traceback of the exception:")
-            tb = Traceback.from_exception(e)
-            print(tb)
+            console.print_exception(show_locals=True)
             print("Push to hub failed. Retrying...")
 
 
