@@ -143,9 +143,9 @@ def main(
     while not succesful_competion:
         try:
             dataset.push_to_hub(
-                repo_id=f"{dataset_name}", max_shard_size=max_shard_size
+                repo_id=f"{dataset_name}",
+                num_shards={"train": 100, "val": 1, "test": 1},
             )
-            print("🎉 Push to hub succeeded!")
 
         except Exception as e:
             print("🚨 Full traceback of the exception:")
