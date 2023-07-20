@@ -7,11 +7,13 @@ import datasets
 import huggingface_hub as hub
 import numpy as np
 from tqdm.auto import tqdm
-from rich import print
+from rich import print, traceback
 import fire
 import yaml
 
 from tali.utils import load_json
+
+traceback.install()
 
 tali_dataset_dir = "/data/"
 
