@@ -146,6 +146,7 @@ def main(
                 repo_id=f"{dataset_name}",
                 num_shards={"train": 100, "val": 1, "test": 1},
             )
+            succesful_competion = True
 
         except Exception as e:
             print("🚨 Full traceback of the exception:")
