@@ -14,7 +14,7 @@ from datasets import logging
 import fire
 import yaml
 
-from tali.utils import load_json
+from tali.utils import get_logger, load_json
 
 traceback.install()
 
@@ -26,6 +26,8 @@ from rich.console import Console
 
 console = Console()
 logging.disable_progress_bar()
+
+logger = get_logger(__name__, set_rich=True)
 
 
 def main(
@@ -56,7 +58,7 @@ def main(
     )
 
     def data_generator(
-        set_name, percentage: float = 1.0, num_data_samples=None
+        set_name, train_percentage: float = 1.0, num_data_samples=None
     ):
         dataset = full_dataset[set_name]
         if num_data_samples is None:
@@ -65,7 +67,9 @@ def main(
             if idx >= num_data_samples:
                 break
             video_list = item["youtube_content_video"]
-            video_list = video_list[: int(ceil(len(video_list) * percentage))]
+            video_list = video_list[
+                : int(ceil(len(video_list) * train_percentage))
+            ]
             video_list = sorted(video_list)
             if len(video_list) == 0:
                 return None
@@ -79,7 +83,7 @@ def main(
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
                 video_path_actual: pathlib.Path = pathlib.Path(temp_path)
-                print(video_path_actual)
+                logger.info(video_path_actual)
 
                 if video_path_actual.exists():
                     item["youtube_content_video"] = open(
@@ -94,7 +98,9 @@ def main(
     # print(data_generator("train", percentage=data_percentage).__next__())
 
     train_generator = lambda: data_generator(
-        "train", percentage=data_percentage, num_data_samples=num_data_samples
+        "train",
+        train_percentage=data_percentage,
+        num_data_samples=num_data_samples,
     )
     val_generator = lambda: data_generator(
         "val", num_data_samples=num_data_samples
