@@ -143,7 +143,9 @@ def main(
             print("🎉 Push to hub succeeded!")
 
         except Exception as e:
-            # 📝 Print the full exception traceback with rich
+            print("🚨 Full traceback of the exception:")
+            tb = Traceback.from_exception(e)
+            print(tb)
             print("Push to hub failed. Retrying...")
 
 
