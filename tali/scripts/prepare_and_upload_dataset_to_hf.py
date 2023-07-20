@@ -45,7 +45,9 @@ def main(
         cache_dir=tali_dataset_dir,
     )
 
-    def data_generator(set_name, percentage: float = 1.0):
+    def data_generator(
+        set_name, percentage: float = 1.0, num_data_samples=None
+    ):
         dataset = full_dataset[set_name]
         if num_data_samples is None:
             num_data_samples = len(dataset)
@@ -82,7 +84,7 @@ def main(
     print(data_generator("train", percentage=data_percentage).__next__())
 
     train_generator = lambda: data_generator(
-        "train", percentage=data_percentage
+        "train", percentage=data_percentage, num_data_samples=num_data_samples
     )
     val_generator = lambda: data_generator("val")
     test_generator = lambda: data_generator("test")
