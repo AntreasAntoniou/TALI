@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 import rich
 from rich import print, traceback
 from rich.traceback import Traceback
-
+from datasets import logging
 import fire
 import yaml
 
@@ -25,6 +25,7 @@ np.random.seed(42)
 from rich.console import Console
 
 console = Console()
+logging.disable_progress_bar()
 
 
 def main(
