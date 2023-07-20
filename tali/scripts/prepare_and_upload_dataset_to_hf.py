@@ -134,19 +134,18 @@ def main(
     succesful_competion = False
 
     while not succesful_competion:
-       try:
+        try:
             dataset.push_to_hub(
                 repo_id=f"{dataset_name}", max_shard_size=max_shard_size
             )
             print("🎉 Push to hub succeeded!")
-            return  # ✅ Success, exit the function
+
         except Exception as e:
             # 📝 Print the full exception traceback with rich
             print("🚨 Full traceback of the exception:")
             Traceback().print()
             print("Push to hub failed. Retrying...")
-            
-            
+
 
 if __name__ == "__main__":
     fire.Fire(main)
