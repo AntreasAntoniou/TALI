@@ -7,8 +7,10 @@ import datasets
 import huggingface_hub as hub
 import numpy as np
 from tqdm.auto import tqdm
+import rich
 from rich import print, traceback
 from rich.traceback import Traceback
+
 import fire
 import yaml
 
@@ -142,8 +144,6 @@ def main(
 
         except Exception as e:
             # 📝 Print the full exception traceback with rich
-            print("🚨 Full traceback of the exception:")
-            Traceback().print()
             print("Push to hub failed. Retrying...")
 
 
