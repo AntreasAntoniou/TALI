@@ -37,7 +37,7 @@ def main(
         num_workers (int, optional): Number of worker processes to use for loading the dataset. Defaults to None.
     """
     print(
-        f"Starting preparation and upload with arguments {dataset_name}, {data_percentage}, {max_shard_size}"
+        f"Starting preparation and upload with arguments dataset_name: {dataset_name}, data_percentage: {data_percentage}, num_data_samples: {num_data_samples}, max_shard_size: {max_shard_size}, num_workers: {num_workers}"
     )
     full_dataset = datasets.load_dataset(
         "Antreas/TALI",
