@@ -81,7 +81,7 @@ def main(
                     item["youtube_subtitle_text"] = captions
                     yield item
 
-    print(data_generator("train", percentage=data_percentage).__next__())
+    # print(data_generator("train", percentage=data_percentage).__next__())
 
     train_generator = lambda: data_generator(
         "train", percentage=data_percentage, num_data_samples=num_data_samples
