@@ -140,10 +140,8 @@ def main(
             )
             succesful_competion = True
         except Exception as e:
-            print(
-                f"Exception: {e}, with stacktrace: {e.__traceback__}, and type: {type(e)}, and cause: {e.__cause__}"
-            )
-            print("Push failed, retrying")
+            print(e)
+            print("Push to hub failed. Retrying...")
 
 
 if __name__ == "__main__":
