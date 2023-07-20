@@ -8,6 +8,7 @@ import huggingface_hub as hub
 import numpy as np
 from tqdm.auto import tqdm
 from rich import print, traceback
+from rich.traceback import Traceback
 import fire
 import yaml
 
@@ -133,16 +134,19 @@ def main(
     succesful_competion = False
 
     while not succesful_competion:
-        try:
-            print("Attempting to push to hub")
+       try:
             dataset.push_to_hub(
                 repo_id=f"{dataset_name}", max_shard_size=max_shard_size
             )
-            succesful_competion = True
+            print("🎉 Push to hub succeeded!")
+            return  # ✅ Success, exit the function
         except Exception as e:
-            print(e)
+            # 📝 Print the full exception traceback with rich
+            print("🚨 Full traceback of the exception:")
+            Traceback().print()
             print("Push to hub failed. Retrying...")
-
+            
+            
 
 if __name__ == "__main__":
     fire.Fire(main)
