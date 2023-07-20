@@ -86,8 +86,12 @@ def main(
     train_generator = lambda: data_generator(
         "train", percentage=data_percentage, num_data_samples=num_data_samples
     )
-    val_generator = lambda: data_generator("val")
-    test_generator = lambda: data_generator("test")
+    val_generator = lambda: data_generator(
+        "val", num_data_samples=num_data_samples
+    )
+    test_generator = lambda: data_generator(
+        "test", num_data_samples=num_data_samples
+    )
 
     train_data = datasets.Dataset.from_generator(
         train_generator,
