@@ -20,7 +20,8 @@ np.random.seed(42)
 
 def main(
     dataset_name: str = "Antreas/TALI",  # Name of the dataset to be uploaded to the Hub
-    train_percentage: float = 1.0,  # Percentage of training data to use
+    data_percentage: float = 1.0,  # Percentage of training data to use
+    num_data_samples: Optional[int] = None,  # Number of data samples to use
     max_shard_size: str = "10GB",  # Maximum size of each dataset shard
     num_workers: Optional[
         int
@@ -36,7 +37,7 @@ def main(
         num_workers (int, optional): Number of worker processes to use for loading the dataset. Defaults to None.
     """
     print(
-        f"Starting preparation and upload with arguments {dataset_name}, {train_percentage}, {max_shard_size}"
+        f"Starting preparation and upload with arguments {dataset_name}, {data_percentage}, {max_shard_size}"
     )
     full_dataset = datasets.load_dataset(
         "Antreas/TALI",
@@ -46,8 +47,11 @@ def main(
 
     def data_generator(set_name, percentage: float = 1.0):
         dataset = full_dataset[set_name]
-
-        for item in tqdm(dataset):
+        if num_data_samples is None:
+            num_data_samples = len(dataset)
+        for idx, item in enumerate(tqdm(dataset)):
+            if idx >= num_data_samples:
+                break
             video_list = item["youtube_content_video"]
             video_list = video_list[: int(ceil(len(video_list) * percentage))]
             video_list = sorted(video_list)
@@ -75,10 +79,10 @@ def main(
                     item["youtube_subtitle_text"] = captions
                     yield item
 
-    print(data_generator("train", percentage=train_percentage).__next__())
+    print(data_generator("train", percentage=data_percentage).__next__())
 
     train_generator = lambda: data_generator(
-        "train", percentage=train_percentage
+        "train", percentage=data_percentage
     )
     val_generator = lambda: data_generator("val")
     test_generator = lambda: data_generator("test")
