@@ -10,7 +10,8 @@ from tqdm.auto import tqdm
 import rich
 from rich import print, traceback
 from rich.traceback import Traceback
-from datasets import logging
+from datasets import logging as datasets_logging
+from huggingface_hub import logging as hf_hub_logging
 import fire
 import yaml
 
@@ -25,7 +26,7 @@ np.random.seed(42)
 from rich.console import Console
 
 console = Console()
-logging.disable_progress_bar()
+datasets_logging.disable_progress_bar()
 
 logger = get_logger(__name__, set_rich=True)
 
