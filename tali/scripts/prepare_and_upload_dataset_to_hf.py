@@ -86,19 +86,21 @@ def main(
 
                 if video_path_actual.exists():
                     logger.info(video_path_actual)
-                    item["youtube_content_video"] = open(
-                        video_path_actual, "rb"
-                    ).read()
-                    item["youtube_content_video_start_time"] = (
+                    video_bytes = open(video_path_actual, "rb").read()
+                    video_starting_time = (
                         video_path.split("/")[-1].split("_")[1].split(".")[0]
                     )
-                    item["youtube_subtitle_text"] = captions
+                    youtube_subtitles = captions
 
                     sample = {
                         key: value
                         for key, value in item.items()
                         if key not in ["youtube_content_video"]
                     }
+
+                    sample["youtube_video_content"] = video_bytes
+                    sample["youtube_video_starting_time"] = video_starting_time
+                    sample["youtube_subtitles"] = youtube_subtitles
 
                     yield sample
 
