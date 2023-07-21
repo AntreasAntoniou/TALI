@@ -93,7 +93,14 @@ def main(
                         video_path.split("/")[-1].split("_")[1].split(".")[0]
                     )
                     item["youtube_subtitle_text"] = captions
-                    yield item
+
+                    sample = {
+                        key: value
+                        for key, value in item.items()
+                        if key not in ["youtube_content_video"]
+                    }
+
+                    yield sample
 
     # print(data_generator("train", percentage=data_percentage).__next__())
 
