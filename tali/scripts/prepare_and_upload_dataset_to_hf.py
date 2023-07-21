@@ -83,9 +83,10 @@ def main(
             for video_path in video_list:
                 temp_path = video_path.replace("/data/", tali_dataset_dir)
                 video_path_actual: pathlib.Path = pathlib.Path(temp_path)
-                logger.info(video_path_actual)
 
                 if video_path_actual.exists():
+                    logger.info(video_path_actual)
+                    logger.info(item)
                     item["youtube_content_video"] = open(
                         video_path_actual, "rb"
                     ).read()
