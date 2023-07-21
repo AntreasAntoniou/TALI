@@ -95,12 +95,16 @@ def main(
                     sample = {
                         key: value
                         for key, value in item.items()
-                        if key not in ["youtube_content_video"]
+                        if key
+                        not in [
+                            "youtube_content_video",
+                            "youtube_subtitle_text",
+                        ]
                     }
 
                     sample["youtube_video_content"] = video_bytes
                     sample["youtube_video_starting_time"] = video_starting_time
-                    sample["youtube_subtitles"] = youtube_subtitles
+                    sample["youtube_subtitle_text"] = youtube_subtitles
 
                     yield sample
 
