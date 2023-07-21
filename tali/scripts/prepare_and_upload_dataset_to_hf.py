@@ -86,7 +86,6 @@ def main(
 
                 if video_path_actual.exists():
                     logger.info(video_path_actual)
-                    logger.info(item)
                     item["youtube_content_video"] = open(
                         video_path_actual, "rb"
                     ).read()
