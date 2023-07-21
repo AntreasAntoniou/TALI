@@ -32,7 +32,7 @@ logger = get_logger(__name__, set_rich=True)
 
 def main(
     dataset_name: str = "Antreas/TALI",  # Name of the dataset to be uploaded to the Hub
-    data_percentage: float = 1.0,  # Percentage of training data to use
+    train_data_percentage: float = 1.0,  # Percentage of training data to use
     num_data_samples: Optional[int] = None,  # Number of data samples to use
     max_shard_size: str = "10GB",  # Maximum size of each dataset shard
     num_workers: Optional[
@@ -49,7 +49,7 @@ def main(
         num_workers (int, optional): Number of worker processes to use for loading the dataset. Defaults to None.
     """
     print(
-        f"Starting preparation and upload with arguments dataset_name: {dataset_name}, data_percentage: {data_percentage}, num_data_samples: {num_data_samples}, max_shard_size: {max_shard_size}, num_workers: {num_workers}"
+        f"Starting preparation and upload with arguments dataset_name: {dataset_name}, data_percentage: {train_data_percentage}, num_data_samples: {num_data_samples}, max_shard_size: {max_shard_size}, num_workers: {num_workers}"
     )
     full_dataset = datasets.load_dataset(
         "Antreas/TALI",
@@ -58,7 +58,7 @@ def main(
     )
 
     def data_generator(
-        set_name, train_percentage: float = 1.0, num_data_samples=None
+        set_name, train_data_percentage: float = 1.0, num_data_samples=None
     ):
         dataset = full_dataset[set_name]
         if num_data_samples is None:
@@ -68,7 +68,7 @@ def main(
                 break
             video_list = item["youtube_content_video"]
             video_list = video_list[
-                : int(ceil(len(video_list) * train_percentage))
+                : int(ceil(len(video_list) * train_data_percentage))
             ]
             video_list = sorted(video_list)
             if len(video_list) == 0:
@@ -112,7 +112,7 @@ def main(
 
     train_generator = lambda: data_generator(
         "train",
-        train_percentage=data_percentage,
+        train_data_percentage=train_data_percentage,
         num_data_samples=num_data_samples,
     )
     val_generator = lambda: data_generator(
