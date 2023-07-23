@@ -4,16 +4,17 @@ from math import ceil
 from typing import Optional
 
 import datasets
+import fire
 import huggingface_hub as hub
 import numpy as np
-from tqdm.auto import tqdm
 import rich
-from rich import print, traceback
-from rich.traceback import Traceback
+import yaml
 from datasets import logging as datasets_logging
 from huggingface_hub import logging as hf_hub_logging
-import fire
-import yaml
+from rich import print, traceback
+from rich.console import Console
+from rich.traceback import Traceback
+from tqdm.auto import tqdm
 
 from tali.utils import get_logger, load_json
 
@@ -23,7 +24,6 @@ tali_dataset_dir = "/data/"
 
 np.random.seed(42)
 
-from rich.console import Console
 
 console = Console()
 datasets_logging.disable_progress_bar()
@@ -87,7 +87,8 @@ def main(
 
                 if video_path_actual.exists():
                     logger.info(video_path_actual)
-                    video_bytes = open(video_path_actual, "rb").read()
+                    with open(video_path_actual, "rb") as f:
+                        video_bytes = f.read()
                     video_starting_time = (
                         video_path.split("/")[-1].split("_")[1].split(".")[0]
                     )

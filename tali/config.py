@@ -3,12 +3,12 @@ import pathlib
 from dataclasses import MISSING, dataclass
 from math import floor
 from typing import Any, Optional
-from numpy.random import beta
 
 import torch
 from accelerate import Accelerator, accelerator
 from hydra.core.config_store import ConfigStore
 from hydra_zen import MISSING, ZenField, builds, make_config
+from numpy.random import beta
 from timm.scheduler import CosineLRScheduler
 from torch.utils.data import DataLoader
 from transformers import AdamW
@@ -53,7 +53,9 @@ HFModelUploadConfig = builds(
     UploadCheckpointsToHuggingFace, populate_full_signature=True
 )
 
-hf_upload = HFModelUploadConfig(repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME)
+hf_upload = HFModelUploadConfig(
+    repo_name=EXPERIMENT_NAME, repo_owner=HF_USERNAME
+)
 
 
 accelerator_config = builds(Accelerator, populate_full_signature=True)
@@ -105,7 +107,9 @@ wit_dataset_config = WITBase.build_config(
     audio_model_name=AUDIO_MODEL_NAME,
 )
 
-dataloader_config = builds(DataLoader, dataset=None, populate_full_signature=True)
+dataloader_config = builds(
+    DataLoader, dataset=None, populate_full_signature=True
+)
 
 learner_config = builds(Learner, populate_full_signature=True)
 
@@ -195,7 +199,9 @@ class BaseConfig:
     hf_repo_path: str = "${hf_username}/${exp_name}"
     hf_cache_dir: str = "${current_experiment_dir}/repo"
     code_dir: str = (
-        os.environ["CODE_DIR"] if "CODE_DIR" in os.environ else "${hydra:runtime.cwd}"
+        os.environ["CODE_DIR"]
+        if "CODE_DIR" in os.environ
+        else "${hydra:runtime.cwd}"
     )
 
 
@@ -427,7 +433,11 @@ def collect_config_store():
         name="wit_image_text",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
         },
@@ -438,11 +448,19 @@ def collect_config_store():
         name="wit_image_text_tali_image_text",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "wit_image_text_tali_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 tali_dataset_config(
                     modality_list=[
                         ModalityTypes.wit_image.value,
@@ -465,7 +483,11 @@ def collect_config_store():
         name="wit_image_text_separate_tali_image_audio",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
@@ -492,7 +514,11 @@ def collect_config_store():
         name="wit_image_text_tali_image_audio",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
@@ -519,7 +545,11 @@ def collect_config_store():
         name="wit_image_text_tali_text_audio",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "wit_text_tali_dataset_text_audio": (
@@ -546,7 +576,11 @@ def collect_config_store():
         name="wit_image_text_separate_tali_image_video",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
@@ -573,7 +607,11 @@ def collect_config_store():
         name="wit_image_text_tali_image_video",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
@@ -600,7 +638,11 @@ def collect_config_store():
         name="wit_image_text_tali_image_text_video",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_video": (
@@ -643,7 +685,11 @@ def collect_config_store():
         name="wit_image_text_separate_tali_image_audio_video",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
@@ -702,7 +748,11 @@ def collect_config_store():
         name="wit_image_text_tali_image_audio_video",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio": (
@@ -761,7 +811,11 @@ def collect_config_store():
         name="wit_image_text_separate_tali_image_text_audio_video",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio_text": (
@@ -820,7 +874,11 @@ def collect_config_store():
         name="wit_image_text_tali_image_text_audio_video",
         node={
             "wit_dataset_image_text": (
-                int(floor(default_image_text_batch_size * batch_size_multiplier)),
+                int(
+                    floor(
+                        default_image_text_batch_size * batch_size_multiplier
+                    )
+                ),
                 wit_dataset_image_text_config,
             ),
             "tali_dataset_image_audio_text": (
@@ -899,7 +957,9 @@ def collect_config_store():
         zen_partial=True,
     )
 
-    cosine_learning_rate_scheduler_config = cosine_learning_rate_scheduler_config()
+    cosine_learning_rate_scheduler_config = (
+        cosine_learning_rate_scheduler_config()
+    )
 
     config_store.store(
         group="optimizer",
@@ -925,7 +985,9 @@ def collect_config_store():
         node=learner_config,
     )
 
-    config_store.store(group="callbacks", name="default", node=default_callbacks)
+    config_store.store(
+        group="callbacks", name="default", node=default_callbacks
+    )
 
     config_store.store(
         group="hydra",

@@ -71,7 +71,9 @@ def get_video_tensors(video_frames, image_size):
             CenterCropVideo(crop_size=(image_size, image_size)),
         ]
     )
-    output_dict = ApplyTransformToKey("video", video_transform)({"video": video_frames})
+    output_dict = ApplyTransformToKey("video", video_transform)(
+        {"video": video_frames}
+    )
     return output_dict["video"].permute(1, 0, 2, 3) / 255.0
 
 
@@ -278,10 +280,14 @@ class TALIBaseTransform:
     def __call__(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
         output_dict = []
         for i in range(len(input_dict[list(input_dict.keys())[0]])):
-            cur_dict = self.apply_transforms({k: v[i] for k, v in input_dict.items()})
+            cur_dict = self.apply_transforms(
+                {k: v[i] for k, v in input_dict.items()}
+            )
             output_dict.append(cur_dict)
 
-        output_dict = {k: [v[k] for v in output_dict] for k in output_dict[0].keys()}
+        output_dict = {
+            k: [v[k] for v in output_dict] for k in output_dict[0].keys()
+        }
 
         return output_dict
 
@@ -413,7 +419,9 @@ class TALIBaseTransform:
             "/data/",
             self.config.root_filepath,
         )
-        duration = duration_in_seconds_from_path(choose_video, modality="video")
+        duration = duration_in_seconds_from_path(
+            choose_video, modality="video"
+        )
         total_time_in_seconds = int(floor(duration))
         max_starting_second = (
             total_time_in_seconds - self.config.clip_duration_in_seconds
@@ -459,7 +467,9 @@ class TALIBaseTransform:
         return output_dict, clip_starting_second, clip_ending_second
 
     def _get_youtube_description(self, input_dict):
-        return "<ydesc> " + input_dict["youtube_description_text"] + " </ydesc>"
+        return (
+            "<ydesc> " + input_dict["youtube_description_text"] + " </ydesc>"
+        )
 
     def _get_youtube_title(self, input_dict):
         return "<ytitle> " + input_dict["youtube_title_text"] + " </ytitle>"
@@ -487,16 +497,18 @@ class TALIBaseTransform:
         )
 
 
-def generate_hierarchical_data_dict(data_dict: Dict[str, Any]) -> Dict[str, Any]:
+def generate_hierarchical_data_dict(
+    data_dict: Dict[str, Any]
+) -> Dict[str, Any]:
     modality_hierarchical_output_dict = {}
     for sub_modality_name in list(data_dict.keys()):
         modality_type = get_base_modality(sub_modality_name)
         if modality_type is None:
             if "other" not in modality_hierarchical_output_dict:
                 modality_hierarchical_output_dict["other"] = {}
-            modality_hierarchical_output_dict["other"][sub_modality_name] = data_dict[
+            modality_hierarchical_output_dict["other"][
                 sub_modality_name
-            ]
+            ] = data_dict[sub_modality_name]
             continue
 
         if modality_type not in modality_hierarchical_output_dict:
@@ -618,7 +630,9 @@ class TALIBase(Dataset):
         # Initialize variables
         self.num_dataset_samples = len(self.dataset)
         self.dummy_batch_mode = dummy_batch_mode
-        self.cache_generated_samples_in_memory = cache_generated_samples_in_memory
+        self.cache_generated_samples_in_memory = (
+            cache_generated_samples_in_memory
+        )
         self.cache_num_samples = cache_num_samples
 
         # Initialize in-memory cache
@@ -628,7 +642,9 @@ class TALIBase(Dataset):
         self.dummy_batch = None
         self.num_samples_per_episode = num_samples_per_episode
         self.num_samples = (
-            total_num_samples if total_num_samples is not None else len(self.dataset)
+            total_num_samples
+            if total_num_samples is not None
+            else len(self.dataset)
         )
         self.image_text_model_name = image_text_model_name
         self.audio_model_name = audio_model_name
@@ -650,7 +666,9 @@ class TALIBase(Dataset):
         self.image_text_processor = CLIPProcessor.from_pretrained(
             self.image_text_model_name
         )
-        self.audio_processor = WhisperProcessor.from_pretrained(self.audio_model_name)
+        self.audio_processor = WhisperProcessor.from_pretrained(
+            self.audio_model_name
+        )
 
         def image_transforms(x):
             if isinstance(x, PIL.Image.Image):
@@ -706,7 +724,9 @@ class TALIBase(Dataset):
         """
         # Return a dictionary of basic transformations
         return {
-            "image": lambda x: (x * 255).to(torch.uint8),  # Scale and convert to uint8
+            "image": lambda x: (x * 255).to(
+                torch.uint8
+            ),  # Scale and convert to uint8
             "text": lambda x: x,  # No transformation on text
             "audio": lambda x: x.view(-1),  # Flatten audio tensor
             "video": lambda x: [

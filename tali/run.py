@@ -2,11 +2,11 @@ import os
 import pathlib
 
 import neptune
+import wandb
 from rich import print
 from rich.traceback import install
 from transformers import AdamW
 
-import wandb
 from tali.ctools import get_max_supported_batch_size
 from tali.data.data import dataclass_collate
 from tali.data.data_plus import CustomConcatDataset
@@ -96,10 +96,14 @@ def run(cfg: BaseConfig) -> None:
     model = accelerator.prepare(model)
 
     if ckpt_path is not None and cfg.resume is True:
-        trainer_state = torch.load(pathlib.Path(ckpt_path) / "trainer_state.pt")
+        trainer_state = torch.load(
+            pathlib.Path(ckpt_path) / "trainer_state.pt"
+        )
         global_step = trainer_state["global_step"]
         neptune_id = (
-            trainer_state["neptune_id"] if "neptune_id" in trainer_state else None
+            trainer_state["neptune_id"]
+            if "neptune_id" in trainer_state
+            else None
         )
         experiment_tracker = neptune.init_run(
             source_files=["tali/*.py", "kubernetes/*.py"],
@@ -156,7 +160,9 @@ def run(cfg: BaseConfig) -> None:
     train_dataset = CustomConcatDataset(train_datasets)
 
     if global_step > 0:
-        train_dataset = Subset(train_dataset, range(global_step, len(train_dataset)))
+        train_dataset = Subset(
+            train_dataset, range(global_step, len(train_dataset))
+        )
 
     train_dataloader = instantiate(
         cfg.dataloader,
@@ -194,15 +200,21 @@ def run(cfg: BaseConfig) -> None:
     )
 
     decay_parameters = get_parameter_names(model, [torch.nn.LayerNorm])
-    decay_parameters = [name for name in decay_parameters if "bias" not in name]
+    decay_parameters = [
+        name for name in decay_parameters if "bias" not in name
+    ]
     optimizer_grouped_parameters = [
         {
-            "params": [p for n, p in model.named_parameters() if n in decay_parameters],
+            "params": [
+                p for n, p in model.named_parameters() if n in decay_parameters
+            ],
             "weight_decay": cfg.optimizer.weight_decay,
         },
         {
             "params": [
-                p for n, p in model.named_parameters() if n not in decay_parameters
+                p
+                for n, p in model.named_parameters()
+                if n not in decay_parameters
             ],
             "weight_decay": 0.0,
         },
@@ -239,7 +251,9 @@ def run(cfg: BaseConfig) -> None:
             experiment_tracker=experiment_tracker,
             gradient_clipping=cfg.gradient_clipping,
         ),
-        evaluator=ClassificationEvaluator(experiment_tracker=experiment_tracker),
+        evaluator=ClassificationEvaluator(
+            experiment_tracker=experiment_tracker
+        ),
         train_dataloader=train_dataloader,
         val_dataloader=val_dataloader,
         callbacks=instantiate_callbacks(cfg.callbacks),
