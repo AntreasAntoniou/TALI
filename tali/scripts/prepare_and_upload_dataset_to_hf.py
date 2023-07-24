@@ -30,6 +30,58 @@ datasets_logging.disable_progress_bar()
 
 logger = get_logger(__name__, set_rich=True)
 
+import os
+
+
+def get_file_size(file_path):
+    return os.path.getsize(file_path)
+
+
+from collections import Counter
+
+
+def get_byte_histogram(file_path):
+    with open(file_path, "rb") as f:
+        byte_content = f.read()
+    return Counter(byte_content)
+
+
+import hashlib
+
+
+def get_file_hash(file_path):
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+
+import math
+
+
+def calculate_entropy(file_path):
+    byte_histogram = get_byte_histogram(file_path)
+    entropy = 0
+    total_bytes = sum(byte_histogram.values())
+    for count in byte_histogram.values():
+        p_x = count / total_bytes
+        entropy += -p_x * math.log2(p_x)
+    return entropy
+
+
+from collections import defaultdict
+
+
+def get_byte_pair_frequency(file_path):
+    pair_freq = defaultdict(int)
+    with open(file_path, "rb") as f:
+        prev_byte = f.read(1)
+        while byte := f.read(1):
+            pair_freq[(prev_byte, byte)] += 1
+            prev_byte = byte
+    return pair_freq
+
 
 def main(
     dataset_name: str = "Antreas/TALI",  # Name of the dataset to be uploaded to the Hub
@@ -108,7 +160,16 @@ def main(
                     sample["youtube_video_starting_time"] = video_starting_time
                     sample["youtube_subtitle_text"] = youtube_subtitles
 
-                    print(video_bytes)
+                    print(f"Summary statistics for {video_path_actual}")
+                    print(f"File size: {get_file_size(video_path_actual)}")
+                    print(f"File hash: {get_file_hash(video_path_actual)}")
+                    print(f"Entropy: {calculate_entropy(video_path_actual)}")
+                    print(
+                        f"Byte histogram: {get_byte_histogram(video_path_actual)}"
+                    )
+                    print(
+                        f"Byte pair frequency: {get_byte_pair_frequency(video_path_actual)}"
+                    )
 
                     yield sample
 
