@@ -108,6 +108,8 @@ def main(
                     sample["youtube_video_starting_time"] = video_starting_time
                     sample["youtube_subtitle_text"] = youtube_subtitles
 
+                    print(video_bytes)
+
                     yield sample
 
     # print(data_generator("train", percentage=data_percentage).__next__())
