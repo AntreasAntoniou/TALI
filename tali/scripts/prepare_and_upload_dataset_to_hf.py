@@ -167,9 +167,6 @@ def main(
                     print(
                         f"Byte histogram: {get_byte_histogram(video_path_actual)}"
                     )
-                    print(
-                        f"Byte pair frequency: {get_byte_pair_frequency(video_path_actual)}"
-                    )
 
                     yield sample
 
