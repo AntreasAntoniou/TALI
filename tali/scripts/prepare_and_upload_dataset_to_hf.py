@@ -163,6 +163,22 @@ def main(
                     print(f"Entropy: {calculate_entropy(video_bytes)}")
                     print(f"Byte histogram: {get_byte_histogram(video_bytes)}")
 
+                    sample["youtube_video_size"] = get_file_size(
+                        video_path_actual
+                    )
+                    sample["youtube_video_hash"] = get_file_hash(video_bytes)
+                    sample["youtube_video_entropy"] = calculate_entropy(
+                        video_bytes
+                    )
+                    sample[
+                        "youtube_video_byte_histogram"
+                    ] = get_byte_histogram(video_bytes)
+                    sample[
+                        "youtube_video_file_path"
+                    ] = video_path_actual.as_posix()
+
+                    print(f"{video_bytes[:100]}")
+
                     yield sample
 
     # print(data_generator("train", percentage=data_percentage).__next__())
