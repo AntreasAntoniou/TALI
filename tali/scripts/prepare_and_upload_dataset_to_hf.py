@@ -160,7 +160,7 @@ def main(
                     sample["youtube_video_size"] = get_file_size(
                         video_path_actual
                     )
-                    sample["youtube_video_hash"] = get_file_hash(video_bytes)
+                    # sample["youtube_video_hash"] = get_file_hash(video_bytes)
                     # sample["youtube_video_entropy"] = calculate_entropy(
                     #     video_bytes
                     # )
@@ -171,9 +171,9 @@ def main(
                         "youtube_video_file_path"
                     ] = video_path_actual.as_posix()
 
-                    print(f"Summary statistics for {video_path_actual}")
-                    print(f"Size: {sample['youtube_video_size']}")
-                    print(f"Hash: {sample['youtube_video_hash']}")
+                    # print(f"Summary statistics for {video_path_actual}")
+                    # print(f"Size: {sample['youtube_video_size']}")
+                    # print(f"Hash: {sample['youtube_video_hash']}")
                     # print(f"Entropy: {sample['youtube_video_entropy']}")
 
                     print(f"{video_bytes[:100]}")
