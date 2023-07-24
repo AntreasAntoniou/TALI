@@ -164,9 +164,9 @@ def main(
                     sample["youtube_video_entropy"] = calculate_entropy(
                         video_bytes
                     )
-                    sample[
-                        "youtube_video_byte_histogram"
-                    ] = get_byte_histogram(video_bytes)
+                    # sample[
+                    #     "youtube_video_byte_histogram"
+                    # ] = get_byte_histogram(video_bytes)
                     sample[
                         "youtube_video_file_path"
                     ] = video_path_actual.as_posix()
@@ -175,9 +175,6 @@ def main(
                     print(f"Size: {sample['youtube_video_size']}")
                     print(f"Hash: {sample['youtube_video_hash']}")
                     print(f"Entropy: {sample['youtube_video_entropy']}")
-                    print(
-                        f"Byte histogram: {sample['youtube_video_byte_histogram']}"
-                    )
 
                     print(f"{video_bytes[:100]}")
 
