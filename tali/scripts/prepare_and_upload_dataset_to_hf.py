@@ -157,12 +157,6 @@ def main(
                     sample["youtube_video_starting_time"] = video_starting_time
                     sample["youtube_subtitle_text"] = youtube_subtitles
 
-                    print(f"Summary statistics for {video_path_actual}")
-                    print(f"File size: {get_file_size(video_path_actual)}")
-                    print(f"File hash: {get_file_hash(video_bytes)}")
-                    print(f"Entropy: {calculate_entropy(video_bytes)}")
-                    print(f"Byte histogram: {get_byte_histogram(video_bytes)}")
-
                     sample["youtube_video_size"] = get_file_size(
                         video_path_actual
                     )
@@ -176,6 +170,14 @@ def main(
                     sample[
                         "youtube_video_file_path"
                     ] = video_path_actual.as_posix()
+
+                    print(f"Summary statistics for {video_path_actual}")
+                    print(f"Size: {sample['youtube_video_size']}")
+                    print(f"Hash: {sample['youtube_video_hash']}")
+                    print(f"Entropy: {sample['youtube_video_entropy']}")
+                    print(
+                        f"Byte histogram: {sample['youtube_video_byte_histogram']}"
+                    )
 
                     print(f"{video_bytes[:100]}")
 
