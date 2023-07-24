@@ -40,28 +40,25 @@ def get_file_size(file_path):
 from collections import Counter
 
 
-def get_byte_histogram(file_path):
-    with open(file_path, "rb") as f:
-        byte_content = f.read()
+def get_byte_histogram(byte_content):
     return Counter(byte_content)
 
 
 import hashlib
 
 
-def get_file_hash(file_path):
+def get_file_hash(byte_content: bytes):
     sha256_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
+
+    sha256_hash.update(byte_content)
     return sha256_hash.hexdigest()
 
 
 import math
 
 
-def calculate_entropy(file_path):
-    byte_histogram = get_byte_histogram(file_path)
+def calculate_entropy(byte_content):
+    byte_histogram = get_byte_histogram(byte_content)
     entropy = 0
     total_bytes = sum(byte_histogram.values())
     for count in byte_histogram.values():
@@ -162,11 +159,9 @@ def main(
 
                     print(f"Summary statistics for {video_path_actual}")
                     print(f"File size: {get_file_size(video_path_actual)}")
-                    print(f"File hash: {get_file_hash(video_path_actual)}")
-                    print(f"Entropy: {calculate_entropy(video_path_actual)}")
-                    print(
-                        f"Byte histogram: {get_byte_histogram(video_path_actual)}"
-                    )
+                    print(f"File hash: {get_file_hash(video_bytes)}")
+                    print(f"Entropy: {calculate_entropy(video_bytes)}")
+                    print(f"Byte histogram: {get_byte_histogram(video_bytes)}")
 
                     yield sample
 
