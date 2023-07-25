@@ -13,10 +13,8 @@ import fire
 import numpy as np
 import yaml
 from datasets import logging as datasets_logging
-from huggingface_hub import logging as hf_hub_logging
 from rich import print, traceback
 from rich.console import Console
-from rich.traceback import Traceback
 from tqdm.auto import tqdm
 
 from tali.utils import get_logger, load_json
