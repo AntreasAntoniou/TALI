@@ -1,13 +1,16 @@
+import hashlib
+import math
 import multiprocessing as mp
+import os
 import pathlib
+from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from math import ceil
 from typing import Optional
 
 import datasets
 import fire
-import huggingface_hub as hub
 import numpy as np
-import rich
 import yaml
 from datasets import logging as datasets_logging
 from huggingface_hub import logging as hf_hub_logging
@@ -30,21 +33,13 @@ datasets_logging.disable_progress_bar()
 
 logger = get_logger(__name__, set_rich=True)
 
-import os
-
 
 def get_file_size(file_path):
     return os.path.getsize(file_path)
 
 
-from collections import Counter
-
-
 def get_byte_histogram(byte_content):
     return Counter(byte_content)
-
-
-import hashlib
 
 
 def get_file_hash(byte_content: bytes):
@@ -52,9 +47,6 @@ def get_file_hash(byte_content: bytes):
 
     sha256_hash.update(byte_content)
     return sha256_hash.hexdigest()
-
-
-import math
 
 
 def calculate_entropy(byte_content):
@@ -65,10 +57,6 @@ def calculate_entropy(byte_content):
         p_x = count / total_bytes
         entropy += -p_x * math.log2(p_x)
     return entropy
-
-
-from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
 
 
 def get_byte_pair_frequency(file_path):
@@ -134,11 +122,11 @@ def main(
     print(
         f"Starting preparation and upload with arguments dataset_name: {dataset_name}, data_percentage: {train_data_percentage}, num_data_samples: {num_data_samples}, max_shard_size: {max_shard_size}, num_workers: {num_workers}"
     )
-    full_dataset = datasets.load_dataset(
+    full_dataset: datasets.DatasetDict = datasets.load_dataset(
         "Antreas/TALI",
         num_proc=mp.cpu_count() if num_workers is None else int(num_workers),
         cache_dir=tali_dataset_dir,
-    )
+    )  # type: ignore
 
     def data_generator(
         set_name, train_data_percentage: float = 1.0, num_data_samples=None
@@ -149,14 +137,14 @@ def main(
         for idx, item in enumerate(tqdm(dataset)):
             if idx >= num_data_samples:
                 break
-            video_list = item["youtube_content_video"]
+            video_list = item["youtube_content_video"]  # type: ignore
             video_list = video_list[
                 : int(ceil(len(video_list) * train_data_percentage))
             ]
             video_list = sorted(video_list)
             if len(video_list) == 0:
                 return None
-            captions = load_json(item["youtube_subtitle_text"])
+            captions = load_json(item["youtube_subtitle_text"])  # type: ignore
 
             new_captions = {}
             for key, value in captions.items():
@@ -233,7 +221,7 @@ def main(
             succesful_competion = True
 
         except Exception as e:
-            print("🚨 Full traceback of the exception:")
+            print(f"🚨 Full traceback of the exception: {e}")
             console.print_exception(show_locals=True)
             print("Push to hub failed. Retrying...")
 
