@@ -68,6 +68,7 @@ def calculate_entropy(byte_content):
 
 
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 
 
 def get_byte_pair_frequency(file_path):
@@ -78,6 +79,38 @@ def get_byte_pair_frequency(file_path):
             pair_freq[(prev_byte, byte)] += 1
             prev_byte = byte
     return pair_freq
+
+
+def process_video(video_path, youtube_subtitles, item):
+    temp_path = video_path.replace("/data/", tali_dataset_dir)
+    video_path_actual: pathlib.Path = pathlib.Path(temp_path)
+
+    if video_path_actual.exists():
+        logger.info(video_path_actual)
+        with open(video_path_actual, "rb") as f:
+            video_bytes = f.read()
+        video_starting_time = (
+            video_path.split("/")[-1].split("_")[1].split(".")[0]
+        )
+
+        sample = {
+            key: value
+            for key, value in item.items()
+            if key
+            not in [
+                "youtube_content_video",
+                "youtube_subtitle_text",
+            ]
+        }
+
+        sample["youtube_video_content"] = video_bytes
+        sample["youtube_video_starting_time"] = video_starting_time
+        sample["youtube_subtitle_text"] = youtube_subtitles
+
+        sample["youtube_video_size"] = get_file_size(video_path_actual)
+        sample["youtube_video_file_path"] = video_path_actual.as_posix()
+
+        return sample
 
 
 def main(
@@ -130,55 +163,17 @@ def main(
                 new_captions[str(key)] = "".join(value)
             captions = yaml.dump(new_captions)
 
-            for video_path in video_list:
-                temp_path = video_path.replace("/data/", tali_dataset_dir)
-                video_path_actual: pathlib.Path = pathlib.Path(temp_path)
+            with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
+                for sample in executor.map(
+                    process_video,
+                    video_list,
+                    [captions] * len(video_list),
+                    [item] * len(video_list),
+                ):
+                    if sample is not None:
+                        yield sample
 
-                if video_path_actual.exists():
-                    logger.info(video_path_actual)
-                    with open(video_path_actual, "rb") as f:
-                        video_bytes = f.read()
-                    video_starting_time = (
-                        video_path.split("/")[-1].split("_")[1].split(".")[0]
-                    )
-                    youtube_subtitles = captions
-
-                    sample = {
-                        key: value
-                        for key, value in item.items()
-                        if key
-                        not in [
-                            "youtube_content_video",
-                            "youtube_subtitle_text",
-                        ]
-                    }
-
-                    sample["youtube_video_content"] = video_bytes
-                    sample["youtube_video_starting_time"] = video_starting_time
-                    sample["youtube_subtitle_text"] = youtube_subtitles
-
-                    sample["youtube_video_size"] = get_file_size(
-                        video_path_actual
-                    )
-                    # sample["youtube_video_hash"] = get_file_hash(video_bytes)
-                    # sample["youtube_video_entropy"] = calculate_entropy(
-                    #     video_bytes
-                    # )
-                    # sample[
-                    #     "youtube_video_byte_histogram"
-                    # ] = get_byte_histogram(video_bytes)
-                    sample[
-                        "youtube_video_file_path"
-                    ] = video_path_actual.as_posix()
-
-                    # print(f"Summary statistics for {video_path_actual}")
-                    # print(f"Size: {sample['youtube_video_size']}")
-                    # print(f"Hash: {sample['youtube_video_hash']}")
-                    # print(f"Entropy: {sample['youtube_video_entropy']}")
-
-                    yield sample
-
-    # print(data_generator("train", percentage=data_percentage).__next__())
+        # print(data_generator("train", percentage=data_percentage).__next__())
 
     train_generator = lambda: data_generator(
         "train",
