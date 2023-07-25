@@ -176,8 +176,6 @@ def main(
                     # print(f"Hash: {sample['youtube_video_hash']}")
                     # print(f"Entropy: {sample['youtube_video_entropy']}")
 
-                    print(f"{video_bytes[:100]}")
-
                     yield sample
 
     # print(data_generator("train", percentage=data_percentage).__next__())
