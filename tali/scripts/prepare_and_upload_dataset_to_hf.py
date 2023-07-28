@@ -214,7 +214,7 @@ def main(
         try:
             dataset.push_to_hub(
                 repo_id=f"{dataset_name}",
-                num_shards={"train": 100, "val": 1, "test": 1},
+                num_shards={"train": 400, "val": 1, "test": 1},
             )
             succesful_competion = True
 
