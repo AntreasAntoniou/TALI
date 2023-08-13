@@ -1,13 +1,17 @@
 import json
+import pathlib
 
 import pyarrow as pa
 from datasets import Dataset
 
-train_data_dir = "/data/generator/default-e3d897e3cfea555e/0.0.0/"
+train_data_dir = pathlib.Path(
+    "/data/generator/default-e3d897e3cfea555e/0.0.0/"
+)
 
 arrow_files = [
     f"{train_data_dir}/{file_name}"
-    for file_name in ["file1.arrow", "file2.arrow"]
+    for file_name in train_data_dir.iterdir()
+    if file_name.suffix == ".arrow"
 ]  # Add your Arrow file names here
 
 arrow_tables = [
