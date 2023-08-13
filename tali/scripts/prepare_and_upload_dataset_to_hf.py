@@ -173,12 +173,12 @@ def main(
     #     "test", num_data_samples=num_data_samples
     # )
 
-    # train_data = datasets.Dataset.from_generator(
-    #     train_generator,
-    #     num_proc=mp.cpu_count(),
-    #     writer_batch_size=5000,
-    #     cache_dir=tali_dataset_dir,
-    # )
+    train_data = datasets.Dataset.from_generator(
+        train_generator,
+        num_proc=mp.cpu_count(),
+        writer_batch_size=5000,
+        cache_dir=tali_dataset_dir,
+    )
 
     # val_data = datasets.Dataset.from_generator(
     #     val_generator,
@@ -197,9 +197,19 @@ def main(
     val_data_dir = "/data/generator/default-344765592abf12ec/0.0.0/"
     test_data_dir = "/data/generator/default-eb76b39d4609a487/0.0.0/"
 
-    train_data = datasets.Dataset.load_from_disk(train_data_dir)
-    val_data = datasets.Dataset.load_from_disk(val_data_dir)
-    test_data = datasets.Dataset.load_from_disk(test_data_dir)
+    # train_data = datasets.Dataset.load_from_disk(train_data_dir)
+    # val_data = datasets.Dataset.load_from_disk(val_data_dir)
+    # test_data = datasets.Dataset.load_from_disk(test_data_dir)
+
+    train_data = datasets.load_dataset(
+        path=dataset_name, data_dir=train_data_dir, cache_dir=train_data_dir
+    )
+    val_data = datasets.load_dataset(
+        path=dataset_name, data_dir=val_data_dir, cache_dir=val_data_dir
+    )
+    test_data = datasets.load_dataset(
+        path=dataset_name, data_dir=test_data_dir, cache_dir=test_data_dir
+    )
 
     print(f"Pushing {dataset_name} to hub")
 
