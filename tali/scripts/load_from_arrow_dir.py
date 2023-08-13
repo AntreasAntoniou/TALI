@@ -21,7 +21,7 @@ arrow_tables = []
 
 for arrow_file in arrow_files:
     print(f"Loading {arrow_file}")
-    arrow_tables.append(pa.ipc.open_file(arrow_file).read_all())
+    arrow_tables.append(pa.parquet.read_table(arrow_file))
 
 concatenated_table = pa.concat_tables(arrow_tables)
 
