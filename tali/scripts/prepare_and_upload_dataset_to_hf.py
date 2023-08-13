@@ -126,73 +126,80 @@ def main(
         cache_dir=tali_dataset_dir,
     )  # type: ignore
 
-    def data_generator(
-        set_name, train_data_percentage: float = 1.0, num_data_samples=None
-    ):
-        dataset = full_dataset[set_name]
-        if num_data_samples is None:
-            num_data_samples = len(dataset)
-        for idx, item in enumerate(tqdm(dataset)):
-            if idx >= num_data_samples:
-                break
-            video_list = item["youtube_content_video"]  # type: ignore
-            video_list = video_list[
-                : int(ceil(len(video_list) * train_data_percentage))
-            ]
-            video_list = sorted(video_list)
-            if len(video_list) == 0:
-                return None
-            captions = load_json(item["youtube_subtitle_text"])  # type: ignore
+    # def data_generator(
+    #     set_name, train_data_percentage: float = 1.0, num_data_samples=None
+    # ):
+    #     dataset = full_dataset[set_name]
+    #     if num_data_samples is None:
+    #         num_data_samples = len(dataset)
+    #     for idx, item in enumerate(tqdm(dataset)):
+    #         if idx >= num_data_samples:
+    #             break
+    #         video_list = item["youtube_content_video"]  # type: ignore
+    #         video_list = video_list[
+    #             : int(ceil(len(video_list) * train_data_percentage))
+    #         ]
+    #         video_list = sorted(video_list)
+    #         if len(video_list) == 0:
+    #             return None
+    #         captions = load_json(item["youtube_subtitle_text"])  # type: ignore
 
-            new_captions = {}
-            for key, value in captions.items():
-                new_captions[str(key)] = "".join(value)
-            captions = yaml.dump(new_captions)
+    #         new_captions = {}
+    #         for key, value in captions.items():
+    #             new_captions[str(key)] = "".join(value)
+    #         captions = yaml.dump(new_captions)
 
-            with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
-                for sample in executor.map(
-                    process_video,
-                    video_list,
-                    [captions] * len(video_list),
-                    [item] * len(video_list),
-                ):
-                    if sample is not None:
-                        yield sample
+    #         with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
+    #             for sample in executor.map(
+    #                 process_video,
+    #                 video_list,
+    #                 [captions] * len(video_list),
+    #                 [item] * len(video_list),
+    #             ):
+    #                 if sample is not None:
+    #                     yield sample
 
-        # print(data_generator("train", percentage=data_percentage).__next__())
+    #     # print(data_generator("train", percentage=data_percentage).__next__())
 
-    train_generator = lambda: data_generator(
-        "train",
-        train_data_percentage=train_data_percentage,
-        num_data_samples=num_data_samples,
-    )
-    val_generator = lambda: data_generator(
-        "val", num_data_samples=num_data_samples
-    )
-    test_generator = lambda: data_generator(
-        "test", num_data_samples=num_data_samples
-    )
+    # train_generator = lambda: data_generator(
+    #     "train",
+    #     train_data_percentage=train_data_percentage,
+    #     num_data_samples=num_data_samples,
+    # )
+    # val_generator = lambda: data_generator(
+    #     "val", num_data_samples=num_data_samples
+    # )
+    # test_generator = lambda: data_generator(
+    #     "test", num_data_samples=num_data_samples
+    # )
 
-    train_data = datasets.Dataset.from_generator(
-        train_generator,
-        num_proc=mp.cpu_count(),
-        writer_batch_size=5000,
-        cache_dir=tali_dataset_dir,
-    )
+    # train_data = datasets.Dataset.from_generator(
+    #     train_generator,
+    #     num_proc=mp.cpu_count(),
+    #     writer_batch_size=5000,
+    #     cache_dir=tali_dataset_dir,
+    # )
 
-    val_data = datasets.Dataset.from_generator(
-        val_generator,
-        writer_batch_size=5000,
-        num_proc=mp.cpu_count(),
-        cache_dir=tali_dataset_dir,
-    )
+    # val_data = datasets.Dataset.from_generator(
+    #     val_generator,
+    #     writer_batch_size=5000,
+    #     num_proc=mp.cpu_count(),
+    #     cache_dir=tali_dataset_dir,
+    # )
 
-    test_data = datasets.Dataset.from_generator(
-        test_generator,
-        writer_batch_size=5000,
-        num_proc=mp.cpu_count(),
-        cache_dir=tali_dataset_dir,
-    )
+    # test_data = datasets.Dataset.from_generator(
+    #     test_generator,
+    #     writer_batch_size=5000,
+    #     num_proc=mp.cpu_count(),
+    #     cache_dir=tali_dataset_dir,
+    # )
+    train_data_dir = "/data/generator/default-e3d897e3cfea555e"
+    val_data_dir = "/data/generator/default-344765592abf12ec"
+    test_data_dir = "/data/generator/default-eb76b39d4609a487"
+
+    train_data = datasets.Dataset.load_from_disk(train_data_dir)
+    val_data = datasets.Dataset.load_from_disk(val_data_dir)
+    test_data = datasets.Dataset.load_from_disk(test_data_dir)
 
     print(f"Pushing {dataset_name} to hub")
 
