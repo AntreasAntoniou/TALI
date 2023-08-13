@@ -120,11 +120,11 @@ def main(
     print(
         f"Starting preparation and upload with arguments dataset_name: {dataset_name}, data_percentage: {train_data_percentage}, num_data_samples: {num_data_samples}, max_shard_size: {max_shard_size}, num_workers: {num_workers}"
     )
-    full_dataset: datasets.DatasetDict = datasets.load_dataset(
-        "Antreas/TALI",
-        num_proc=mp.cpu_count() if num_workers is None else int(num_workers),
-        cache_dir=tali_dataset_dir,
-    )  # type: ignore
+    # full_dataset: datasets.DatasetDict = datasets.load_dataset(
+    #     "Antreas/TALI",
+    #     num_proc=mp.cpu_count() if num_workers is None else int(num_workers),
+    #     cache_dir=tali_dataset_dir,
+    # )  # type: ignore
 
     # def data_generator(
     #     set_name, train_data_percentage: float = 1.0, num_data_samples=None
@@ -201,15 +201,9 @@ def main(
     # val_data = datasets.Dataset.load_from_disk(val_data_dir)
     # test_data = datasets.Dataset.load_from_disk(test_data_dir)
 
-    train_data = datasets.load_dataset(
-        path=dataset_name, data_dir=train_data_dir, cache_dir=train_data_dir
-    )
-    val_data = datasets.load_dataset(
-        path=dataset_name, data_dir=val_data_dir, cache_dir=val_data_dir
-    )
-    test_data = datasets.load_dataset(
-        path=dataset_name, data_dir=test_data_dir, cache_dir=test_data_dir
-    )
+    train_data = datasets.load_from_disk(train_data_dir)
+    val_data = datasets.load_from_disk(val_data_dir)
+    test_data = datasets.load_from_disk(test_data_dir)
 
     print(f"Pushing {dataset_name} to hub")
 
