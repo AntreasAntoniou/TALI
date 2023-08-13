@@ -3,16 +3,19 @@ import pathlib
 
 import pyarrow as pa
 from datasets import Dataset
+from rich import print
 
 train_data_dir = pathlib.Path(
     "/data/generator/default-e3d897e3cfea555e/0.0.0/"
 )
+print(f"Loading data from {train_data_dir}")
+arrow_files = []
 
-arrow_files = [
-    file_name
-    for file_name in train_data_dir.iterdir()
-    if file_name.suffix == ".arrow"
-]  # Add your Arrow file names here
+for file_name in train_data_dir.iterdir():
+    if not file_name.name.endswith(".arrow"):
+        continue
+    print(file_name)
+    arrow_files.append(file_name)
 
 arrow_tables = [
     pa.ipc.open_file(file_path).read_all() for file_path in arrow_files
