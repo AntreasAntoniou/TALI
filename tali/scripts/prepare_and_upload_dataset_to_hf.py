@@ -173,12 +173,12 @@ def main(
     #     "test", num_data_samples=num_data_samples
     # )
 
-    train_data = datasets.Dataset.from_generator(
-        train_generator,
-        num_proc=mp.cpu_count(),
-        writer_batch_size=5000,
-        cache_dir=tali_dataset_dir,
-    )
+    # train_data = datasets.Dataset.from_generator(
+    #     train_generator,
+    #     num_proc=mp.cpu_count(),
+    #     writer_batch_size=5000,
+    #     cache_dir=tali_dataset_dir,
+    # )
 
     # val_data = datasets.Dataset.from_generator(
     #     val_generator,
