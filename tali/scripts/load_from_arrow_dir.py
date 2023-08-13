@@ -17,9 +17,12 @@ for file_name in train_data_dir.iterdir():
     print(file_name)
     arrow_files.append(file_name)
 
-arrow_tables = [
-    pa.ipc.open_file(file_path).read_all() for file_path in arrow_files
-]
+arrow_tables = []
+
+for arrow_file in arrow_files:
+    print(f"Loading {arrow_file}")
+    arrow_tables.append(pa.ipc.open_file(arrow_file).read_all())
+
 concatenated_table = pa.concat_tables(arrow_tables)
 
 train_data = Dataset.from_parquet(concatenated_table)
