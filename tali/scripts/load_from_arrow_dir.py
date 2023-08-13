@@ -9,7 +9,7 @@ train_data_dir = pathlib.Path(
 )
 
 arrow_files = [
-    f"{train_data_dir}/{file_name}"
+    file_name
     for file_name in train_data_dir.iterdir()
     if file_name.suffix == ".arrow"
 ]  # Add your Arrow file names here
