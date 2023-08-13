@@ -193,9 +193,9 @@ def main(
     #     num_proc=mp.cpu_count(),
     #     cache_dir=tali_dataset_dir,
     # )
-    train_data_dir = "/data/generator/default-e3d897e3cfea555e/0.0.0/generator-train-00052-of-00211.arrow"
-    val_data_dir = "/data/generator/default-344765592abf12ec/0.0.0/generator-train-00052-of-00211.arrow"
-    test_data_dir = "/data/generator/default-eb76b39d4609a487/0.0.0/generator-train-00052-of-00211.arrow"
+    train_data_dir = "/data/generator/default-e3d897e3cfea555e/0.0.0/"
+    val_data_dir = "/data/generator/default-344765592abf12ec/0.0.0/"
+    test_data_dir = "/data/generator/default-eb76b39d4609a487/0.0.0/"
 
     # train_data = datasets.Dataset.load_from_disk(train_data_dir)
     # val_data = datasets.Dataset.load_from_disk(val_data_dir)
