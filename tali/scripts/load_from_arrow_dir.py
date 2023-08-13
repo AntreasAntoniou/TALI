@@ -5,6 +5,7 @@ import pyarrow as pa
 from datasets import Dataset
 from rich import print
 
+Dataset.from_generator
 train_data_dir = pathlib.Path(
     "/data/generator/default-e3d897e3cfea555e/0.0.0/"
 )
