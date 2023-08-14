@@ -194,14 +194,16 @@ def main(
         cache_dir=tali_dataset_dir,
     )
 
-    train_data.save_to_disk(f"{tali_dataset_dir}/train")
-    val_data.save_to_disk(f"{tali_dataset_dir}/val")
-    test_data.save_to_disk(f"{tali_dataset_dir}/test")
-
     print(f"Pushing {dataset_name} to hub")
 
     dataset = datasets.DatasetDict(
         {"train": train_data, "val": val_data, "test": test_data}
+    )
+
+    dataset.save_to_disk(
+        f"{tali_dataset_dir}/{dataset_name}",
+        num_proc=mp.cpu_count(),
+        num_shards={"train": 400, "val": 10, "test": 10},
     )
     # dataset_path = pathlib.Path(tali_dataset_dir) / dataset_name
     # dataset.save_to_disk(
