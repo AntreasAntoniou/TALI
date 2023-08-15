@@ -27,7 +27,7 @@ np.random.seed(42)
 
 
 console = Console()
-datasets_logging.disable_progress_bar()
+# datasets_logging.disable_progress_bar()
 
 logger = get_logger(__name__, set_rich=True)
 
