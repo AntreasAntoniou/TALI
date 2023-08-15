@@ -23,12 +23,6 @@ traceback.install()
 
 tali_dataset_dir = "/data/"
 
-np.random.seed(42)
-
-
-console = Console()
-# datasets_logging.disable_progress_bar()
-
 logger = get_logger(__name__, set_rich=True)
 
 
@@ -53,27 +47,19 @@ def main(
     print(
         f"Starting preparation and upload with arguments dataset_name: {dataset_name}, data_percentage: {train_data_percentage}, num_data_samples: {num_data_samples}, max_shard_size: {max_shard_size}, num_workers: {num_workers}"
     )
+
     dataset_dir = pathlib.Path(f"{tali_dataset_dir}/{dataset_name}")
-    dataset = datasets.load_from_disk(dataset_dir)
+    dataset = datasets.save_to_disk(dataset_dir)
 
-    dataset["train"].to_parquet(f"{dataset_dir}/train-parquet/")
-    dataset["val"].to_parquet(f"{dataset_dir}/val-parquet/")
-    dataset["test"].to_parquet(f"{dataset_dir}/test-parquet/")
-
-    succesful_competion = False
-
-    # while not succesful_competion:
-    #     try:
-    #         dataset.push_to_hub(
-    #             repo_id=f"{dataset_name}",
-    #             num_shards={"train": 400, "val": 1, "test": 1},
-    #         )
-    #         succesful_competion = True
-
-    #     except Exception as e:
-    #         print(f"🚨 Full traceback of the exception: {e}")
-    #         console.print_exception(show_locals=True)
-    #         print("Push to hub failed. Retrying...")
+    dataset["train"].to_parquet(
+        f"{dataset_dir}/train-parquet/", num_proc=mp.cpu_count()
+    )
+    dataset["val"].to_parquet(
+        f"{dataset_dir}/val-parquet/", num_proc=mp.cpu_count()
+    )
+    dataset["test"].to_parquet(
+        f"{dataset_dir}/test-parquet/", num_proc=mp.cpu_count()
+    )
 
 
 if __name__ == "__main__":
