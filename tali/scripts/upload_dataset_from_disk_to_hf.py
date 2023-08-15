@@ -123,7 +123,9 @@ def main(
     dataset_dir = pathlib.Path(f"{tali_dataset_dir}/{dataset_name}")
     dataset = datasets.load_from_disk(dataset_dir)
 
-    dataset.to_parquet(dataset_dir)
+    dataset["train"].to_parquet(f"{dataset_dir}/train/")
+    dataset["val"].to_parquet(f"{dataset_dir}/val/")
+    dataset["test"].to_parquet(f"{dataset_dir}/test/")
 
     succesful_competion = False
 
