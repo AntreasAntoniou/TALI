@@ -32,73 +32,6 @@ console = Console()
 logger = get_logger(__name__, set_rich=True)
 
 
-def get_file_size(file_path):
-    return os.path.getsize(file_path)
-
-
-def get_byte_histogram(byte_content):
-    return Counter(byte_content)
-
-
-def get_file_hash(byte_content: bytes):
-    sha256_hash = hashlib.sha256()
-
-    sha256_hash.update(byte_content)
-    return sha256_hash.hexdigest()
-
-
-def calculate_entropy(byte_content):
-    byte_histogram = get_byte_histogram(byte_content)
-    entropy = 0
-    total_bytes = sum(byte_histogram.values())
-    for count in byte_histogram.values():
-        p_x = count / total_bytes
-        entropy += -p_x * math.log2(p_x)
-    return entropy
-
-
-def get_byte_pair_frequency(file_path):
-    pair_freq = defaultdict(int)
-    with open(file_path, "rb") as f:
-        prev_byte = f.read(1)
-        while byte := f.read(1):
-            pair_freq[(prev_byte, byte)] += 1
-            prev_byte = byte
-    return pair_freq
-
-
-def process_video(video_path, youtube_subtitles, item):
-    temp_path = video_path.replace("/data/", tali_dataset_dir)
-    video_path_actual: pathlib.Path = pathlib.Path(temp_path)
-
-    if video_path_actual.exists():
-        logger.info(video_path_actual)
-        with open(video_path_actual, "rb") as f:
-            video_bytes = f.read()
-        video_starting_time = (
-            video_path.split("/")[-1].split("_")[1].split(".")[0]
-        )
-
-        sample = {
-            key: value
-            for key, value in item.items()
-            if key
-            not in [
-                "youtube_content_video",
-                "youtube_subtitle_text",
-            ]
-        }
-
-        sample["youtube_video_content"] = video_bytes
-        sample["youtube_video_starting_time"] = video_starting_time
-        sample["youtube_subtitle_text"] = youtube_subtitles
-
-        sample["youtube_video_size"] = get_file_size(video_path_actual)
-        sample["youtube_video_file_path"] = video_path_actual.as_posix()
-
-        return sample
-
-
 def main(
     dataset_name: str = "Antreas/TALI",  # Name of the dataset to be uploaded to the Hub
     train_data_percentage: float = 1.0,  # Percentage of training data to use
@@ -123,9 +56,9 @@ def main(
     dataset_dir = pathlib.Path(f"{tali_dataset_dir}/{dataset_name}")
     dataset = datasets.load_from_disk(dataset_dir)
 
-    dataset["train"].to_parquet(f"{dataset_dir}/train.parquet")
-    dataset["val"].to_parquet(f"{dataset_dir}/val.parquet")
-    dataset["test"].to_parquet(f"{dataset_dir}/test.parquet")
+    dataset["train"].to_parquet(f"{dataset_dir}/train-parquet/")
+    dataset["val"].to_parquet(f"{dataset_dir}/val-parquet/")
+    dataset["test"].to_parquet(f"{dataset_dir}/test-parquet/")
 
     succesful_competion = False
 
