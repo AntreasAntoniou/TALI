@@ -51,15 +51,9 @@ def main(
     dataset_dir = pathlib.Path(f"{tali_dataset_dir}/{dataset_name}")
     dataset = datasets.load_from_disk(dataset_dir)
 
-    dataset["train"].to_parquet(
-        f"{dataset_dir}/train.parquet", num_proc=mp.cpu_count()
-    )
-    dataset["val"].to_parquet(
-        f"{dataset_dir}/val.parquet", num_proc=mp.cpu_count()
-    )
-    dataset["test"].to_parquet(
-        f"{dataset_dir}/test.parquet", num_proc=mp.cpu_count()
-    )
+    dataset["train"].to_parquet(f"{dataset_dir}/train.parquet")
+    dataset["val"].to_parquet(f"{dataset_dir}/val.parquet")
+    dataset["test"].to_parquet(f"{dataset_dir}/test.parquet")
 
 
 if __name__ == "__main__":
