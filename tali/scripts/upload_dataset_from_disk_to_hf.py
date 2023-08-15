@@ -49,7 +49,7 @@ def main(
     )
 
     dataset_dir = pathlib.Path(f"{tali_dataset_dir}/{dataset_name}")
-    dataset = datasets.save_to_disk(dataset_dir)
+    dataset = datasets.load_from_disk(dataset_dir)
 
     dataset["train"].to_parquet(
         f"{dataset_dir}/train-parquet/", num_proc=mp.cpu_count()
