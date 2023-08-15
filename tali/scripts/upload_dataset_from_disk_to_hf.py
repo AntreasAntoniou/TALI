@@ -52,13 +52,13 @@ def main(
     dataset = datasets.load_from_disk(dataset_dir)
 
     dataset["train"].to_parquet(
-        f"{dataset_dir}/train-parquet/", num_proc=mp.cpu_count()
+        f"{dataset_dir}/train.parquet", num_proc=mp.cpu_count()
     )
     dataset["val"].to_parquet(
-        f"{dataset_dir}/val-parquet/", num_proc=mp.cpu_count()
+        f"{dataset_dir}/val.parquet", num_proc=mp.cpu_count()
     )
     dataset["test"].to_parquet(
-        f"{dataset_dir}/test-parquet/", num_proc=mp.cpu_count()
+        f"{dataset_dir}/test.parquet", num_proc=mp.cpu_count()
     )
 
 
