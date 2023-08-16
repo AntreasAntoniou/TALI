@@ -59,7 +59,9 @@ def main(
     dataset = datasets.DatasetDict(
         {"train": train_dataset, "val": val_dataset, "test": test_dataset}
     )
-    dataset.push_to_hub(repo_id=dataset_name)
+    dataset.push_to_hub(
+        repo_id=dataset_name, num_shards={"train": 400, "val": 10, "test": 10}
+    )
     # dataset = datasets.load_from_disk(dataset_dir)
 
     # dataset["train"].to_parquet(f"{dataset_dir}/train.parquet")
