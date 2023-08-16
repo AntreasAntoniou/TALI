@@ -25,6 +25,8 @@ tali_dataset_dir = "/data/"
 
 logger = get_logger(__name__, set_rich=True)
 
+import huggingface_hub as hf_hub
+
 
 def main(
     dataset_name: str = "Antreas/TALI",  # Name of the dataset to be uploaded to the Hub
@@ -49,11 +51,30 @@ def main(
     )
 
     dataset_dir = pathlib.Path(f"{tali_dataset_dir}/{dataset_name}")
-    dataset = datasets.load_from_disk(dataset_dir)
 
-    dataset["train"].to_parquet(f"{dataset_dir}/train.parquet")
-    dataset["val"].to_parquet(f"{dataset_dir}/val.parquet")
-    dataset["test"].to_parquet(f"{dataset_dir}/test.parquet")
+    hf_hub.upload_folder(
+        repo_id=dataset_name,
+        folder_path=dataset_dir / "test/",
+        path_in_repo="test/",
+        use_auth_token=True,
+    )
+    hf_hub.upload_folder(
+        repo_id=dataset_name,
+        folder_path=dataset_dir / "val/",
+        path_in_repo="val/",
+        use_auth_token=True,
+    )
+    hf_hub.upload_folder(
+        repo_id=dataset_name,
+        folder_path=dataset_dir / "train/",
+        path_in_repo="data/",
+        use_auth_token=True,
+    )
+    # dataset = datasets.load_from_disk(dataset_dir)
+
+    # dataset["train"].to_parquet(f"{dataset_dir}/train.parquet")
+    # dataset["val"].to_parquet(f"{dataset_dir}/val.parquet")
+    # dataset["test"].to_parquet(f"{dataset_dir}/test.parquet")
 
 
 if __name__ == "__main__":
