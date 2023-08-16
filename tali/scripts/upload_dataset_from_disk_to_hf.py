@@ -52,27 +52,14 @@ def main(
 
     dataset_dir = pathlib.Path(f"{tali_dataset_dir}/{dataset_name}")
 
-    hf_hub.upload_file(
-        repo_id=dataset_name,
-        path_or_fileobj=dataset_dir / "test.parquet",
-        path_in_repo="data/",
-        use_auth_token=True,
-        repo_type="dataset",
+    train_dataset = datasets.load_from_disk(dataset_dir / "train")
+    val_dataset = datasets.load_from_disk(dataset_dir / "val")
+    test_dataset = datasets.load_from_disk(dataset_dir / "test")
+
+    dataset = datasets.DatasetDict(
+        {"train": train_dataset, "val": val_dataset, "test": test_dataset}
     )
-    hf_hub.upload_file(
-        repo_id=dataset_name,
-        path_or_fileobj=dataset_dir / "val.parquet",
-        path_in_repo="data/",
-        use_auth_token=True,
-        repo_type="dataset",
-    )
-    hf_hub.upload_file(
-        repo_id=dataset_name,
-        path_or_fileobj=dataset_dir / "train.parquet",
-        path_in_repo="data/",
-        use_auth_token=True,
-        repo_type="dataset",
-    )
+    dataset.push_to_hub(repo_id=dataset_name)
     # dataset = datasets.load_from_disk(dataset_dir)
 
     # dataset["train"].to_parquet(f"{dataset_dir}/train.parquet")
