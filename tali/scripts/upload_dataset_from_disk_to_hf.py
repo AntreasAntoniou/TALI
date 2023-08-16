@@ -54,19 +54,19 @@ def main(
 
     hf_hub.upload_file(
         repo_id=dataset_name,
-        folder_path=dataset_dir / "test.parquet",
+        path_or_fileobj=dataset_dir / "test.parquet",
         path_in_repo="data/",
         use_auth_token=True,
     )
     hf_hub.upload_file(
         repo_id=dataset_name,
-        folder_path=dataset_dir / "val.parquet",
+        path_or_fileobj=dataset_dir / "val.parquet",
         path_in_repo="data/",
         use_auth_token=True,
     )
     hf_hub.upload_file(
         repo_id=dataset_name,
-        folder_path=dataset_dir / "train.parquet",
+        path_or_fileobj=dataset_dir / "train.parquet",
         path_in_repo="data/",
         use_auth_token=True,
     )
