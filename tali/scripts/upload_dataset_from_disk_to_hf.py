@@ -56,11 +56,11 @@ def main(
     val_dataset = datasets.load_from_disk(dataset_dir / "val")
     test_dataset = datasets.load_from_disk(dataset_dir / "test")
 
-    dataset = datasets.DatasetDict(
+    dataset: datasets.Dataset = datasets.DatasetDict(
         {"train": train_dataset, "val": val_dataset, "test": test_dataset}
     )
     dataset.push_to_hub(
-        repo_id=dataset_name, num_shards={"train": 400, "val": 10, "test": 10}
+        repo_id=dataset_name, num_shards={"train": 600, "val": 10, "test": 10}
     )
     # dataset = datasets.load_from_disk(dataset_dir)
 
