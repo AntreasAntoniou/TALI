@@ -4,7 +4,7 @@ import signal
 
 def run_command():
     command = [
-        "python",
+        "/opt/conda/envs/main/bin/python",
         "tali/scripts/upload_dataset_from_disk_to_hf.py",
         "--dataset_name",
         "Antreas/TALI-big-2.0",
