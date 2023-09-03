@@ -1,5 +1,7 @@
 import array
+import io
 import time
+from typing import Union
 
 import av
 import numpy as np
@@ -131,40 +133,30 @@ def suppress_stderr(func):
 
 @suppress_stderr
 def extract_frames_pyav(
-    video_path: str,
+    video_data: Union[str, bytes],
     modality: str,
     starting_second: float,
     ending_second: float,
     num_frames: int,
     rng: np.random.Generator,
-    frame_selection_method: str = FrameSelectionMethod.RANDOM,
+    frame_selection_method: str = "RANDOM",
     key_frames_only: bool = False,
     stereo_audio_if_available: bool = False,
     single_image_frame: bool = False,
 ) -> torch.Tensor:
-    """
-    Extract frames from a video file 📹
-
-    Args:
-        video_path (str): Path to the video file 📁
-        modality (str): Modality for reading the video ('video' or 'audio') 🔊🎥
-        start_time (float): Start time for frame extraction in seconds ⏱
-        end_time (float): End time for frame extraction in seconds ⏱
-        num_frames (int): Number of frames to extract 🎞
-        rng (np.random.Generator): NumPy random generator for random frame selection 🎲
-        frame_selection_method (str, optional): Frame selection method. Defaults to FrameSelectionMethod.RANDOM.
-
-    Returns:
-        torch.Tensor: Extracted frames as a torch.Tensor 🧪
-    """
     frame_dict = {}
-    # logger.info(f"Extracting frames from {video_path}")
-    with av.open(video_path) as container:
+
+    video_source = (
+        io.BytesIO(video_data) if isinstance(video_data, bytes) else video_data
+    )
+
+    with av.open(video_source) as container:
         stream = next(s for s in container.streams if s.type == modality)
         if key_frames_only:
             stream.codec_context.skip_frame = "NONKEY"
 
         container = seek_to_second(container, stream, starting_second)
+
         # Get the duration of the video
         video_duration = duration_in_seconds(stream)
         # print(f"Video duration: {video_duration} seconds")

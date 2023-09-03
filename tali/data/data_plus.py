@@ -85,7 +85,7 @@ def convert_to_pil(image):
 
 
 def videoclip_to_video_audio_tensors(
-    video_path: pathlib.Path,
+    video_path: Union[pathlib.Path, bytes, str],
     rng: Optional[np.random.Generator] = None,
     return_video: bool = True,
     return_audio: bool = False,
