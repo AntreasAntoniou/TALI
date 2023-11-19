@@ -6,6 +6,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from math import floor
+from re import sub
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import datasets
@@ -17,6 +18,7 @@ import pyarrow.parquet as pq
 import torch
 import torch.nn as nn
 import tqdm
+import yaml
 from hydra_zen import builds
 from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.transforms import (
@@ -586,6 +588,9 @@ def select_subtitles_between_timestamps(
     starting_timestamp: float,
     ending_timestamp: float,
 ):
+    subtitle_dict = yaml.safe_load(subtitle_dict)
+    subtitle_dict = {float(key): value for key, value in subtitle_dict.items()}
+    subtitle_dict = dict(sorted(subtitle_dict.items(), key=lambda x: x[0]))
     selected_subtitles = ""
     for subtitle_timestamp, subtitle_text in subtitle_dict.items():
         subtitle_timestamp = float(subtitle_timestamp)
@@ -595,6 +600,7 @@ def select_subtitles_between_timestamps(
         ):
             subtitle_text = "".join(subtitle_text)
             selected_subtitles += subtitle_text + " "
+
     return selected_subtitles
 
 

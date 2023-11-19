@@ -49,6 +49,21 @@ def get_logger(
     return logger
 
 
+def set_logger_to_rich(logger: logging.Logger):
+    ch = RichHandler()
+
+    # create formatter
+    formatter = logging.Formatter("%(message)s")
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    return logger
+
+
 def get_hydra_config(logger_level: str = "INFO"):
     return dict(
         job_logging=dict(

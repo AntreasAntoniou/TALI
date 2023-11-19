@@ -1,87 +1,60 @@
-import os
-
-import torch
-
-os.environ["HYDRA_FULL_ERROR"] = "1"
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
 import pathlib
 import random
 
 import datasets
+import gradio as gr
+import torch
+import torchvision.transforms as T
+from fastapi import concurrency
 from rich import print
 from rich.traceback import install
 
-install()
-
-import gradio as gr
-import torchaudio
-import torchvision
-import torchvision.transforms as T
-
+from tali.data.data_new import load_dataset_via_hub
 from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
-from tali.data.data import ModalityTypes
-from tali.data.data_demo import TALIBaseDemoTransform
-from tali.data.data_plus import TALIBaseTransformConfig
+from tali.data.data_new import TALIBaseDemoTransform
 
-data_root = "/data/"
-transform = TALIBaseDemoTransform(
-    config=TALIBaseTransformConfig(
-        root_filepath=data_root,
-        modality_list=[
-            ModalityTypes.wit_image.value,
-            ModalityTypes.wit_caption.value,
-            ModalityTypes.wit_title.value,
-            ModalityTypes.wit_main_body.value,
-            ModalityTypes.youtube_image.value,
-            ModalityTypes.youtube_video.value,
-            ModalityTypes.youtube_subtitles.value,
-            ModalityTypes.youtube_audio.value,
-            ModalityTypes.youtube_description.value,
-        ],
-        rng_seed=42,
-        top_k_tali=10,
-        image_size=224,
-        num_video_frames=25 * 25,
-        num_audio_frames=25 * 16000,
-        clip_duration_in_seconds=25.0,
-        deterministic_sampling=True,
-    )
-)
-dataset_dict = datasets.load_dataset(
-    path="Antreas/TALI",
-    keep_in_memory=False,
-    cache_dir=os.environ["HF_CACHE_DIR"],
-)
-dataset_dict = dataset_dict.with_transform(transform)
+dataset_cache = pathlib.Path("/disk/scratch_fast1/data/")
+dataset_dict = load_dataset_via_hub(dataset_cache)
+demo_transform = TALIBaseDemoTransform(cache_dir=dataset_cache / "cache")
+dataset_length_dict = {
+    "train": len(dataset_dict["train"]),
+    "val": len(dataset_dict["val"]),
+    "test": len(dataset_dict["test"]),
+}
+
+
+dataset_dict.set_transform(demo_transform)
+
 
 num_samples = 0
 
-
-# {
-#     'wit_idx': 502620,
-#     'wikipedia_caption_image': torch.Size([3, 224, 224]),
-#     'wikipedia_text': '<section_title> Station layout </section_title>',
-#     'youtube_video_id': '6e7RO-o6u6w',
-#     'youtube_content_video': torch.Size([10, 3, 224, 224]),
-#     'youtube_content_audio': torch.Size([16000]),
-#     'youtube_description_text': "<ysub> it's open somebody's gonna be building something there so the neighborhood
-# isn't is in change i don't think shintomicho has much of a personality when they took away the kabuki theater it
-# really did change  </ysub>"
-# }
+# [
+#     'image',
+#     'image_url',
+#     'item_idx',
+#     'wit_features',
+#     'wit_idx',
+#     'youtube_title_text',
+#     'youtube_description_text',
+#     'youtube_video_content',
+#     'youtube_video_starting_time',
+#     'youtube_subtitle_text',
+#     'youtube_video_size',
+#     'youtube_video_file_path',
+#     'captions'
+# ]
 
 
 def update_length_options(set_name):
-    max_idx = len(dataset_dict[set_name]) - 1
+    max_idx = dataset_length_dict[set_name] - 1
     return gr.update(minimum=0, maximum=max_idx, step=1)
 
 
 def get_random_sample(set_name):
-    dataset = dataset_dict[set_name]
-    sample_index = random.randint(0, len(dataset) - 1)
+    sample_index = random.randint(0, dataset_length_dict[set_name] - 1)
     return sample_index
 
 
@@ -128,7 +101,6 @@ def update_captions(language, set_name, sample_index):
 
 
 def update_language_choices(set_name, sample_index):
-    # print(dataset_dict[set_name][int(sample_index)])
     languages = list(
         dataset_dict[set_name][int(sample_index)]["captions"].keys()
     )
@@ -143,32 +115,33 @@ def load_sample(set_name, sample_index):
 
     # Retrieve the sample at the given index
     sample = dataset[int(sample_index)]
+    if sample_index == -1:
+        return load_random_sample(set_name)
     # Extract the text, image, video, and audio from the sample (you'll need to adapt this to your specific dataset)
-    subtitles = sample["youtube_description_text"]
+    subtitles = sample["youtube_subtitle_text"]
 
-    wit_image = sample["wikipedia_caption_image"].permute(1, 2, 0).numpy()
-    youtube_image = (
-        T.ToTensor()(sample["youtube_random_video_sample_image"])
-        .permute(1, 2, 0)
-        .numpy()
-    )
-    video_path = sample["youtube_content_video"]
-    audio_path = sample["youtube_content_video"]
+    wit_image = sample["image"]
 
-    # if not pathlib.Path(video_path).parent.exists():
-    #     pathlib.Path(video_path).parent.mkdir(parents=True, exist_ok=True)
+    temp_file_path = "/dev/shm/{set_name}_{sample_index}.mp4"
 
-    # if not pathlib.Path(video_path).exists():
-    #     torchvision.io.write_video(video_path, video, fps=20)
-    # if not pathlib.Path(audio_path).exists():
-    #     torchaudio.save(audio_path, audio.view(-1).unsqueeze(0), 16000)
+    # Write the bytes to the file
+    with open(temp_file_path, "wb") as temp_file:
+        temp_file.write(sample["youtube_video_content"])
+
+    video_path = temp_file_path
+    audio_path = temp_file_path
+
+    youtube_description_text = sample["youtube_description_text"]
+    youtube_title_text = sample["youtube_title_text"]
+
     return (
         *update_language_choices(set_name=set_name, sample_index=sample_index),
         subtitles,
         wit_image,
-        youtube_image,
         video_path,
         audio_path,
+        youtube_description_text,
+        youtube_title_text,
     )
 
 
@@ -231,60 +204,65 @@ if __name__ == "__main__":
         )
         gr.Markdown(
             """
-        ### The wikipedia image is semantically aligned to the youtube components, while the youtube components are temporally aligned to each other.
+        ### The wikipedia image and caption should be (weakly) semantically aligned to the youtube components, while the youtube components are temporally aligned to each other.
         """
         )
-        output_subtitle = gr.Text(label="Youtube Subtitles")
-        caption_title_and_reference_description = gr.Textbox(
-            label="caption_title_and_reference_description"
-        )
-        page_title = gr.Textbox(label="page_title")
+        youtube_subtitle_text = gr.Text(label="Youtube Subtitles")
+        youtube_title_text = gr.Textbox(label="Youtube Title")
+        youtube_description_text = gr.Textbox(label="Youtube Description")
+
         with gr.Row():
             with gr.Column():
-                output_wit_image = gr.Image(label="Wikipedia Image")
+                wikipedia_image = gr.Image(label="Wikipedia Image")
             with gr.Column():
-                output_youtube_image = gr.Image(label="Youtube Image")
+                youtube_video = gr.Video(label="Youtube Video")
             with gr.Column():
-                output_video = gr.Video(label="Youtube Video")
-            with gr.Column():
-                output_audio = gr.Audio(label="Youtube Audio")
+                youtube_audio = gr.Audio(label="Youtube Audio")
 
         gr.Markdown(
             """
         ### Choose what language to display captions in (the captions are in multiple languages)
         """
         )
-        output_language = gr.Dropdown(label="Wiki language ID")
+        wikipedia_language = gr.Dropdown(label="Wiki language ID")
 
         gr.Markdown(
             """
         ### These captions are semantically aligned to the wikipedia image, and should ideally be semantically aligned to the youtube components, however the dataset was selected automatically and this is not always the case. Overall however, the captions are very good at describing the youtube components.
         """
         )
-
         with gr.Row():
-            section_title = gr.Textbox(label="section_title")
+            page_title = gr.Textbox(label="Wikipedia Page Title")
+        with gr.Row():
+            caption_title_and_reference_description = gr.Textbox(
+                label="Wikipedia Caption Title and Reference Description"
+            )
+        with gr.Row():
+            section_title = gr.Textbox(label="Wikipedia Section Title")
+        with gr.Row():
             hierarchical_section_title = gr.Textbox(
-                label="hierarchical_section_title"
+                label="Wikipedia Hierarchical Section Title"
             )
         with gr.Row():
             caption_alt_text_description = gr.Textbox(
-                label="caption_alt_text_description"
+                label="Wikipedia Caption Alt Text Description"
             )
+        with gr.Row():
             caption_reference_description = gr.Textbox(
-                label="caption_reference_description"
+                label="Wikipedia Caption Reference Description"
             )
         with gr.Row():
             context_section_description = gr.Textbox(
-                label="context_section_description"
+                label="Wikipedia Context Section Description"
             )
+        with gr.Row():
             context_page_description = gr.Textbox(
-                label="context_page_description"
+                label="Wikipedia Context Page Description"
             )
 
-        output_language.change(
+        wikipedia_language.change(
             update_captions,
-            [output_language, input_set_name, input_sample_index],
+            [wikipedia_language, input_set_name, input_sample_index],
             [
                 caption_alt_text_description,
                 caption_reference_description,
@@ -305,20 +283,18 @@ if __name__ == "__main__":
             [
                 input_set_name,
                 input_sample_index,
-                output_language,
+                wikipedia_language,
                 report_textbox,
             ],
             "flagged_data_points",
         )
-        report_button = gr.Button(
-            "Report Issue", info="Report an issue with the sample"
-        )
+        report_button = gr.Button("Report Issue")
         report_button.click(
             lambda *args: callback.flag(args),
             [
                 input_set_name,
                 input_sample_index,
-                output_language,
+                wikipedia_language,
                 report_textbox,
             ],
             None,
@@ -348,7 +324,7 @@ if __name__ == "__main__":
             inputs=[input_set_name],
             outputs=[
                 input_sample_index,
-                output_language,
+                wikipedia_language,
                 caption_alt_text_description,
                 caption_reference_description,
                 caption_title_and_reference_description,
@@ -357,11 +333,12 @@ if __name__ == "__main__":
                 hierarchical_section_title,
                 page_title,
                 section_title,
-                output_subtitle,
-                output_wit_image,
-                output_youtube_image,
-                output_video,
-                output_audio,
+                youtube_subtitle_text,
+                wikipedia_image,
+                youtube_video,
+                youtube_audio,
+                youtube_description_text,
+                youtube_title_text,
             ],
         )
 
@@ -373,7 +350,7 @@ if __name__ == "__main__":
             fn=load_sample,
             inputs=[input_set_name, input_sample_index],
             outputs=[
-                output_language,
+                wikipedia_language,
                 caption_alt_text_description,
                 caption_reference_description,
                 caption_title_and_reference_description,
@@ -382,13 +359,14 @@ if __name__ == "__main__":
                 hierarchical_section_title,
                 page_title,
                 section_title,
-                output_subtitle,
-                output_wit_image,
-                output_youtube_image,
-                output_video,
-                output_audio,
+                youtube_subtitle_text,
+                wikipedia_image,
+                youtube_video,
+                youtube_audio,
+                youtube_description_text,
+                youtube_title_text,
             ],
         )
 
-    demo.queue(concurrency_count=8)
-    demo.launch(share=True, debug=True, enable_queue=True)
+    demo.queue()
+    demo.launch(share=True, debug=True)
