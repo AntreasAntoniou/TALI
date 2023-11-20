@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 from tali.data.data_new import TALIBaseDemoTransform
 
-dataset_cache = pathlib.Path("/disk/scratch_fast1/data/")
+dataset_cache = pathlib.Path("/disk/scratch_fast0/tali/")
 dataset_dict = load_dataset_via_hub(dataset_cache)
 demo_transform = TALIBaseDemoTransform(cache_dir=dataset_cache / "cache")
 dataset_length_dict = {

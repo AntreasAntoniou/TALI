@@ -131,18 +131,19 @@ class TALIBaseDemoTransform:
 
 
 def download_dataset_via_hub(
+    dataset_name: str,
     dataset_download_path: pathlib.Path,
     num_download_workers: int = mp.cpu_count(),
 ):
     import huggingface_hub as hf_hub
 
     download_folder = hf_hub.snapshot_download(
-        repo_id="Antreas/TALI",
+        repo_id=dataset_name,
         repo_type="dataset",
         cache_dir=dataset_download_path,
         resume_download=True,
         max_workers=num_download_workers,
-        ignore_patterns=["data/train-*", "data/val-*"],
+        ignore_patterns=[],
     )
 
     return pathlib.Path(download_folder) / "data"
@@ -151,6 +152,7 @@ def download_dataset_via_hub(
 def load_dataset_via_hub(
     dataset_download_path: pathlib.Path,
     num_download_workers: int = mp.cpu_count(),
+    dataset_name: Optional[str] = None,
 ):
     from dataclasses import dataclass, field
 
@@ -159,17 +161,31 @@ def load_dataset_via_hub(
     dataset_path = download_dataset_via_hub(
         dataset_download_path=dataset_download_path,
         num_download_workers=num_download_workers,
+        dataset_name=dataset_name,
     )
     # Building a list of file paths for validation set
     test_files = [
         file.as_posix()
         for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "test" in file.as_posix()
     ]
-    print(f"Found {len(test_files)} files for testing set, {test_files}")
+    train_files = [
+        file.as_posix()
+        for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "train" in file.as_posix()
+    ]
+    val_files = [
+        file.as_posix()
+        for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "val" in file.as_posix()
+    ]
+    print(
+        f"Found {len(test_files)} files for testing set, {len(train_files)} for training set and {len(val_files)} for validation set"
+    )
     data_files = {
-        "test": test_files[0],
-        "val": test_files[1],
-        "train": test_files[2],
+        "test": train_files,
+        "val": val_files,
+        "train": test_files,
     }
 
     features = Features(
@@ -208,7 +224,7 @@ def load_dataset_via_hub(
     )
 
     dataset = datasets.load_dataset(
-        "parquet",
+        "parquet" if dataset_name is None else dataset_name,
         data_files=data_files,
         features=features,
         num_proc=1,
@@ -218,8 +234,10 @@ def load_dataset_via_hub(
 
 
 if __name__ == "__main__":
-    dataset_cache = pathlib.Path("/disk/scratch_fast1/data/")
-    dataset = load_dataset_via_hub(dataset_cache)["test"]
+    dataset_cache = pathlib.Path("/disk/scratch_fast0/tali/")
+    dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
+        "test"
+    ]
     demo_transform = TALIBaseDemoTransform(cache_dir=dataset_cache / "cache")
 
     for sample in tqdm(dataset):

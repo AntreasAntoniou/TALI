@@ -17,7 +17,7 @@ hf_hub.snapshot_download(
     cache_dir=dataset_cache,
     resume_download=True,
     max_workers=mp.cpu_count(),
-    ignore_patterns=["data/train-*", "data/val-*"],
+    ignore_patterns=[],
 )
 
 from datasets import Array2D, ClassLabel, Features, Image, Sequence, Value
