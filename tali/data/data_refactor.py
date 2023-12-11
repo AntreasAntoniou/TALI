@@ -109,6 +109,18 @@ class TALIBaseTransformConfig:
     video_frame_duration: int = 30
 
 
+WIKIPEDIA_ENTRY_KEYS = [
+    "caption_alt_text_description",
+    "caption_reference_description",
+    "caption_title_and_reference_description",
+    "context_page_description",
+    "context_section_description",
+    "hierarchical_section_title",
+    "page_title",
+    "section_title",
+]
+
+
 class TALIBaseTransform:
     def __init__(
         self,
@@ -128,16 +140,7 @@ class TALIBaseTransform:
             language_idx = wikipedia_features["language"].index(language)
             wit_text = {
                 key: wikipedia_features[key][language_idx]
-                for key in [
-                    "caption_alt_text_description",
-                    "caption_reference_description",
-                    "caption_title_and_reference_description",
-                    "context_page_description",
-                    "context_section_description",
-                    "hierarchical_section_title",
-                    "page_title",
-                    "section_title",
-                ]
+                for key in WIKIPEDIA_ENTRY_KEYS
                 if wikipedia_features[key][language_idx] is not None
             }
             output_dict[language] = wit_text
@@ -160,22 +163,22 @@ class TALIBaseTransform:
     def _apply_transform(self, input_dict: Dict[str, Any]):
         output_dict = input_dict.copy()
 
-        output_dict["wit_idx"] = [input_dict["wit_idx"]]
+        output_dict[TALIKeys.wit_idx] = [input_dict[TALIKeys.wit_idx]]
 
         output_dict[
             SubModalityTypes.wikipedia_caption_text.value.name
-        ] = self._process_wikipedia_captions(input_dict["wit_features"])
+        ] = self._process_wikipedia_captions(input_dict[TALIKeys.wit_features])
 
         output_dict[
             SubModalityTypes.youtube_description_text.value.name
-        ] = input_dict["youtube_description_text"]
+        ] = input_dict[TALIKeys.youtube_description_text.value]
 
         output_dict[
             SubModalityTypes.youtube_subtitle_text.value.name
         ] = self._process_youtube_subtitles(
-            youtube_subtitle_text=input_dict["youtube_subtitle_text"],
+            youtube_subtitle_text=input_dict[TALIKeys.youtube_subtitle_text],
             youtube_video_starting_time=input_dict[
-                "youtube_video_starting_time"
+                TALIKeys.youtube_video_starting_time
             ],
         )
         return output_dict
