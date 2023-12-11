@@ -12,7 +12,7 @@ import datasets
 import numpy as np
 import PIL
 import torch
-import torchaudio.transforms as T
+import torchaudio.transforms as TA
 import tqdm
 from pytorchvideo.transforms import ApplyTransformToKey, ShortSideScale
 from rich import print

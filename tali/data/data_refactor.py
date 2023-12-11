@@ -3,10 +3,13 @@ import pathlib
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from math import floor
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import datasets
 import numpy as np
+import PIL
+import torchaudio.transforms as TA
 import yaml
 from pytorchvideo.transforms import ApplyTransformToKey, ShortSideScale
 from rich import print
@@ -58,7 +61,7 @@ class TALIBaseTransformConfig:
     clip_duration_in_seconds: float = 3
     priority_caption_language: Optional[str] = "en"
     video_frame_duration: int = 30
-    video_frames_format: str = VideoFramesFormat.PIL.value
+    video_frames_format: str = VideoFramesFormat.TENSOR.value
 
 
 WIKIPEDIA_ENTRY_KEYS = [
@@ -114,7 +117,7 @@ def videoclip_to_video_audio_tensors(
     ending_second: Optional[int] = None,
     num_audio_frames: int = 1 * 16000,
     num_video_frames: int = 10,
-    video_frame_format: str = "TENSOR",
+    video_frame_format: str = VideoFramesFormat.TENSOR,
 ):
     """Extracts frames from a video clip and transforms them into tensors.
 
@@ -170,7 +173,19 @@ def videoclip_to_video_audio_tensors(
                 ],
                 dim=0,
             )
-        output["video"] = [convert_to_pil(frame) for frame in video]
+        output["video"] = (
+            [convert_to_pil(frame) for frame in video]
+            if video_frame_format == VideoFramesFormat.PIL
+            else video
+            if video_frame_format == VideoFramesFormat.TENSOR
+            else None
+        )
+        if output["video"] is None:
+            raise ValueError(
+                f"Unknown video frame format {video_frame_format}, "
+                f"must be one of {VideoFramesFormat.PIL} or "
+                f"{VideoFramesFormat.TENSOR}"
+            )
 
     if return_image:
         if image is None:
@@ -186,7 +201,20 @@ def videoclip_to_video_audio_tensors(
             )
             image = get_video_tensors(image, image_size)[0]
 
-        output["image"] = convert_to_pil(image)
+        output["image"] = (
+            convert_to_pil(image)
+            if video_frame_format == VideoFramesFormat.PIL
+            else image
+            if video_frame_format == VideoFramesFormat.TENSOR
+            else None
+        )
+
+        if output["image"] is None:
+            raise ValueError(
+                f"Unknown video frame format {video_frame_format}, "
+                f"must be one of {VideoFramesFormat.PIL} or "
+                f"{VideoFramesFormat.TENSOR}"
+            )
 
     if return_audio:
         audio = extract_frames_pyav(
@@ -210,7 +238,7 @@ def extract_audio(num_audio_frames, audio_frames):
     source_sample_rate = 44100
     target_sample_rate = 16000
     audio_frames = audio_frames[: int(floor(44100 * audio_duration_target))]
-    resampler = T.Resample(
+    resampler = TA.Resample(
         source_sample_rate, target_sample_rate, dtype=audio_frames.dtype
     )
     audio = resampler(audio_frames)
@@ -306,7 +334,7 @@ class TALIBaseTransformConfig:
     clip_duration_in_seconds: float = 3
     priority_caption_language: Optional[str] = "en"
     video_frame_duration: int = 30
-    video_frames_format: str = VideoFramesFormat.PIL.value
+    video_frames_format: str = VideoFramesFormat.TENSOR
 
 
 WIKIPEDIA_ENTRY_KEYS = [
@@ -326,30 +354,33 @@ class TALIBaseTransform:
         self,
         cache_dir: pathlib.Path,
         config: TALIBaseTransformConfig,
+        text_tokenizer: Optional[Callable] = None,
+        image_tokenizer: Optional[Callable] = None,
+        audio_tokenizer: Optional[Callable] = None,
+        video_tokenizer: Optional[Callable] = None,
     ):
         self.cache_dir = cache_dir
         self.config = config
+        self.text_tokenizer = text_tokenizer
+        self.image_tokenizer = image_tokenizer
+        self.audio_tokenizer = audio_tokenizer
+        self.video_tokenizer = video_tokenizer
 
         self.select_subtitles_between_timestamps = (
             select_subtitles_between_timestamps
         )
-        self.video_transform = self._build_video_transform()
+        self.video_transform = self.build_video_loader()
 
-    def _build_video_transform(self):
-        def transform(x, start, end, seed):
-            return_video = (
-                SubModalityTypes.youtube_content_video
-                in self.config.modality_list
-            )
-            return_audio = (
-                SubModalityTypes.youtube_content_audio
-                in self.config.modality_list
-            )
-            return_image = (
-                SubModalityTypes.youtube_random_video_frame
-                in self.config.modality_list
-            )
-
+    def build_video_loader(self):
+        def loader(
+            x: bytes | str | pathlib.Path,
+            start: int,
+            end: int,
+            seed: int,
+            return_video: bool = False,
+            return_audio: bool = False,
+            return_image: bool = False,
+        ):
             return videoclip_to_video_audio_tensors(
                 video_data=x,
                 image_size=self.config.image_size,
@@ -361,11 +392,12 @@ class TALIBaseTransform:
                 num_audio_frames=self.config.num_audio_frames,
                 num_video_frames=self.config.num_video_frames,
                 rng=np.random.RandomState(seed),
+                video_frame_format=self.config.video_frames_format,
             )
 
-        return transform
+        return loader
 
-    def _process_wikipedia_captions(self, wikipedia_features: dict):
+    def _process_wikipedia_text(self, wikipedia_features: dict):
         output_dict = dict()
         for language in wikipedia_features["language"]:
             language_idx = wikipedia_features["language"].index(language)
@@ -391,51 +423,178 @@ class TALIBaseTransform:
             + " </ysub>"
         )
 
+    def _process_text(self, input_dict: Dict[str, Any]):
+        wikipedia_text_content = self._process_wikipedia_text(
+            input_dict[TALIKeys.wit_features.value]
+        )
+        output_dict = {
+            SubModalityTypes.wikipedia_caption_text.value.name: wikipedia_text_content,
+            SubModalityTypes.youtube_description_text.value.name: input_dict[
+                TALIKeys.youtube_description_text.value
+            ],
+            SubModalityTypes.youtube_title_text.value.name: input_dict[
+                TALIKeys.youtube_title_text.value
+            ],
+            SubModalityTypes.youtube_subtitle_text.value.name: self._process_youtube_subtitles(
+                youtube_subtitle_text=input_dict[
+                    TALIKeys.youtube_subtitle_text.value
+                ],
+                youtube_video_starting_time=input_dict[
+                    TALIKeys.youtube_video_starting_time.value
+                ],
+            ),
+        }
+
+        if self.text_tokenizer is not None:
+            for key, value in output_dict.items():
+                if isinstance(value, str):
+                    output_dict[key] = self.text_tokenizer(value)
+                elif isinstance(value, dict):
+                    item_dict = {}
+                    for sub_key, sub_value in value.items():
+                        item_dict[sub_key] = self.text_tokenizer(sub_value)
+                    output_dict[key] = item_dict
+
+        return output_dict
+
+    def _process_audio(
+        self, input_dict: Dict[str, Any], audio: Optional[None]
+    ):
+        output_dict = {}
+        if SubModalityTypes.youtube_content_audio in self.config.modality_list:
+            output_dict[SubModalityTypes.youtube_content_audio.value.name] = (
+                audio
+                if audio is not None
+                else self.video_transform(
+                    x=input_dict[TALIKeys.youtube_video_content.value],
+                    start=0,
+                    end=30,
+                    seed=int(input_dict[TALIKeys.item_idx.value]),
+                    return_audio=True,
+                )["audio"],
+            )
+
+        if self.audio_tokenizer is not None:
+            for key, value in output_dict.items():
+                output_dict[key] = self.audio_tokenizer(value)
+
+        return output_dict
+
+    def _process_image(
+        self, input_dict: Dict[str, Any], image: Optional[None]
+    ):
+        output_dict = {}
+        if (
+            SubModalityTypes.youtube_random_video_frame
+            in self.config.modality_list
+        ):
+            output_dict[
+                SubModalityTypes.youtube_random_video_frame.value.name
+            ] = (
+                image
+                if image is not None
+                else self.video_transform(
+                    x=input_dict[TALIKeys.youtube_video_content.value],
+                    start=0,
+                    end=30,
+                    seed=int(input_dict[TALIKeys.item_idx.value]),
+                    return_image=True,
+                )["image"]
+            )
+
+        if (
+            SubModalityTypes.wikipedia_caption_image
+            in self.config.modality_list
+        ):
+            output_dict[
+                SubModalityTypes.wikipedia_caption_image.value.name
+            ] = input_dict[TALIKeys.image.value]
+
+        if self.image_tokenizer is not None:
+            for key, value in output_dict.items():
+                output_dict[key] = self.image_tokenizer(value)
+
+        return output_dict
+
+    def _process_video(
+        self, input_dict: Dict[str, Any], video: [Optional] = None
+    ):
+        output_dict = {}
+        if SubModalityTypes.youtube_content_video in self.config.modality_list:
+            output_dict = {
+                SubModalityTypes.youtube_content_video.value.name: video
+                if video is not None
+                else self.video_transform(
+                    x=input_dict[TALIKeys.youtube_video_content.value],
+                    start=0,
+                    end=30,
+                    seed=int(input_dict[TALIKeys.item_idx.value]),
+                    return_video=True,
+                )["video"],
+            }
+        if self.video_tokenizer is not None:
+            for key, value in output_dict.items():
+                output_dict[key] = self.video_tokenizer(value)
+
+        return output_dict
+
     def _apply_transform(self, input_dict: Dict[str, Any]):
-        output_dict = input_dict.copy()
+        output_dict = {}
 
         output_dict[TALIKeys.wit_idx.value] = [
             input_dict[TALIKeys.wit_idx.value]
         ]
 
-        output_dict[
-            SubModalityTypes.wikipedia_caption_text.value.name
-        ] = self._process_wikipedia_captions(
-            input_dict[TALIKeys.wit_features.value]
+        output_dict[TALIKeys.item_idx.value] = [
+            input_dict[TALIKeys.item_idx.value]
+        ]
+
+        youtube_video = None
+        youtube_audio = None
+        youtube_image = None
+        if SubModalityTypes.youtube_content_video in self.config.modality_list:
+            youtube_features = self.video_transform(
+                x=input_dict[TALIKeys.youtube_video_content.value],
+                start=0,
+                end=30,
+                seed=int(input_dict[TALIKeys.item_idx.value]),
+                return_video=True,
+                return_audio=SubModalityTypes.youtube_content_audio.value
+                in self.config.modality_list,
+                return_image=SubModalityTypes.youtube_random_video_frame.value
+                in self.config.modality_list,
+            )
+            youtube_video = youtube_features["video"]
+            youtube_audio = (
+                youtube_features["audio"]
+                if "audio" in youtube_features
+                else None
+            )
+            youtube_image = (
+                youtube_features["image"]
+                if "image" in youtube_features
+                else None
+            )
+
+        output_dict.update(self._process_text(input_dict=input_dict))
+        output_dict.update(
+            self._process_audio(
+                input_dict=input_dict,
+                audio=youtube_audio,
+            )
         )
-
-        output_dict[
-            SubModalityTypes.youtube_description_text.value.name
-        ] = input_dict[TALIKeys.youtube_description_text.value]
-
-        output_dict[
-            SubModalityTypes.youtube_subtitle_text.value.name
-        ] = self._process_youtube_subtitles(
-            youtube_subtitle_text=input_dict[
-                TALIKeys.youtube_subtitle_text.value
-            ],
-            youtube_video_starting_time=input_dict[
-                TALIKeys.youtube_video_starting_time.value
-            ],
+        output_dict.update(
+            self._process_image(
+                input_dict=input_dict,
+                image=youtube_image,
+            )
         )
-        youtube_features = self.video_transform(
-            x=input_dict[TALIKeys.youtube_video_content.value],
-            start=0,
-            end=30,
-            seed=int(input_dict[TALIKeys.item_idx.value]),
+        output_dict.update(
+            self._process_video(
+                input_dict=input_dict,
+                video=youtube_video,
+            )
         )
-
-        output_dict[
-            SubModalityTypes.youtube_content_video.value.name
-        ] = youtube_features["video"]
-
-        output_dict[
-            SubModalityTypes.youtube_content_audio.value.name
-        ] = youtube_features["audio"]
-
-        output_dict[
-            SubModalityTypes.youtube_random_video_frame.value.name
-        ] = youtube_features["image"]
 
         return output_dict
 
@@ -575,6 +734,46 @@ def load_dataset_via_hub(
     return dataset
 
 
+def default_transforms():
+    image_text_processor = CLIPProcessor.from_pretrained(image_text_model_name)
+    audio_processor = WhisperProcessor.from_pretrained(audio_model_name)
+
+    def image_transforms(x):
+        if isinstance(x, PIL.Image.Image):
+            temp_x = np.array(x)
+            if temp_x.max() > 255:
+                temp_x = temp_x / 65535.0
+                temp_x = (temp_x * 255).astype(np.uint8)
+                x = PIL.Image.fromarray(temp_x)
+
+        return self.image_text_processor(
+            images=x, return_tensors="pt"
+        ).pixel_values.squeeze(1)
+
+    def text_transforms(x):
+        return self.image_text_processor(
+            text=x, return_tensors="pt", padding=True, truncation=True
+        ).input_ids.squeeze(0)
+
+    def audio_transforms(x):
+        return torch.cat(
+            [
+                self.audio_processor(
+                    item.view(-1),
+                    sampling_rate=16000,
+                    return_tensors="pt",
+                ).input_features
+                for item in x.unbind(0)
+            ]
+        )
+
+    def video_transforms(x):
+        return torch.stack(
+            [image_transforms(image) for image in x],
+            dim=0,
+        )
+
+
 if __name__ == "__main__":
     import torch
 
@@ -584,6 +783,10 @@ if __name__ == "__main__":
     ]
     demo_transform = TALIBaseTransform(
         cache_dir=dataset_cache / "cache",
+        text_tokenizer=None,
+        image_tokenizer=None,
+        audio_tokenizer=None,
+        video_tokenizer=None,
         config=TALIBaseTransformConfig(
             root_filepath=dataset_cache,
             modality_list=[
@@ -598,6 +801,7 @@ if __name__ == "__main__":
                 SubModalityTypes.wikipedia_main_body_text,
                 SubModalityTypes.wikipedia_title_text,
             ],
+            video_frames_format=VideoFramesFormat.PIL,
         ),
     )
 
@@ -611,5 +815,6 @@ if __name__ == "__main__":
                 print(key, value.shape)
             elif hasattr(value, "__len__"):
                 print(key, len(value))
+            print(key, type(value))
 
         break
