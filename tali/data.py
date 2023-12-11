@@ -17,16 +17,121 @@ from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import CenterCropVideo
 from tqdm import tqdm
 
-from tali.data.data import select_subtitles_between_timestamps
 from tali.frame_extractor import FrameSelectionMethod, extract_frames_pyav
 from tali.utils import get_logger
 
 logger = get_logger(__name__, set_rich=True, logging_level="INFO")
 
 
+WIKIPEDIA_ENTRY_KEYS = [
+    "caption_alt_text_description",
+    "caption_reference_description",
+    "caption_title_and_reference_description",
+    "context_page_description",
+    "context_section_description",
+    "hierarchical_section_title",
+    "page_title",
+    "section_title",
+]
+
+
+class ModalityTypes(Enum):
+    image = "image"
+    audio = "audio"
+    video = "video"
+    text = "text"
+
+
 class VideoFramesFormat(Enum):
     PIL = "PIL"
     TENSOR = "TENSOR"
+
+
+@dataclass
+class SubModality:
+    parent: ModalityTypes
+    name: str
+
+
+class SubModalityTypes(Enum):
+    wikipedia_caption_image = SubModality(
+        ModalityTypes.image, "wikipedia_caption_image"
+    )
+    youtube_random_video_frame = SubModality(
+        ModalityTypes.image, "youtube_random_video_sample_image"
+    )
+    youtube_thumbnail_image = SubModality(
+        ModalityTypes.image, "youtube_thumbnail_image"
+    )
+
+    wikipedia_caption_text = SubModality(
+        ModalityTypes.text, "wikipedia_caption_text"
+    )
+    wikipedia_title_text = SubModality(
+        ModalityTypes.text, "wikipedia_title_text"
+    )
+    wikipedia_main_body_text = SubModality(
+        ModalityTypes.text, "wikipedia_main_body_text"
+    )
+    youtube_subtitle_text = SubModality(
+        ModalityTypes.text, "youtube_subtitle_text"
+    )
+    youtube_description_text = SubModality(
+        ModalityTypes.text, "youtube_description_text"
+    )
+    youtube_title_text = SubModality(ModalityTypes.text, "youtube_title_text")
+
+    youtube_content_audio = SubModality(
+        ModalityTypes.audio, "youtube_content_audio"
+    )
+
+    youtube_content_video = SubModality(
+        ModalityTypes.video, "youtube_content_video"
+    )
+
+
+class TALIKeys(Enum):
+    image = "image"
+    image_url = "image_url"
+    item_idx = "item_idx"
+    wit_features = "wit_features"
+    wit_idx = "wit_idx"
+    youtube_title_text = "youtube_title_text"
+    youtube_description_text = "youtube_description_text"
+    youtube_video_content = "youtube_video_content"
+    youtube_video_starting_time = "youtube_video_starting_time"
+    youtube_subtitle_text = "youtube_subtitle_text"
+    youtube_video_size = "youtube_video_size"
+    youtube_video_file_path = "youtube_video_file_path"
+    wikipedia_caption_text = "wikipedia_caption_text"
+
+
+@dataclass
+class TALIBaseTransformConfig:
+    root_filepath: Union[str, pathlib.Path]
+    modality_list: List
+    rng_seed: int = 42
+    image_size: int = 224
+    num_video_frames: int = 30
+    num_audio_frames: int = 44100
+    clip_duration_in_seconds: float = 3
+    priority_caption_language: Optional[str] = "en"
+    video_frame_duration: int = 30
+    video_frames_format: str = VideoFramesFormat.TENSOR
+
+
+@dataclass
+class TALIBaseTransformConfig:
+    root_filepath: Union[str, pathlib.Path]
+    modality_list: List
+    rng_seed: int = 42
+    image_size: int = 224
+    num_video_frames: int = 30
+    num_audio_frames: int = 44100
+    clip_duration_in_seconds: float = 3
+    priority_caption_language: Optional[str] = "en"
+    video_frame_duration: int = 30
+    video_frames_format: str = VideoFramesFormat.TENSOR.value
 
 
 def select_subtitles_between_timestamps(
@@ -48,32 +153,6 @@ def select_subtitles_between_timestamps(
             selected_subtitles += subtitle_text + " "
 
     return selected_subtitles
-
-
-@dataclass
-class TALIBaseTransformConfig:
-    root_filepath: Union[str, pathlib.Path]
-    modality_list: List
-    rng_seed: int = 42
-    image_size: int = 224
-    num_video_frames: int = 30
-    num_audio_frames: int = 44100
-    clip_duration_in_seconds: float = 3
-    priority_caption_language: Optional[str] = "en"
-    video_frame_duration: int = 30
-    video_frames_format: str = VideoFramesFormat.TENSOR.value
-
-
-WIKIPEDIA_ENTRY_KEYS = [
-    "caption_alt_text_description",
-    "caption_reference_description",
-    "caption_title_and_reference_description",
-    "context_page_description",
-    "context_section_description",
-    "hierarchical_section_title",
-    "page_title",
-    "section_title",
-]
 
 
 def get_video_tensors(video_frames, image_size):
@@ -257,96 +336,159 @@ def extract_audio(num_audio_frames, audio_frames):
     return audio
 
 
-class ModalityTypes(Enum):
-    image = "image"
-    audio = "audio"
-    video = "video"
-    text = "text"
+def download_dataset_via_hub(
+    dataset_name: str,
+    dataset_download_path: pathlib.Path,
+    num_download_workers: int = mp.cpu_count(),
+):
+    import huggingface_hub as hf_hub
 
-
-@dataclass
-class SubModality:
-    parent: ModalityTypes
-    name: str
-
-
-class SubModalityTypes(Enum):
-    wikipedia_caption_image = SubModality(
-        ModalityTypes.image, "wikipedia_caption_image"
-    )
-    youtube_random_video_frame = SubModality(
-        ModalityTypes.image, "youtube_random_video_sample_image"
-    )
-    youtube_thumbnail_image = SubModality(
-        ModalityTypes.image, "youtube_thumbnail_image"
+    download_folder = hf_hub.snapshot_download(
+        repo_id=dataset_name,
+        repo_type="dataset",
+        cache_dir=dataset_download_path,
+        resume_download=True,
+        max_workers=num_download_workers,
+        ignore_patterns=[],
     )
 
-    wikipedia_caption_text = SubModality(
-        ModalityTypes.text, "wikipedia_caption_text"
+    return pathlib.Path(download_folder) / "data"
+
+
+def load_dataset_via_hub(
+    dataset_download_path: pathlib.Path,
+    num_download_workers: int = mp.cpu_count(),
+    dataset_name: Optional[str] = None,
+):
+    pass
+
+    from datasets import Features, Image, Sequence, Value
+
+    dataset_path = download_dataset_via_hub(
+        dataset_download_path=dataset_download_path,
+        num_download_workers=num_download_workers,
+        dataset_name=dataset_name,
     )
-    wikipedia_title_text = SubModality(
-        ModalityTypes.text, "wikipedia_title_text"
+    # Building a list of file paths for validation set
+
+    train_files = [
+        file.as_posix()
+        for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "train" in file.as_posix()
+    ]
+    val_files = [
+        file.as_posix()
+        for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "val" in file.as_posix()
+    ]
+    test_files = [
+        file.as_posix()
+        for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "test" in file.as_posix()
+    ]
+    print(
+        f"Found {len(train_files)} for training set, {len(val_files)} for validation set and {len(test_files)} files for testing set"
     )
-    wikipedia_main_body_text = SubModality(
-        ModalityTypes.text, "wikipedia_main_body_text"
+    data_files = {
+        "test": test_files,
+        "val": val_files,
+        "train": train_files,
+    }
+
+    features = Features(
+        {
+            "image": Image(
+                decode=True
+            ),  # Set `decode=True` if you want to decode the images, otherwise `decode=False`
+            "image_url": Value("string"),
+            "item_idx": Value("int64"),
+            "wit_features": Sequence(
+                {
+                    "attribution_passes_lang_id": Value("bool"),
+                    "caption_alt_text_description": Value("string"),
+                    "caption_reference_description": Value("string"),
+                    "caption_title_and_reference_description": Value("string"),
+                    "context_page_description": Value("string"),
+                    "context_section_description": Value("string"),
+                    "hierarchical_section_title": Value("string"),
+                    "is_main_image": Value("bool"),
+                    "language": Value("string"),
+                    "page_changed_recently": Value("bool"),
+                    "page_title": Value("string"),
+                    "page_url": Value("string"),
+                    "section_title": Value("string"),
+                }
+            ),
+            "wit_idx": Value("int64"),
+            "youtube_title_text": Value("string"),
+            "youtube_description_text": Value("string"),
+            "youtube_video_content": Value("binary"),
+            "youtube_video_starting_time": Value("string"),
+            "youtube_subtitle_text": Value("string"),
+            "youtube_video_size": Value("int64"),
+            "youtube_video_file_path": Value("string"),
+        }
     )
-    youtube_subtitle_text = SubModality(
-        ModalityTypes.text, "youtube_subtitle_text"
+
+    dataset = datasets.load_dataset(
+        "parquet" if dataset_name is None else dataset_name,
+        data_files=data_files,
+        features=features,
+        num_proc=1,
+        cache_dir=dataset_download_path / "cache",
     )
-    youtube_description_text = SubModality(
-        ModalityTypes.text, "youtube_description_text"
+    return dataset
+
+
+def default_transforms():
+    from transformers import CLIPProcessor, WhisperProcessor
+
+    image_text_model_name = "openai/clip-vit-base-patch16"
+    audio_model_name = "openai/whisper-base"
+    image_text_processor = CLIPProcessor.from_pretrained(image_text_model_name)
+    audio_processor = WhisperProcessor.from_pretrained(audio_model_name)
+
+    def image_transforms(x):
+        if isinstance(x, PIL.Image.Image):
+            temp_x = np.array(x)
+            if temp_x.max() > 255:
+                temp_x = temp_x / 65535.0
+                temp_x = (temp_x * 255).astype(np.uint8)
+                x = PIL.Image.fromarray(temp_x)
+
+        return image_text_processor(
+            images=x, return_tensors="pt"
+        ).pixel_values.squeeze(1)
+
+    def text_transforms(x):
+        return image_text_processor(
+            text=x, return_tensors="pt", padding=True, truncation=True
+        ).input_ids.squeeze(0)
+
+    def audio_transforms(x):
+        return torch.cat(
+            [
+                audio_processor(
+                    item.view(-1),
+                    sampling_rate=16000,
+                    return_tensors="pt",
+                ).input_features
+                for item in x
+            ]
+        )
+
+    def video_transforms(x):
+        return torch.stack(
+            [image_transforms(image) for image in x],
+            dim=0,
+        )
+
+    return (
+        image_transforms,
+        text_transforms,
+        audio_transforms,
+        video_transforms,
     )
-    youtube_title_text = SubModality(ModalityTypes.text, "youtube_title_text")
-
-    youtube_content_audio = SubModality(
-        ModalityTypes.audio, "youtube_content_audio"
-    )
-
-    youtube_content_video = SubModality(
-        ModalityTypes.video, "youtube_content_video"
-    )
-
-
-class TALIKeys(Enum):
-    image = "image"
-    image_url = "image_url"
-    item_idx = "item_idx"
-    wit_features = "wit_features"
-    wit_idx = "wit_idx"
-    youtube_title_text = "youtube_title_text"
-    youtube_description_text = "youtube_description_text"
-    youtube_video_content = "youtube_video_content"
-    youtube_video_starting_time = "youtube_video_starting_time"
-    youtube_subtitle_text = "youtube_subtitle_text"
-    youtube_video_size = "youtube_video_size"
-    youtube_video_file_path = "youtube_video_file_path"
-    wikipedia_caption_text = "wikipedia_caption_text"
-
-
-@dataclass
-class TALIBaseTransformConfig:
-    root_filepath: Union[str, pathlib.Path]
-    modality_list: List
-    rng_seed: int = 42
-    image_size: int = 224
-    num_video_frames: int = 30
-    num_audio_frames: int = 44100
-    clip_duration_in_seconds: float = 3
-    priority_caption_language: Optional[str] = "en"
-    video_frame_duration: int = 30
-    video_frames_format: str = VideoFramesFormat.TENSOR
-
-
-WIKIPEDIA_ENTRY_KEYS = [
-    "caption_alt_text_description",
-    "caption_reference_description",
-    "caption_title_and_reference_description",
-    "context_page_description",
-    "context_section_description",
-    "hierarchical_section_title",
-    "page_title",
-    "section_title",
-]
 
 
 class TALIBaseTransform:
@@ -638,161 +780,6 @@ class TALIBaseTransform:
             output_dict = self._apply_transform(input_dict)
 
         return output_dict
-
-
-def download_dataset_via_hub(
-    dataset_name: str,
-    dataset_download_path: pathlib.Path,
-    num_download_workers: int = mp.cpu_count(),
-):
-    import huggingface_hub as hf_hub
-
-    download_folder = hf_hub.snapshot_download(
-        repo_id=dataset_name,
-        repo_type="dataset",
-        cache_dir=dataset_download_path,
-        resume_download=True,
-        max_workers=num_download_workers,
-        ignore_patterns=[],
-    )
-
-    return pathlib.Path(download_folder) / "data"
-
-
-def load_dataset_via_hub(
-    dataset_download_path: pathlib.Path,
-    num_download_workers: int = mp.cpu_count(),
-    dataset_name: Optional[str] = None,
-):
-    pass
-
-    from datasets import Features, Image, Sequence, Value
-
-    dataset_path = download_dataset_via_hub(
-        dataset_download_path=dataset_download_path,
-        num_download_workers=num_download_workers,
-        dataset_name=dataset_name,
-    )
-    # Building a list of file paths for validation set
-
-    train_files = [
-        file.as_posix()
-        for file in pathlib.Path(dataset_path).glob("*.parquet")
-        if "train" in file.as_posix()
-    ]
-    val_files = [
-        file.as_posix()
-        for file in pathlib.Path(dataset_path).glob("*.parquet")
-        if "val" in file.as_posix()
-    ]
-    test_files = [
-        file.as_posix()
-        for file in pathlib.Path(dataset_path).glob("*.parquet")
-        if "test" in file.as_posix()
-    ]
-    print(
-        f"Found {len(train_files)} for training set, {len(val_files)} for validation set and {len(test_files)} files for testing set"
-    )
-    data_files = {
-        "test": test_files,
-        "val": val_files,
-        "train": train_files,
-    }
-
-    features = Features(
-        {
-            "image": Image(
-                decode=True
-            ),  # Set `decode=True` if you want to decode the images, otherwise `decode=False`
-            "image_url": Value("string"),
-            "item_idx": Value("int64"),
-            "wit_features": Sequence(
-                {
-                    "attribution_passes_lang_id": Value("bool"),
-                    "caption_alt_text_description": Value("string"),
-                    "caption_reference_description": Value("string"),
-                    "caption_title_and_reference_description": Value("string"),
-                    "context_page_description": Value("string"),
-                    "context_section_description": Value("string"),
-                    "hierarchical_section_title": Value("string"),
-                    "is_main_image": Value("bool"),
-                    "language": Value("string"),
-                    "page_changed_recently": Value("bool"),
-                    "page_title": Value("string"),
-                    "page_url": Value("string"),
-                    "section_title": Value("string"),
-                }
-            ),
-            "wit_idx": Value("int64"),
-            "youtube_title_text": Value("string"),
-            "youtube_description_text": Value("string"),
-            "youtube_video_content": Value("binary"),
-            "youtube_video_starting_time": Value("string"),
-            "youtube_subtitle_text": Value("string"),
-            "youtube_video_size": Value("int64"),
-            "youtube_video_file_path": Value("string"),
-        }
-    )
-
-    dataset = datasets.load_dataset(
-        "parquet" if dataset_name is None else dataset_name,
-        data_files=data_files,
-        features=features,
-        num_proc=1,
-        cache_dir=dataset_download_path / "cache",
-    )
-    return dataset
-
-
-def default_transforms():
-    from transformers import CLIPProcessor, WhisperProcessor
-
-    image_text_model_name = "openai/clip-vit-base-patch16"
-    audio_model_name = "openai/whisper-base"
-    image_text_processor = CLIPProcessor.from_pretrained(image_text_model_name)
-    audio_processor = WhisperProcessor.from_pretrained(audio_model_name)
-
-    def image_transforms(x):
-        if isinstance(x, PIL.Image.Image):
-            temp_x = np.array(x)
-            if temp_x.max() > 255:
-                temp_x = temp_x / 65535.0
-                temp_x = (temp_x * 255).astype(np.uint8)
-                x = PIL.Image.fromarray(temp_x)
-
-        return image_text_processor(
-            images=x, return_tensors="pt"
-        ).pixel_values.squeeze(1)
-
-    def text_transforms(x):
-        return image_text_processor(
-            text=x, return_tensors="pt", padding=True, truncation=True
-        ).input_ids.squeeze(0)
-
-    def audio_transforms(x):
-        return torch.cat(
-            [
-                audio_processor(
-                    item.view(-1),
-                    sampling_rate=16000,
-                    return_tensors="pt",
-                ).input_features
-                for item in x
-            ]
-        )
-
-    def video_transforms(x):
-        return torch.stack(
-            [image_transforms(image) for image in x],
-            dim=0,
-        )
-
-    return (
-        image_transforms,
-        text_transforms,
-        audio_transforms,
-        video_transforms,
-    )
 
 
 if __name__ == "__main__":
