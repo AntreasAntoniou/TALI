@@ -156,7 +156,7 @@ if __name__ == "__main__":
     with gr.Blocks(theme=gr.themes.Soft()) as demo:
         gr.Markdown(
             """
-        # TALI (Temporally and semantically Aligned Audio, Language and Images) Dataset Demo v-0.3.0 🖼️ 🔊 🎦 📝
+        # TALI (Temporally and semantically Aligned Audio, Language and Images) Dataset Demo v-0.4.1 🖼️ 🔊 🎦 📝
         ## What should I expect to see here? 
         This demo is intended to show you what the TALI dataset looks like. It is a dataset that used the [Wikipedia Image Text (WIT)](https://huggingface.co/datasets/wikimedia/wit_base) captions and article titles to search Youtube for videos that match the captions, and then subsquently downloads the video, audio, and subtitles from such videos.
         The result is a rich multi modal dataset that has multiple caption types related to both the WiT Images, and the Youtube videos. This means learning can take place between either temporally or semantically aligned text, images, audio and video.
