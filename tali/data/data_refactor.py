@@ -4,8 +4,9 @@ import time
 from cgi import test
 from collections import defaultdict
 from dataclasses import dataclass
+from enum import Enum
 from functools import cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import datasets
 import numpy as np
@@ -13,8 +14,6 @@ from rich import print
 from tqdm import tqdm
 
 from tali.data.data import (
-    AnyModalSample,
-    ModalityTypes,
     default_image_transforms,
     select_subtitles_between_timestamps,
 )
@@ -31,6 +30,72 @@ from tali.utils import get_logger, load_json
 logger = get_logger(__name__)
 
 
+class ModalityTypes(Enum):
+    image = "image"
+    audio = "audio"
+    video = "video"
+    text = "text"
+
+
+@dataclass
+class SubModality:
+    parent: ModalityTypes
+    name: str
+
+
+class SubModalityTypes(Enum):
+    wikipedia_caption_image = SubModality(
+        ModalityTypes.image, "wikipedia_caption_image"
+    )
+    youtube_random_video_sample_image = SubModality(
+        ModalityTypes.image, "youtube_random_video_sample_image"
+    )
+    youtube_thumbnail_image = SubModality(
+        ModalityTypes.image, "youtube_thumbnail_image"
+    )
+
+    wikipedia_caption_text = SubModality(
+        ModalityTypes.text, "wikipedia_caption_text"
+    )
+    wikipedia_title_text = SubModality(
+        ModalityTypes.text, "wikipedia_title_text"
+    )
+    wikipedia_main_body_text = SubModality(
+        ModalityTypes.text, "wikipedia_main_body_text"
+    )
+    youtube_subtitle_text = SubModality(
+        ModalityTypes.text, "youtube_subtitle_text"
+    )
+    youtube_description_text = SubModality(
+        ModalityTypes.text, "youtube_description_text"
+    )
+    youtube_title_text = SubModality(ModalityTypes.text, "youtube_title_text")
+
+    youtube_content_audio = SubModality(
+        ModalityTypes.audio, "youtube_content_audio"
+    )
+
+    youtube_content_video = SubModality(
+        ModalityTypes.video, "youtube_content_video"
+    )
+
+
+class TALIKeys(Enum):
+    image = "image"
+    image_url = "image_url"
+    item_idx = "item_idx"
+    wit_features = "wit_features"
+    wit_idx = "wit_idx"
+    youtube_title_text = "youtube_title_text"
+    youtube_description_text = "youtube_description_text"
+    youtube_video_content = "youtube_video_content"
+    youtube_video_starting_time = "youtube_video_starting_time"
+    youtube_subtitle_text = "youtube_subtitle_text"
+    youtube_video_size = "youtube_video_size"
+    youtube_video_file_path = "youtube_video_file_path"
+    wikipedia_caption_text = "wikipedia_caption_text"
+
+
 @dataclass
 class TALIBaseTransformConfig:
     root_filepath: Union[str, pathlib.Path]
@@ -41,30 +106,28 @@ class TALIBaseTransformConfig:
     num_audio_frames: int = 44100
     clip_duration_in_seconds: float = 3
     priority_caption_language: Optional[str] = "en"
+    video_frame_duration: int = 30
 
 
-class TALIBaseDemoTransform:
+class TALIBaseTransform:
     def __init__(
         self,
         cache_dir: pathlib.Path,
+        config: TALIBaseTransformConfig,
     ):
         self.cache_dir = cache_dir
+        self.config = config
+
         self.select_subtitles_between_timestamps = (
             select_subtitles_between_timestamps
         )
 
-    def _apply_transform(self, input_dict: Dict[str, Any]):
-        output_dict = input_dict.copy()
-
-        wit_sample = input_dict["wit_features"]
-
-        output_dict["wit_idx"] = [input_dict["wit_idx"]]
-        output_dict["captions"] = {}
-
-        for language in wit_sample["language"]:
-            language_idx = wit_sample["language"].index(language)
+    def _process_wikipedia_captions(self, wikipedia_features: dict):
+        output_dict = dict()
+        for language in wikipedia_features["language"]:
+            language_idx = wikipedia_features["language"].index(language)
             wit_text = {
-                key: wit_sample[key][language_idx]
+                key: wikipedia_features[key][language_idx]
                 for key in [
                     "caption_alt_text_description",
                     "caption_reference_description",
@@ -75,27 +138,45 @@ class TALIBaseDemoTransform:
                     "page_title",
                     "section_title",
                 ]
-                if wit_sample[key][language_idx] is not None
+                if wikipedia_features[key][language_idx] is not None
             }
-            output_dict["captions"][language] = wit_text
+            output_dict[language] = wit_text
+        return output_dict
+
+    def _process_youtube_subtitles(
+        self, youtube_subtitle_text: str, youtube_video_starting_time: int
+    ):
+        return (
+            "<ysub> "
+            + select_subtitles_between_timestamps(
+                subtitle_dict=youtube_subtitle_text,
+                starting_timestamp=int(youtube_video_starting_time),
+                ending_timestamp=youtube_video_starting_time
+                + self.config.clip_duration_in_seconds,
+            )
+            + " </ysub>"
+        )
+
+    def _apply_transform(self, input_dict: Dict[str, Any]):
+        output_dict = input_dict.copy()
+
+        output_dict["wit_idx"] = [input_dict["wit_idx"]]
 
         output_dict[
-            get_submodality_name(ModalityTypes.youtube_description.value)
+            SubModalityTypes.wikipedia_caption_text.value.name
+        ] = self._process_wikipedia_captions(input_dict["wit_features"])
+
+        output_dict[
+            SubModalityTypes.youtube_description_text.value.name
         ] = input_dict["youtube_description_text"]
 
         output_dict[
-            get_submodality_name(ModalityTypes.youtube_subtitles.value)
-        ] = (
-            "<ysub> "
-            + select_subtitles_between_timestamps(
-                subtitle_dict=input_dict["youtube_subtitle_text"],
-                starting_timestamp=int(
-                    input_dict["youtube_video_starting_time"]
-                ),
-                ending_timestamp=int(input_dict["youtube_video_starting_time"])
-                + 30,
-            )
-            + " </ysub>"
+            SubModalityTypes.youtube_subtitle_text.value.name
+        ] = self._process_youtube_subtitles(
+            youtube_subtitle_text=input_dict["youtube_subtitle_text"],
+            youtube_video_starting_time=input_dict[
+                "youtube_video_starting_time"
+            ],
         )
         return output_dict
 
@@ -107,23 +188,13 @@ class TALIBaseDemoTransform:
         Args:
             input_dict (Dict[str, Any]): The input dictionary.
             dict_keys([
-                'image',
-                'image_url',
-                'item_idx',
-                'wit_features',
-                'wit_idx',
-                'youtube_title_text',
-                'youtube_description_text',
-                'youtube_video_content',
-                'youtube_video_starting_time',
-                'youtube_subtitle_text',
-                'youtube_video_size',
-                'youtube_video_file_path',
-                'wikipedia_caption_text'])
+                'image', 'image_url', 'item_idx',
+                'wit_features', 'wit_idx', 'youtube_content_video',
+                'youtube_subtitle_text', 'youtube_title_text',
+                'youtube_description_text'])
 
-
-            Returns:
-                Dict[str, Any]: The transformed dictionary.
+        Returns:
+            Dict[str, Any]: The transformed dictionary.
         """
 
         if isinstance(input_dict["item_idx"], list):
@@ -250,8 +321,25 @@ if __name__ == "__main__":
     dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
         "test"
     ]
-    demo_transform = TALIBaseDemoTransform(cache_dir=dataset_cache / "cache")
+    demo_transform = TALIBaseTransform(
+        cache_dir=dataset_cache / "cache",
+        config=TALIBaseTransformConfig(
+            root_filepath=dataset_cache,
+            modality_list=[
+                SubModalityTypes.youtube_content_video,
+                SubModalityTypes.youtube_content_audio,
+                SubModalityTypes.youtube_subtitle_text,
+                SubModalityTypes.youtube_description_text,
+                SubModalityTypes.youtube_title_text,
+                SubModalityTypes.wikipedia_caption_image,
+                SubModalityTypes.wikipedia_caption_text,
+                SubModalityTypes.wikipedia_main_body_text,
+                SubModalityTypes.wikipedia_title_text,
+            ],
+        ),
+    )
 
     for sample in tqdm(dataset):
         sample = demo_transform(sample)
         print(list(sample.keys()))
+        break
