@@ -452,7 +452,17 @@ class TALIBaseTransform:
                 elif isinstance(value, dict):
                     item_dict = {}
                     for sub_key, sub_value in value.items():
-                        item_dict[sub_key] = self.text_tokenizer(sub_value)
+                        if isinstance(sub_value, str):
+                            item_dict[sub_key] = self.text_tokenizer(sub_value)
+                        elif isinstance(sub_value, dict):
+                            item_dict[sub_key] = {}
+                            for (
+                                sub_sub_key,
+                                sub_sub_value,
+                            ) in sub_value.items():
+                                item_dict[sub_key][
+                                    sub_sub_key
+                                ] = self.text_tokenizer(sub_sub_value)
                     output_dict[key] = item_dict
 
         return output_dict
@@ -681,7 +691,7 @@ def load_dataset_via_hub(
         if "test" in file.as_posix()
     ]
     print(
-        f"Found {len(test_files)} files for testing set, {len(train_files)} for training set and {len(val_files)} for validation set"
+        f"Found {len(train_files)} for training set, {len(val_files)} for validation set and {len(test_files)} files for testing set"
     )
     data_files = {
         "test": test_files,
@@ -735,6 +745,10 @@ def load_dataset_via_hub(
 
 
 def default_transforms():
+    from transformers import CLIPProcessor, WhisperProcessor
+
+    image_text_model_name = "openai/clip-vit-base-patch16"
+    audio_model_name = "openai/whisper-base"
     image_text_processor = CLIPProcessor.from_pretrained(image_text_model_name)
     audio_processor = WhisperProcessor.from_pretrained(audio_model_name)
 
@@ -746,24 +760,24 @@ def default_transforms():
                 temp_x = (temp_x * 255).astype(np.uint8)
                 x = PIL.Image.fromarray(temp_x)
 
-        return self.image_text_processor(
+        return image_text_processor(
             images=x, return_tensors="pt"
         ).pixel_values.squeeze(1)
 
     def text_transforms(x):
-        return self.image_text_processor(
+        return image_text_processor(
             text=x, return_tensors="pt", padding=True, truncation=True
         ).input_ids.squeeze(0)
 
     def audio_transforms(x):
         return torch.cat(
             [
-                self.audio_processor(
+                audio_processor(
                     item.view(-1),
                     sampling_rate=16000,
                     return_tensors="pt",
                 ).input_features
-                for item in x.unbind(0)
+                for item in x
             ]
         )
 
@@ -773,6 +787,13 @@ def default_transforms():
             dim=0,
         )
 
+    return (
+        image_transforms,
+        text_transforms,
+        audio_transforms,
+        video_transforms,
+    )
+
 
 if __name__ == "__main__":
     import torch
@@ -781,12 +802,20 @@ if __name__ == "__main__":
     dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
         "test"
     ]
+
+    (
+        image_transforms,
+        text_transforms,
+        audio_transforms,
+        video_transforms,
+    ) = default_transforms()
+
     demo_transform = TALIBaseTransform(
         cache_dir=dataset_cache / "cache",
-        text_tokenizer=None,
-        image_tokenizer=None,
-        audio_tokenizer=None,
-        video_tokenizer=None,
+        text_tokenizer=text_transforms,
+        image_tokenizer=image_transforms,
+        audio_tokenizer=audio_transforms,
+        video_tokenizer=video_transforms,
         config=TALIBaseTransformConfig(
             root_filepath=dataset_cache,
             modality_list=[
