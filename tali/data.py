@@ -1,3 +1,4 @@
+import logging
 import multiprocessing as mp
 import pathlib
 from collections import defaultdict
@@ -17,11 +18,12 @@ from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import CenterCropVideo
 from tqdm import tqdm
 
-from tali.frame_extractor import FrameSelectionMethod, extract_frames_pyav
-from tali.utils import get_logger
+from tali.frames import FrameSelectionMethod, extract_frames_pyav
+from tali.utils import enrichen_logger
 
-logger = get_logger(__name__, set_rich=True, logging_level="INFO")
-
+logger = logging.getLogger(__name__)
+logger = enrichen_logger(logger)
+logger.setLevel(logging.INFO)
 
 WIKIPEDIA_ENTRY_KEYS = [
     "caption_alt_text_description",
