@@ -54,161 +54,6 @@ def get_video_clip(video, starting_second, ending_second):
     return video.get_clip(start_sec=starting_second, end_sec=ending_second)
 
 
-def get_video_tensors(video_frames, image_size):
-    """Converts video frames into tensor format and applies transforms.
-
-    Args:
-        video_frames: Frames extracted from a video.
-        image_size (int): The size for each video frame.
-
-    Returns:
-        Transformed video frames in tensor format.
-    """
-    video_frames = video_frames.permute(3, 0, 1, 2).to(torch.float32)
-    video_transform = Compose(
-        [
-            ShortSideScale(size=image_size),
-            CenterCropVideo(crop_size=(image_size, image_size)),
-        ]
-    )
-    output_dict = ApplyTransformToKey("video", video_transform)(
-        {"video": video_frames}
-    )
-    return output_dict["video"].permute(1, 0, 2, 3) / 255.0
-
-
-def convert_to_pil(image):
-    image = image.numpy().transpose(1, 2, 0)
-    image = (image * 255).astype(np.uint8)
-    image = PIL.Image.fromarray(image)
-    return image
-
-
-def videoclip_to_video_audio_tensors(
-    video_path: Union[pathlib.Path, bytes, str],
-    rng: Optional[np.random.Generator] = None,
-    return_video: bool = True,
-    return_audio: bool = False,
-    return_image: bool = False,
-    image_size: int = 224,
-    starting_second: int = 0,
-    ending_second: Optional[int] = None,
-    num_audio_frames: int = 1 * 16000,
-    num_video_frames: int = 10,
-):
-    """Extracts frames from a video clip and transforms them into tensors.
-
-    Args:
-        video_path (pathlib.Path): The path to the video file.
-        rng (np.random.Generator): A random number generator.
-        return_video (bool): Whether to return video frames.
-        return_audio (bool): Whether to return audio frames.
-        return_image (bool): Whether to return image frames.
-        image_size (int): The size of each image frame.
-        starting_second (int): The starting time of the clip in seconds.
-        ending_second (Optional[int]): The ending time of the clip in seconds.
-        num_audio_frames (int): The number of audio frames to extract.
-        num_video_frames (int): The number of video frames to extract.
-
-    Returns:
-        A dictionary containing video frames, image frames, and/or audio frames
-        in tensor format.
-    """
-    output = {}
-    video = image = audio = None
-
-    if rng is None:
-        rng = np.random.default_rng()
-
-    if return_video:
-        video = extract_frames_pyav(
-            video_path=video_path,
-            starting_second=starting_second,
-            ending_second=ending_second,
-            num_frames=num_video_frames + (1 if return_image else 0),
-            rng=rng,
-            modality="video",
-            frame_selection_method=FrameSelectionMethod.RANDOM,
-        )
-
-        video = get_video_tensors(video, image_size)
-
-        if return_image:
-            image = video[0]
-            video = video[1:]
-
-        if video.shape[0] < num_video_frames:
-            video = torch.cat(
-                [
-                    video,
-                    torch.zeros(
-                        num_video_frames - video.shape[0],
-                        video.shape[1],
-                        video.shape[2],
-                        video.shape[3],
-                    ),
-                ],
-                dim=0,
-            )
-        output["video"] = [convert_to_pil(frame) for frame in video]
-
-    if return_image:
-        if image is None:
-            image = extract_frames_pyav(
-                video_path=video_path,
-                starting_second=starting_second,
-                ending_second=ending_second,
-                num_frames=1,
-                rng=rng,
-                modality="video",
-                frame_selection_method=FrameSelectionMethod.RANDOM,
-                single_image_frame=True,
-            )
-            image = get_video_tensors(image, image_size)[0]
-
-        output["image"] = convert_to_pil(image)
-
-    if return_audio:
-        audio = extract_frames_pyav(
-            video_path=video_path,
-            starting_second=starting_second,
-            ending_second=ending_second,
-            num_frames=44100 * num_audio_frames / 16000,
-            rng=rng,
-            modality="audio",
-            frame_selection_method=FrameSelectionMethod.SEQUENTIAL,
-        )[:, 0]
-
-        audio = extract_audio(num_audio_frames, audio)
-        output["audio"] = audio
-
-    return output
-
-
-def extract_audio(num_audio_frames, audio_frames):
-    audio_duration_target = float(num_audio_frames) / 16000.0
-    source_sample_rate = 44100
-    target_sample_rate = 16000
-    audio_frames = audio_frames[: int(floor(44100 * audio_duration_target))]
-    resampler = T.Resample(
-        source_sample_rate, target_sample_rate, dtype=audio_frames.dtype
-    )
-    audio = resampler(audio_frames)
-    # audio_shape = audio.shape
-
-    if audio.shape[0] < num_audio_frames:
-        audio = torch.cat(
-            [
-                audio,
-                torch.zeros(
-                    num_audio_frames - audio.shape[0],
-                ),
-            ],
-            dim=0,
-        )
-    return audio
-
-
 def get_submodality_name(item: AnyModalSample):
     return str(item.sub_modality).replace("SubModalityTypes.", "")
 
@@ -263,7 +108,7 @@ class TALIBaseTransform:
             )
 
             return videoclip_to_video_audio_tensors(
-                video_path=path,
+                video=path,
                 image_size=self.config.image_size,
                 starting_second=start,
                 ending_second=end,
@@ -911,8 +756,7 @@ class CustomConcatDataset(Dataset):
 
 
 if __name__ == "__main__":
-    import cProfile
-    import pstats
+    pass
 
     import tqdm
     from rich import print

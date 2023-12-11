@@ -6,7 +6,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from math import floor
-from re import sub
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import datasets

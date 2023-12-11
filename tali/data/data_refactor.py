@@ -1,33 +1,232 @@
 import multiprocessing as mp
 import pathlib
-import time
-from cgi import test
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-from functools import cache
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import datasets
 import numpy as np
+import yaml
+from pytorchvideo.transforms import ApplyTransformToKey, ShortSideScale
 from rich import print
+from torchvision.transforms import Compose
+from torchvision.transforms._transforms_video import CenterCropVideo
 from tqdm import tqdm
 
-from tali.data.data import (
-    default_image_transforms,
-    select_subtitles_between_timestamps,
-)
-from tali.data.data_plus import (
-    TALIBaseTransformConfig,
-    convert_to_pil,
-    get_submodality_name,
-    get_video_tensors,
-    videoclip_to_video_audio_tensors,
-)
+from tali.data.data import select_subtitles_between_timestamps
 from tali.frame_extractor import FrameSelectionMethod, extract_frames_pyav
-from tali.utils import get_logger, load_json
+from tali.utils import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger(__name__, set_rich=True, logging_level="INFO")
+
+
+class VideoFramesFormat(Enum):
+    PIL = "PIL"
+    TENSOR = "TENSOR"
+
+
+def select_subtitles_between_timestamps(
+    subtitle_dict: Dict[str, str],
+    starting_timestamp: float,
+    ending_timestamp: float,
+):
+    subtitle_dict = yaml.safe_load(subtitle_dict)
+    subtitle_dict = {float(key): value for key, value in subtitle_dict.items()}
+    subtitle_dict = dict(sorted(subtitle_dict.items(), key=lambda x: x[0]))
+    selected_subtitles = ""
+    for subtitle_timestamp, subtitle_text in subtitle_dict.items():
+        subtitle_timestamp = float(subtitle_timestamp)
+        if (
+            float(subtitle_timestamp) >= starting_timestamp
+            and float(subtitle_timestamp) <= ending_timestamp
+        ):
+            subtitle_text = "".join(subtitle_text)
+            selected_subtitles += subtitle_text + " "
+
+    return selected_subtitles
+
+
+@dataclass
+class TALIBaseTransformConfig:
+    root_filepath: Union[str, pathlib.Path]
+    modality_list: List
+    rng_seed: int = 42
+    image_size: int = 224
+    num_video_frames: int = 30
+    num_audio_frames: int = 44100
+    clip_duration_in_seconds: float = 3
+    priority_caption_language: Optional[str] = "en"
+    video_frame_duration: int = 30
+    video_frames_format: str = VideoFramesFormat.PIL.value
+
+
+WIKIPEDIA_ENTRY_KEYS = [
+    "caption_alt_text_description",
+    "caption_reference_description",
+    "caption_title_and_reference_description",
+    "context_page_description",
+    "context_section_description",
+    "hierarchical_section_title",
+    "page_title",
+    "section_title",
+]
+
+
+def get_video_tensors(video_frames, image_size):
+    """Converts video frames into tensor format and applies transforms.
+
+    Args:
+        video_frames: Frames extracted from a video.
+        image_size (int): The size for each video frame.
+
+    Returns:
+        Transformed video frames in tensor format.
+    """
+    video_frames = video_frames.permute(3, 0, 1, 2).to(torch.float32)
+    video_transform = Compose(
+        [
+            ShortSideScale(size=image_size),
+            CenterCropVideo(crop_size=(image_size, image_size)),
+        ]
+    )
+    output_dict = ApplyTransformToKey("video", video_transform)(
+        {"video": video_frames}
+    )
+    return output_dict["video"].permute(1, 0, 2, 3) / 255.0
+
+
+def convert_to_pil(image):
+    image = image.numpy().transpose(1, 2, 0)
+    image = (image * 255).astype(np.uint8)
+    image = PIL.Image.fromarray(image)
+    return image
+
+
+def videoclip_to_video_audio_tensors(
+    video_data: Union[pathlib.Path, bytes, str],
+    rng: Optional[np.random.Generator] = None,
+    return_video: bool = True,
+    return_audio: bool = False,
+    return_image: bool = False,
+    image_size: int = 224,
+    starting_second: int = 0,
+    ending_second: Optional[int] = None,
+    num_audio_frames: int = 1 * 16000,
+    num_video_frames: int = 10,
+    video_frame_format: str = "TENSOR",
+):
+    """Extracts frames from a video clip and transforms them into tensors.
+
+    Args:
+        video_path (pathlib.Path): The path to the video file.
+        rng (np.random.Generator): A random number generator.
+        return_video (bool): Whether to return video frames.
+        return_audio (bool): Whether to return audio frames.
+        return_image (bool): Whether to return image frames.
+        image_size (int): The size of each image frame.
+        starting_second (int): The starting time of the clip in seconds.
+        ending_second (Optional[int]): The ending time of the clip in seconds.
+        num_audio_frames (int): The number of audio frames to extract.
+        num_video_frames (int): The number of video frames to extract.
+
+    Returns:
+        A dictionary containing video frames, image frames, and/or audio frames
+        in tensor format.
+    """
+    output = {}
+    video = image = audio = None
+
+    if rng is None:
+        rng = np.random.default_rng()
+
+    if return_video:
+        video = extract_frames_pyav(
+            video_data=video_data,
+            starting_second=starting_second,
+            ending_second=ending_second,
+            num_frames=num_video_frames + (1 if return_image else 0),
+            rng=rng,
+            modality="video",
+            frame_selection_method=FrameSelectionMethod.RANDOM,
+        )
+
+        video = get_video_tensors(video, image_size)
+
+        if return_image:
+            image = video[0]
+            video = video[1:]
+
+        if video.shape[0] < num_video_frames:
+            video = torch.cat(
+                [
+                    video,
+                    torch.zeros(
+                        num_video_frames - video.shape[0],
+                        video.shape[1],
+                        video.shape[2],
+                        video.shape[3],
+                    ),
+                ],
+                dim=0,
+            )
+        output["video"] = [convert_to_pil(frame) for frame in video]
+
+    if return_image:
+        if image is None:
+            image = extract_frames_pyav(
+                video_data=video_data,
+                starting_second=starting_second,
+                ending_second=ending_second,
+                num_frames=1,
+                rng=rng,
+                modality="video",
+                frame_selection_method=FrameSelectionMethod.RANDOM,
+                single_image_frame=True,
+            )
+            image = get_video_tensors(image, image_size)[0]
+
+        output["image"] = convert_to_pil(image)
+
+    if return_audio:
+        audio = extract_frames_pyav(
+            video_data=video_data,
+            starting_second=starting_second,
+            ending_second=ending_second,
+            num_frames=44100 * num_audio_frames / 16000,
+            rng=rng,
+            modality="audio",
+            frame_selection_method=FrameSelectionMethod.SEQUENTIAL,
+        )[:, 0]
+
+        audio = extract_audio(num_audio_frames, audio)
+        output["audio"] = audio
+
+    return output
+
+
+def extract_audio(num_audio_frames, audio_frames):
+    audio_duration_target = float(num_audio_frames) / 16000.0
+    source_sample_rate = 44100
+    target_sample_rate = 16000
+    audio_frames = audio_frames[: int(floor(44100 * audio_duration_target))]
+    resampler = T.Resample(
+        source_sample_rate, target_sample_rate, dtype=audio_frames.dtype
+    )
+    audio = resampler(audio_frames)
+    # audio_shape = audio.shape
+
+    if audio.shape[0] < num_audio_frames:
+        audio = torch.cat(
+            [
+                audio,
+                torch.zeros(
+                    num_audio_frames - audio.shape[0],
+                ),
+            ],
+            dim=0,
+        )
+    return audio
 
 
 class ModalityTypes(Enum):
@@ -47,7 +246,7 @@ class SubModalityTypes(Enum):
     wikipedia_caption_image = SubModality(
         ModalityTypes.image, "wikipedia_caption_image"
     )
-    youtube_random_video_sample_image = SubModality(
+    youtube_random_video_frame = SubModality(
         ModalityTypes.image, "youtube_random_video_sample_image"
     )
     youtube_thumbnail_image = SubModality(
@@ -107,6 +306,7 @@ class TALIBaseTransformConfig:
     clip_duration_in_seconds: float = 3
     priority_caption_language: Optional[str] = "en"
     video_frame_duration: int = 30
+    video_frames_format: str = VideoFramesFormat.PIL.value
 
 
 WIKIPEDIA_ENTRY_KEYS = [
@@ -133,6 +333,37 @@ class TALIBaseTransform:
         self.select_subtitles_between_timestamps = (
             select_subtitles_between_timestamps
         )
+        self.video_transform = self._build_video_transform()
+
+    def _build_video_transform(self):
+        def transform(x, start, end, seed):
+            return_video = (
+                SubModalityTypes.youtube_content_video
+                in self.config.modality_list
+            )
+            return_audio = (
+                SubModalityTypes.youtube_content_audio
+                in self.config.modality_list
+            )
+            return_image = (
+                SubModalityTypes.youtube_random_video_frame
+                in self.config.modality_list
+            )
+
+            return videoclip_to_video_audio_tensors(
+                video_data=x,
+                image_size=self.config.image_size,
+                starting_second=start,
+                ending_second=end,
+                return_video=return_video,
+                return_audio=return_audio,
+                return_image=return_image,
+                num_audio_frames=self.config.num_audio_frames,
+                num_video_frames=self.config.num_video_frames,
+                rng=np.random.RandomState(seed),
+            )
+
+        return transform
 
     def _process_wikipedia_captions(self, wikipedia_features: dict):
         output_dict = dict()
@@ -154,8 +385,8 @@ class TALIBaseTransform:
             + select_subtitles_between_timestamps(
                 subtitle_dict=youtube_subtitle_text,
                 starting_timestamp=int(youtube_video_starting_time),
-                ending_timestamp=youtube_video_starting_time
-                + self.config.clip_duration_in_seconds,
+                ending_timestamp=int(youtube_video_starting_time)
+                + int(self.config.video_frame_duration),
             )
             + " </ysub>"
         )
@@ -163,11 +394,15 @@ class TALIBaseTransform:
     def _apply_transform(self, input_dict: Dict[str, Any]):
         output_dict = input_dict.copy()
 
-        output_dict[TALIKeys.wit_idx] = [input_dict[TALIKeys.wit_idx]]
+        output_dict[TALIKeys.wit_idx.value] = [
+            input_dict[TALIKeys.wit_idx.value]
+        ]
 
         output_dict[
             SubModalityTypes.wikipedia_caption_text.value.name
-        ] = self._process_wikipedia_captions(input_dict[TALIKeys.wit_features])
+        ] = self._process_wikipedia_captions(
+            input_dict[TALIKeys.wit_features.value]
+        )
 
         output_dict[
             SubModalityTypes.youtube_description_text.value.name
@@ -176,11 +411,32 @@ class TALIBaseTransform:
         output_dict[
             SubModalityTypes.youtube_subtitle_text.value.name
         ] = self._process_youtube_subtitles(
-            youtube_subtitle_text=input_dict[TALIKeys.youtube_subtitle_text],
+            youtube_subtitle_text=input_dict[
+                TALIKeys.youtube_subtitle_text.value
+            ],
             youtube_video_starting_time=input_dict[
-                TALIKeys.youtube_video_starting_time
+                TALIKeys.youtube_video_starting_time.value
             ],
         )
+        youtube_features = self.video_transform(
+            x=input_dict[TALIKeys.youtube_video_content.value],
+            start=0,
+            end=30,
+            seed=int(input_dict[TALIKeys.item_idx.value]),
+        )
+
+        output_dict[
+            SubModalityTypes.youtube_content_video.value.name
+        ] = youtube_features["video"]
+
+        output_dict[
+            SubModalityTypes.youtube_content_audio.value.name
+        ] = youtube_features["audio"]
+
+        output_dict[
+            SubModalityTypes.youtube_random_video_frame.value.name
+        ] = youtube_features["image"]
+
         return output_dict
 
     def __call__(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -239,9 +495,9 @@ def load_dataset_via_hub(
     num_download_workers: int = mp.cpu_count(),
     dataset_name: Optional[str] = None,
 ):
-    from dataclasses import dataclass, field
+    pass
 
-    from datasets import ClassLabel, Features, Image, Sequence, Value
+    from datasets import Features, Image, Sequence, Value
 
     dataset_path = download_dataset_via_hub(
         dataset_download_path=dataset_download_path,
@@ -320,6 +576,8 @@ def load_dataset_via_hub(
 
 
 if __name__ == "__main__":
+    import torch
+
     dataset_cache = pathlib.Path("/disk/scratch_fast0/tali/")
     dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
         "test"
@@ -331,6 +589,7 @@ if __name__ == "__main__":
             modality_list=[
                 SubModalityTypes.youtube_content_video,
                 SubModalityTypes.youtube_content_audio,
+                SubModalityTypes.youtube_random_video_frame,
                 SubModalityTypes.youtube_subtitle_text,
                 SubModalityTypes.youtube_description_text,
                 SubModalityTypes.youtube_title_text,
@@ -345,4 +604,12 @@ if __name__ == "__main__":
     for sample in tqdm(dataset):
         sample = demo_transform(sample)
         print(list(sample.keys()))
+        for key, value in sample.items():
+            if hasattr(value, "shape"):
+                print(key, value.shape)
+            elif isinstance(value, torch.Tensor):
+                print(key, value.shape)
+            elif hasattr(value, "__len__"):
+                print(key, len(value))
+
         break

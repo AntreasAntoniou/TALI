@@ -31,7 +31,7 @@ class TALIBaseDemoTransform:
         self.image_transform = default_image_transforms(self.config.image_size)
         self.video_transform = (
             lambda x, start, end, rng: videoclip_to_video_audio_tensors(
-                video_path=x.replace(
+                video=x.replace(
                     "/data/",
                     self.config.root_filepath.as_posix()
                     if isinstance(self.config.root_filepath, pathlib.Path)

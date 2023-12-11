@@ -1,32 +1,16 @@
 import multiprocessing as mp
 import pathlib
-import time
-from cgi import test
 from collections import defaultdict
 from dataclasses import dataclass
-from functools import cache
 from typing import Any, Dict, List, Optional, Union
 
 import datasets
-import numpy as np
 from rich import print
 from tqdm import tqdm
 
-from tali.data.data import (
-    AnyModalSample,
-    ModalityTypes,
-    default_image_transforms,
-    select_subtitles_between_timestamps,
-)
-from tali.data.data_plus import (
-    TALIBaseTransformConfig,
-    convert_to_pil,
-    get_submodality_name,
-    get_video_tensors,
-    videoclip_to_video_audio_tensors,
-)
-from tali.frame_extractor import FrameSelectionMethod, extract_frames_pyav
-from tali.utils import get_logger, load_json
+from tali.data.data import ModalityTypes, select_subtitles_between_timestamps
+from tali.data.data_plus import TALIBaseTransformConfig, get_submodality_name
+from tali.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -165,9 +149,9 @@ def load_dataset_via_hub(
     num_download_workers: int = mp.cpu_count(),
     dataset_name: Optional[str] = None,
 ):
-    from dataclasses import dataclass, field
+    pass
 
-    from datasets import ClassLabel, Features, Image, Sequence, Value
+    from datasets import Features, Image, Sequence, Value
 
     dataset_path = download_dataset_via_hub(
         dataset_download_path=dataset_download_path,

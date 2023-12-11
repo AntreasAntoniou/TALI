@@ -31,9 +31,9 @@ def load_dataset_via_hub(
     num_download_workers: int = mp.cpu_count(),
     dataset_name: Optional[str] = None,
 ):
-    from dataclasses import dataclass, field
+    pass
 
-    from datasets import ClassLabel, Features, Image, Sequence, Value
+    from datasets import Features, Image, Sequence, Value
 
     dataset_path = download_dataset_via_hub(
         dataset_download_path=dataset_download_path,
