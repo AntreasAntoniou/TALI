@@ -3,6 +3,7 @@ pytest
 isort
 jupyterlab
 black
+gh
 sphinx
 sphinx_rtd_theme
 sphinx-autodoc-typehints
