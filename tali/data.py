@@ -361,17 +361,19 @@ def load_dataset_via_hub(
     dataset_download_path: pathlib.Path,
     num_download_workers: int = mp.cpu_count(),
     dataset_name: Optional[str] = None,
+    streaming: bool = False,
 ):
-    pass
-
     from datasets import Features, Image, Sequence, Value
 
-    dataset_path = download_dataset_via_hub(
-        dataset_download_path=dataset_download_path,
-        num_download_workers=num_download_workers,
-        dataset_name=dataset_name,
-    )
-    # Building a list of file paths for validation set
+    if not streaming:
+        dataset_path = download_dataset_via_hub(
+            dataset_download_path=dataset_download_path,
+            num_download_workers=num_download_workers,
+            dataset_name=dataset_name,
+        )
+        # Building a list of file paths for validation set
+    else:
+        dataset_path = dataset_download_path
 
     train_files = [
         file.as_posix()
@@ -436,8 +438,9 @@ def load_dataset_via_hub(
         "parquet" if dataset_name is None else dataset_name,
         data_files=data_files,
         features=features,
-        num_proc=1,
+        num_proc=mp.cpu_count(),
         cache_dir=dataset_download_path / "cache",
+        streaming=streaming,
     )
     return dataset
 
