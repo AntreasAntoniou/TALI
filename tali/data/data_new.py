@@ -183,9 +183,9 @@ def load_dataset_via_hub(
         f"Found {len(test_files)} files for testing set, {len(train_files)} for training set and {len(val_files)} for validation set"
     )
     data_files = {
-        "test": train_files,
+        "test": test_files,
         "val": val_files,
-        "train": test_files,
+        "train": train_files,
     }
 
     features = Features(
