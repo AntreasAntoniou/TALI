@@ -8,6 +8,78 @@ Welcome to TALI, a large-scale quadra-modal dataset consisting of temporally and
 - TALI integrates YouTube media components (video and audio), YouTube text components (title, description, subtitles), and Wikipedia components (image and context). These components have been temporally aligned and semantically integrated.
 - Multiple language support enhances the global comprehension and capabilities of the TALI dataset.
 
+## Getting Started
+
+### Installation
+
+For the default install use:
+
+```bash
+pip install git+https://github.com/AntreasAntoniou/TALI
+```
+
+For the dev install use:
+
+```bash
+pip install git+https://github.com/AntreasAntoniou/TALI[dev]
+```
+
+
+To get started with TALI, you can load the dataset via Hugging Face's `datasets` library through our helper functions. The reason we don't use `datasets` directly is because we found huggingface_hub downloads much faster and reliable. Here's a basic usage example:
+
+```python
+dataset_cache = pathlib.Path("/my/path/to/data")
+
+    dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
+        "train"
+    ]
+
+    (
+        image_transforms,
+        text_transforms,
+        audio_transforms,
+        video_transforms,
+    ) = default_transforms()
+
+    preprocessing_transform = TALIBaseTransform(
+        cache_dir=dataset_cache / "cache",
+        text_tokenizer=text_transforms,
+        image_tokenizer=image_transforms,
+        audio_tokenizer=audio_transforms,
+        video_tokenizer=video_transforms,
+        config=TALIBaseTransformConfig(
+            root_filepath=dataset_cache,
+            modality_list=[
+                SubModalityTypes.youtube_content_video,
+                SubModalityTypes.youtube_content_audio,
+                SubModalityTypes.youtube_random_video_frame,
+                SubModalityTypes.youtube_subtitle_text,
+                SubModalityTypes.youtube_description_text,
+                SubModalityTypes.youtube_title_text,
+                SubModalityTypes.wikipedia_caption_image,
+                SubModalityTypes.wikipedia_caption_text,
+                SubModalityTypes.wikipedia_main_body_text,
+                SubModalityTypes.wikipedia_title_text,
+            ],
+            video_frames_format=VideoFramesFormat.PIL,
+        ),
+    )
+
+    for sample in tqdm(dataset):
+        sample = preprocessing_transform(sample)
+        print(list(sample.keys()))
+        for key, value in sample.items():
+            if hasattr(value, "shape"):
+                print(key, value.shape)
+            elif isinstance(value, torch.Tensor):
+                print(key, value.shape)
+            elif hasattr(value, "__len__"):
+                print(key, len(value))
+            print(key, type(value))
+
+        break
+```
+
 ## Significance of TALI
 
 Previously, self-supervised learning has primarily relied on uni-modal datasets or multi-modal datasets that lack temporal alignment across different modalities. TALI addresses this gap by offering a dataset with temporal alignment across four modalities. This dataset empowers models to perceive real-world dynamics and comprehend temporal sequencing, paramount in various applications. Furthermore, semantically aligned Wikipedia text and images provide added context, creating a richer learning environment for various multi-modal research areas, including contextual understanding, pattern recognition, and contrastive learning.
@@ -31,15 +103,30 @@ TALI's assembly involved semantic alignment techniques using CLIP models to extr
 
 The TALI dataset encapsulates multi-language captions. While these captions are ideally semantically aligned with both the YouTube and Wikipedia components, alignment's extent can fluctuate due to the auto-selection process of the dataset.
 
-## Getting Started
+## Usage
 
-To get started with TALI, you can load the dataset via Hugging Face's `datasets` library. Here's a basic usage example:
+TALI can be used for a wide range of tasks. Its quadra-modal nature makes it suitable for both uni-modal and multi-modal tasks. Here are a few examples:
 
-```python
-from tali.data import load_dataset_via_hub
+- **Uni-modal tasks**: Language modelling, image classification, audio classification, video classification
+- **Bi-modal tasks**: Image captioning, text-to-image synthesis, audio-visual correspondence learning
+- **Multi-modal tasks**: Cross-modal retrieval, multi-modal fusion for classification or prediction tasks
 
-# Path to your local dataset cache
-dataset_cache = "/path/to/your/dataset/cache"
+## Limitations and Challenges
 
-# Load the TALI dataset
-dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")["train"]
+While TALI is a highly versatile dataset, it also poses some challenges:
+
+- The semantic alignment between YouTube and Wikipedia components is not perfect. There might be some mismatches.
+- The quality of YouTube subtitles can vary greatly. Some videos might have professionally produced subtitles while others might only have auto-generated captions.
+- Some videos might contain multiple languages, and the language might not always align with the language of the Wikipedia page.
+
+## Citation
+
+If you use TALI in your research, please cite our paper:
+
+```bibtex
+@inproceedings{antoniou2023tali,
+  title={TALI: A Large Scale Tetra-Modal Dataset consisting of Temporally and Semantically Aligned Audio, Language and Images},
+  author={Antoniou, Antreas, Eleni Triantafillou, Justin Engelmann, Fady Rezk, Hugo Larochelle, Jeff Pan, Yi Liu, and Amos Storkey},
+  year={2023}
+}
+```
