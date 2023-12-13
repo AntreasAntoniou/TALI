@@ -30,7 +30,22 @@ pip install git+https://github.com/AntreasAntoniou/TALI[dev]
 To get started with TALI, you can load the dataset via Hugging Face's `datasets` library through our helper functions. The reason we don't use `datasets` directly is because we found huggingface_hub downloads much faster and reliable. For a full set of possible configurations look at [examples.py](examples.py). Here's a basic usage example:
 
 ```python
-dataset_cache = pathlib.Path("/my/path/to/data")
+    import pathlib
+    from enum import Enum
+
+    import torch
+    from tqdm.auto import tqdm
+
+    from tali.data import (
+        SubModalityTypes,
+        TALIBaseTransform,
+        TALIBaseTransformConfig,
+        VideoFramesFormat,
+        default_transforms,
+        load_dataset_via_hub,
+    )
+
+    dataset_cache = pathlib.Path("/my/path/to/data")
 
     dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
         "train"
