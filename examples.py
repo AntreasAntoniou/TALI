@@ -27,7 +27,7 @@ def tali_with_transforms_no_streaming():
         video_transforms,
     ) = default_transforms()
 
-    demo_transform = TALIBaseTransform(
+    preprocessing_transform = TALIBaseTransform(
         cache_dir=dataset_cache / "cache",
         text_tokenizer=text_transforms,
         image_tokenizer=image_transforms,
@@ -52,7 +52,7 @@ def tali_with_transforms_no_streaming():
     )
 
     for sample in tqdm(dataset):
-        sample = demo_transform(sample)
+        sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
             if hasattr(value, "shape"):
@@ -73,7 +73,7 @@ def tali_without_transforms_no_streaming():
         "train"
     ]
 
-    demo_transform = TALIBaseTransform(
+    preprocessing_transform = TALIBaseTransform(
         cache_dir=dataset_cache / "cache",
         text_tokenizer=None,
         image_tokenizer=None,
@@ -98,7 +98,7 @@ def tali_without_transforms_no_streaming():
     )
 
     for sample in tqdm(dataset):
-        sample = demo_transform(sample)
+        sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
             if hasattr(value, "shape"):
@@ -126,7 +126,7 @@ def tali_with_transforms_streaming():
         video_transforms,
     ) = default_transforms()
 
-    demo_transform = TALIBaseTransform(
+    preprocessing_transform = TALIBaseTransform(
         cache_dir=dataset_cache / "cache",
         text_tokenizer=text_transforms,
         image_tokenizer=image_transforms,
@@ -151,7 +151,7 @@ def tali_with_transforms_streaming():
     )
 
     for sample in tqdm(dataset):
-        sample = demo_transform(sample)
+        sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
             if hasattr(value, "shape"):
@@ -172,7 +172,7 @@ def tali_without_transforms_streaming():
         dataset_cache, dataset_name="Antreas/TALI", streaming=True
     )["train"]
 
-    demo_transform = TALIBaseTransform(
+    preprocessing_transform = TALIBaseTransform(
         cache_dir=dataset_cache / "cache",
         text_tokenizer=None,
         image_tokenizer=None,
@@ -197,7 +197,7 @@ def tali_without_transforms_streaming():
     )
 
     for sample in tqdm(dataset):
-        sample = demo_transform(sample)
+        sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
             if hasattr(value, "shape"):
