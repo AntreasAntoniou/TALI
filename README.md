@@ -1,5 +1,5 @@
 
-# TALI: Temporal and Semantic Alignment of Language, Image, Video, and Audio
+# TALI: A Large Scale Quadra-Modal Dataset consisting of Temporally and Semantically Aligned Audio, Language and Images
 
 Welcome to TALI, a large-scale quadra-modal dataset consisting of temporally and semantically aligned audio, language, and images. This dataset is assembled from YouTube and Wikipedia, offering rich multimodal data points for various research areas.
 
@@ -121,10 +121,10 @@ While TALI is a highly versatile dataset, it also poses some challenges:
 
 ## Citation
 
-If you use TALI in your research, please cite our paper:
+If you use TALI in your research, please cite our (not yet public) paper:
 
 ```bibtex
-@inproceedings{antoniou2023tali,
+@article{antoniou2023tali,
   title={TALI: A Large Scale Tetra-Modal Dataset consisting of Temporally and Semantically Aligned Audio, Language and Images},
   author={Antoniou, Antreas, Eleni Triantafillou, Justin Engelmann, Fady Rezk, Hugo Larochelle, Jeff Pan, Yi Liu, and Amos Storkey},
   year={2023}
