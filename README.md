@@ -8,6 +8,8 @@ Welcome to TALI, a large-scale quadra-modal dataset consisting of temporally and
 - TALI integrates YouTube media components (video and audio), YouTube text components (title, description, subtitles), and Wikipedia components (image and context). These components have been temporally aligned and semantically integrated.
 - Multiple language support enhances the global comprehension and capabilities of the TALI dataset.
 
+## For a Gradio visualization of the full dataset please go to this [link](https://antreas.io/demos/tali)
+
 ## Getting Started
 
 ### Installation
