@@ -8,6 +8,7 @@ pytorchvideo
 torchtyping
 rich
 opencv-python
+av
 scipy
 scikit-learn
 huggingface_hub
