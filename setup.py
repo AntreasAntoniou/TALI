@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
 
 # Read requirements_dev.txt
 with open("requirements_dev.txt") as f:
-    dev_requirements = f.read().splitlines()
+    dev_requirements = f.read().splitlines()[1:]
 
 setup(
     name="tali",
