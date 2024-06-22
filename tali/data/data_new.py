@@ -48,9 +48,7 @@ class TALIBaseDemoTransform:
         cache_dir: pathlib.Path,
     ):
         self.cache_dir = cache_dir
-        self.select_subtitles_between_timestamps = (
-            select_subtitles_between_timestamps
-        )
+        self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
 
     def _apply_transform(self, input_dict: Dict[str, Any]):
         output_dict = input_dict.copy()
@@ -78,21 +76,16 @@ class TALIBaseDemoTransform:
             }
             output_dict["captions"][language] = wit_text
 
-        output_dict[
-            get_submodality_name(ModalityTypes.youtube_description.value)
-        ] = input_dict["youtube_description_text"]
+        output_dict[get_submodality_name(ModalityTypes.youtube_description.value)] = input_dict[
+            "youtube_description_text"
+        ]
 
-        output_dict[
-            get_submodality_name(ModalityTypes.youtube_subtitles.value)
-        ] = (
+        output_dict[get_submodality_name(ModalityTypes.youtube_subtitles.value)] = (
             "<ysub> "
             + select_subtitles_between_timestamps(
                 subtitle_dict=input_dict["youtube_subtitle_text"],
-                starting_timestamp=int(
-                    input_dict["youtube_video_starting_time"]
-                ),
-                ending_timestamp=int(input_dict["youtube_video_starting_time"])
-                + 30,
+                starting_timestamp=int(input_dict["youtube_video_starting_time"]),
+                ending_timestamp=int(input_dict["youtube_video_starting_time"]) + 30,
             )
             + " </ysub>"
         )
@@ -118,9 +111,7 @@ class TALIBaseDemoTransform:
         if isinstance(input_dict["item_idx"], list):
             output_dict = defaultdict(list)
             for idx in range(len(input_dict["item_idx"])):
-                input_dict_ = {
-                    key: input_dict[key][idx] for key in input_dict.keys()
-                }
+                input_dict_ = {key: input_dict[key][idx] for key in input_dict.keys()}
                 output_dict_ = self._apply_transform(input_dict_)
                 for key in output_dict_.keys():
                     output_dict[key].append(output_dict_[key])
@@ -172,7 +163,7 @@ def load_dataset_via_hub(
     train_files = [
         file.as_posix()
         for file in pathlib.Path(dataset_path).glob("*.parquet")
-        if "train" in file.as_posix()
+        if "val" in file.as_posix()
     ]
     val_files = [
         file.as_posix()
@@ -222,12 +213,13 @@ def load_dataset_via_hub(
             "youtube_video_file_path": Value("string"),
         }
     )
+    import multiprocessing as mp
 
     dataset = datasets.load_dataset(
         "parquet" if dataset_name is None else dataset_name,
         data_files=data_files,
         features=features,
-        num_proc=1,
+        num_proc=mp.cpu_count() * 2,
         cache_dir=dataset_download_path / "cache",
     )
     return dataset
@@ -235,9 +227,7 @@ def load_dataset_via_hub(
 
 if __name__ == "__main__":
     dataset_cache = pathlib.Path("/disk/scratch_fast0/tali/")
-    dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
-        "test"
-    ]
+    dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")["test"]
     demo_transform = TALIBaseDemoTransform(cache_dir=dataset_cache / "cache")
 
     for sample in tqdm(dataset):
