@@ -224,7 +224,7 @@ def tali_without_transforms_streaming(
         break
 
 
-class ExampleOption(Enum):
+class ExampleOption:
     WITH_TRANSFORMS_NO_STREAMING = "with_transforms_no_streaming"
     WITHOUT_TRANSFORMS_NO_STREAMING = "without_transforms_no_streaming"
     WITH_TRANSFORMS_STREAMING = "with_transforms_streaming"
