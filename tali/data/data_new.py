@@ -11,19 +11,12 @@ import numpy as np
 from rich import print
 from tqdm import tqdm
 
-from tali.data.data import (
-    AnyModalSample,
-    ModalityTypes,
-    default_image_transforms,
-    select_subtitles_between_timestamps,
-)
-from tali.data.data_plus import (
-    TALIBaseTransformConfig,
-    convert_to_pil,
-    get_submodality_name,
-    get_video_tensors,
-    videoclip_to_video_audio_tensors,
-)
+from tali.data.data import (AnyModalSample, ModalityTypes,
+                            default_image_transforms,
+                            select_subtitles_between_timestamps)
+from tali.data.data_plus import (TALIBaseTransformConfig, convert_to_pil,
+                                 get_submodality_name, get_video_tensors,
+                                 videoclip_to_video_audio_tensors)
 from tali.frame_extractor import FrameSelectionMethod, extract_frames_pyav
 from tali.utils import get_logger, load_json
 
@@ -142,6 +135,7 @@ def download_dataset_via_hub(
 
 def load_dataset_via_hub(
     dataset_download_path: pathlib.Path,
+    dataset_cache_path: pathlib.Path,
     num_download_workers: int = mp.cpu_count(),
     dataset_name: Optional[str] = None,
 ):
@@ -163,7 +157,7 @@ def load_dataset_via_hub(
     train_files = [
         file.as_posix()
         for file in pathlib.Path(dataset_path).glob("*.parquet")
-        if "val" in file.as_posix()
+        if "train" in file.as_posix()
     ]
     val_files = [
         file.as_posix()
@@ -220,7 +214,7 @@ def load_dataset_via_hub(
         data_files=data_files,
         features=features,
         num_proc=mp.cpu_count() * 2,
-        cache_dir=dataset_download_path / "cache",
+        cache_dir=dataset_cache_path,
     )
     return dataset
 

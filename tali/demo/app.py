@@ -2,6 +2,7 @@ import pathlib
 import random
 
 import gradio as gr
+from rich import print
 
 from tali.data.data_new import load_dataset_via_hub
 from tali.utils import get_logger
@@ -10,11 +11,16 @@ logger = get_logger(__name__)
 
 from tali.data.data_new import TALIBaseDemoTransform
 
-dataset_cache = pathlib.Path("/home/antreas/datasets")
-dataset_dict = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")
-demo_transform = TALIBaseDemoTransform(cache_dir=dataset_cache / "cache")
+dataset_path = pathlib.Path("/home/antreas/datasets")
+dataset_cache = pathlib.Path("/mnt/nvme-fast0/datasets")
+dataset_dict = load_dataset_via_hub(
+    dataset_download_path=dataset_path,
+    dataset_cache_path=dataset_cache / "tali",
+    dataset_name="Antreas/TALI",
+)
+demo_transform = TALIBaseDemoTransform(cache_dir=dataset_cache)
 dataset_length_dict = {
-    "train": len(dataset_dict["val"]),
+    "train": len(dataset_dict["train"]),
     "val": len(dataset_dict["val"]),
     "test": len(dataset_dict["test"]),
 }
@@ -84,9 +90,7 @@ def update_captions(language, set_name, sample_index):
     return [
         gr.update(value=caption_dict["caption_alt_text_description"]),
         gr.update(value=caption_dict["caption_reference_description"]),
-        gr.update(
-            value=caption_dict["caption_title_and_reference_description"]
-        ),
+        gr.update(value=caption_dict["caption_title_and_reference_description"]),
         gr.update(value=caption_dict["context_page_description"]),
         gr.update(value=caption_dict["context_section_description"]),
         gr.update(value=caption_dict["hierarchical_section_title"]),
@@ -96,9 +100,7 @@ def update_captions(language, set_name, sample_index):
 
 
 def update_language_choices(set_name, sample_index):
-    languages = list(
-        dataset_dict[set_name][int(sample_index)]["captions"].keys()
-    )
+    languages = list(dataset_dict[set_name][int(sample_index)]["captions"].keys())
     return gr.update(choices=languages, value=languages[0]), *update_captions(
         languages[0], set_name, sample_index
     )
@@ -185,9 +187,7 @@ if __name__ == "__main__":
                 fetch_btn = gr.Button("Fetch sample")
                 fetch_random_btn = gr.Button("Fetch random sample")
 
-        input_set_name.change(
-            update_length_options, input_set_name, input_sample_index
-        )
+        input_set_name.change(update_length_options, input_set_name, input_sample_index)
 
         gr.Markdown("## Explore the Multi-modal Components")
 
@@ -208,24 +208,14 @@ if __name__ == "__main__":
 
                 page_title = gr.Textbox(label="Wikipedia Page Title")
                 section_title = gr.Textbox(label="Wikipedia Section Title ")
-                hierarchical_section_title = gr.Textbox(
-                    label="Hierarchical Section Title "
-                )
+                hierarchical_section_title = gr.Textbox(label="Hierarchical Section Title ")
                 caption_title_and_reference_description = gr.Textbox(
                     label="Caption Title Reference "
                 )
-                caption_alt_text_description = gr.Textbox(
-                    label="Caption Alt-Text "
-                )
-                caption_reference_description = gr.Textbox(
-                    label="Caption Reference Description "
-                )
-                context_section_description = gr.Textbox(
-                    label="Context Section Description "
-                )
-                context_page_description = gr.Textbox(
-                    label="Context Page Description "
-                )
+                caption_alt_text_description = gr.Textbox(label="Caption Alt-Text ")
+                caption_reference_description = gr.Textbox(label="Caption Reference Description ")
+                context_section_description = gr.Textbox(label="Context Section Description ")
+                context_page_description = gr.Textbox(label="Context Page Description ")
 
                 wikipedia_language.change(
                     update_captions,
@@ -260,9 +250,7 @@ if __name__ == "__main__":
                 youtube_audio = gr.Audio(label="Youtube Audio ")
                 youtube_title_text = gr.Textbox(label="Youtube Title ")
 
-                youtube_description_text = gr.Textbox(
-                    label="Youtube Description "
-                )
+                youtube_description_text = gr.Textbox(label="Youtube Description ")
 
         gr.Markdown(
             """
@@ -356,5 +344,5 @@ if __name__ == "__main__":
             ],
         )
 
-    demo.queue()
-    demo.launch(share=True, debug=True)
+    # launch server in a new thread and retrieve the URL
+    demo.launch(share=True, debug=True, enable_monitoring=True)

@@ -1,4 +1,4 @@
- Demo of TALI: A Large Scale Quadra-Modal Dataset consisting of Temporally and Semantically Aligned Audio, Language and Images
+# Demo of TALI: A Large Scale Quadra-Modal Dataset consisting of Temporally and Semantically Aligned Audio, Language and Images
 
 Exploring the dynamics of real-world settings often calls for models that understand and incorporate temporal and semantic cues across multiple modalities. The TALI (Temporal and Semantic Alignment of Language, Image, Video, and Audio) dataset addresses this need. Assembled from YouTube and Wikipedia, TALI dataset offers temporally and semantically aligned data across four modalities - language, image, video, and audio.
 
