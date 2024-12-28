@@ -235,7 +235,6 @@ def videoclip_to_video_audio_tensors(
         )
 
         video = get_video_tensors(video, image_size)
-        
 
         if return_image:
             image = video[0]
@@ -445,7 +444,6 @@ def default_transforms():
     audio_processor = WhisperProcessor.from_pretrained(audio_model_name)
 
     def image_transforms(x):
-        print(x)
         if isinstance(x, PIL.Image.Image):
             temp_x = np.array(x)
             if temp_x.max() > 255:
