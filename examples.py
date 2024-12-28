@@ -1,5 +1,4 @@
 import pathlib
-from enum import Enum
 
 import torch
 from tqdm.auto import tqdm
@@ -23,7 +22,7 @@ def tali_with_transforms_no_streaming(
     dataset = load_dataset_via_hub(
         dataset_download_path=dataset_storage_path,
         dataset_cache_path=dataset_cache_path / "tali",
-        dataset_name="Antreas/TALI"
+        dataset_name="Antreas/TALI",
     )["train"]
 
     (
@@ -61,9 +60,7 @@ def tali_with_transforms_no_streaming(
         sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
-            if hasattr(value, "shape"):
-                print(key, value.shape)
-            elif isinstance(value, torch.Tensor):
+            if hasattr(value, "shape") or isinstance(value, torch.Tensor):
                 print(key, value.shape)
             elif hasattr(value, "__len__"):
                 print(key, len(value))
@@ -81,7 +78,7 @@ def tali_without_transforms_no_streaming(
     dataset = load_dataset_via_hub(
         dataset_download_path=dataset_storage_path,
         dataset_cache_path=dataset_cache_path / "tali",
-        dataset_name="Antreas/TALI"
+        dataset_name="Antreas/TALI",
     )["train"]
 
     preprocessing_transform = TALIBaseTransform(
@@ -112,9 +109,7 @@ def tali_without_transforms_no_streaming(
         sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
-            if hasattr(value, "shape"):
-                print(key, value.shape)
-            elif isinstance(value, torch.Tensor):
+            if hasattr(value, "shape") or isinstance(value, torch.Tensor):
                 print(key, value.shape)
             elif hasattr(value, "__len__"):
                 print(key, len(value))
@@ -133,7 +128,7 @@ def tali_with_transforms_streaming(
         dataset_download_path=dataset_storage_path,
         dataset_cache_path=dataset_cache_path / "tali",
         dataset_name="Antreas/TALI",
-        streaming=True
+        streaming=True,
     )["train"]
 
     (
@@ -171,9 +166,7 @@ def tali_with_transforms_streaming(
         sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
-            if hasattr(value, "shape"):
-                print(key, value.shape)
-            elif isinstance(value, torch.Tensor):
+            if hasattr(value, "shape") or isinstance(value, torch.Tensor):
                 print(key, value.shape)
             elif hasattr(value, "__len__"):
                 print(key, len(value))
@@ -192,7 +185,7 @@ def tali_without_transforms_streaming(
         dataset_download_path=dataset_storage_path,
         dataset_cache_path=dataset_cache_path / "tali",
         dataset_name="Antreas/TALI",
-        streaming=True
+        streaming=True,
     )["train"]
 
     preprocessing_transform = TALIBaseTransform(
@@ -223,9 +216,7 @@ def tali_without_transforms_streaming(
         sample = preprocessing_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
-            if hasattr(value, "shape"):
-                print(key, value.shape)
-            elif isinstance(value, torch.Tensor):
+            if hasattr(value, "shape") or isinstance(value, torch.Tensor):
                 print(key, value.shape)
             elif hasattr(value, "__len__"):
                 print(key, len(value))
@@ -241,32 +232,36 @@ class ExampleOption:
     WITHOUT_TRANSFORMS_STREAMING = "without_transforms_streaming"
 
 
-def main(option: ExampleOption, dataset_storage_path: pathlib.Path | str, dataset_cache_path: pathlib.Path | str):
+def main(
+    option: ExampleOption,
+    dataset_storage_path: pathlib.Path | str,
+    dataset_cache_path: pathlib.Path | str,
+):
     if isinstance(dataset_storage_path, str):
         dataset_storage_path = pathlib.Path(dataset_storage_path)
 
     if isinstance(dataset_cache_path, str):
         dataset_cache_path = pathlib.Path(dataset_cache_path)
-    
+
     if option == ExampleOption.WITH_TRANSFORMS_NO_STREAMING:
         tali_with_transforms_no_streaming(
             dataset_storage_path=dataset_storage_path,
-            dataset_cache_path=dataset_cache_path
+            dataset_cache_path=dataset_cache_path,
         )
     elif option == ExampleOption.WITHOUT_TRANSFORMS_NO_STREAMING:
         tali_without_transforms_no_streaming(
             dataset_storage_path=dataset_storage_path,
-            dataset_cache_path=dataset_cache_path
+            dataset_cache_path=dataset_cache_path,
         )
     elif option == ExampleOption.WITH_TRANSFORMS_STREAMING:
         tali_with_transforms_streaming(
             dataset_storage_path=dataset_storage_path,
-            dataset_cache_path=dataset_cache_path
+            dataset_cache_path=dataset_cache_path,
         )
     elif option == ExampleOption.WITHOUT_TRANSFORMS_STREAMING:
         tali_without_transforms_streaming(
             dataset_storage_path=dataset_storage_path,
-            dataset_cache_path=dataset_cache_path
+            dataset_cache_path=dataset_cache_path,
         )
 
 

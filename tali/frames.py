@@ -3,7 +3,6 @@ import functools
 import io
 import os
 import time
-from typing import Union
 
 import av
 import numpy as np
@@ -17,12 +16,14 @@ class FrameSelectionMethod:
 
     RANDOM: str = "random"  # 🎲
     UNIFORM: str = "uniform"  # 📏
-    SEQUENTIAL: str = "sequential"  #
+    SEQUENTIAL: str = "sequential"
 
 
 def seek_to_second(container, stream, second):
     # Convert the second to the stream's time base
-    timestamp = int(second * stream.time_base.denominator / stream.time_base.numerator)
+    timestamp = int(
+        second * stream.time_base.denominator / stream.time_base.numerator
+    )
     # Seek to the timestamp
     container.seek(timestamp, stream=stream)
     return container
@@ -54,7 +55,7 @@ def suppress_stderr(func):
 
 @suppress_stderr
 def extract_frames_pyav(
-    video_data: Union[str, bytes],
+    video_data: str | bytes,
     modality: str,
     starting_second: float,
     ending_second: float,
@@ -67,7 +68,9 @@ def extract_frames_pyav(
 ) -> torch.Tensor:
     frame_dict = {}
 
-    video_source = io.BytesIO(video_data) if isinstance(video_data, bytes) else video_data
+    video_source = (
+        io.BytesIO(video_data) if isinstance(video_data, bytes) else video_data
+    )
 
     with av.open(video_source) as container:
         stream = next(s for s in container.streams if s.type == modality)
@@ -80,9 +83,12 @@ def extract_frames_pyav(
             # logger.info(f"Frame timestamp: {frame}")
             frame_timestamp = frame_timestamp_in_seconds(frame, stream)
             # logger.info(f"Frame timestamp: {frame_timestamp}")
-            array_frame = torch.from_numpy(
-                frame.to_ndarray(format="rgb24" if modality == "video" else None)
-            )
+            if modality == "video":
+                array_frame = frame.to_ndarray(format="rgb24")
+            else:
+                array_frame = frame.to_ndarray()
+
+            array_frame = torch.from_numpy(array_frame)
 
             if modality == "video" and len(array_frame.shape) == 2:
                 array_frame = array_frame.unsqueeze(0)
@@ -130,12 +136,8 @@ def extract_frames_pyav(
 
 
 def test_extract_frames_video_pyav():
-    video_path = (
-        "/data/datasets/tali-wit-2-1-buckets/video_data.parquet/550/550321/4chLRYT8ylY/360p_90.mp4"
-    )
-    video_path = (
-        "/data/datasets/tali-wit-2-1-buckets//video_data.parquet/10/10586/SA7bKo4HRTg/360p_0.mp4"
-    )
+    video_path = "/data/datasets/tali-wit-2-1-buckets/video_data.parquet/550/550321/4chLRYT8ylY/360p_90.mp4"
+    video_path = "/data/datasets/tali-wit-2-1-buckets//video_data.parquet/10/10586/SA7bKo4HRTg/360p_0.mp4"
     modality = "video"
     start_time = 10
     end_time = 20
@@ -169,12 +171,8 @@ def test_extract_frames_video_pyav():
 
 
 def test_extract_frames_audio_pyav():
-    video_path = (
-        "/data/datasets/tali-wit-2-1-buckets/video_data.parquet/550/550321/4chLRYT8ylY/360p_90.mp4"
-    )
-    video_path = (
-        "/data/datasets/tali-wit-2-1-buckets//video_data.parquet/10/10586/SA7bKo4HRTg/360p_0.mp4"
-    )
+    video_path = "/data/datasets/tali-wit-2-1-buckets/video_data.parquet/550/550321/4chLRYT8ylY/360p_90.mp4"
+    video_path = "/data/datasets/tali-wit-2-1-buckets//video_data.parquet/10/10586/SA7bKo4HRTg/360p_0.mp4"
     modality = "audio"
     start_time = 10
     end_time = 20

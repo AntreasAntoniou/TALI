@@ -2,7 +2,6 @@ import pathlib
 import random
 
 import gradio as gr
-from rich import print
 
 from tali.data.data_new import load_dataset_via_hub
 from tali.utils import get_logger
@@ -154,7 +153,7 @@ if __name__ == "__main__":
     with gr.Blocks(theme=gr.themes.Soft()) as demo:
         # load markdown from intro.md file
         intro_md_path = pathlib.Path(__file__).parent / "intro.md"
-        with open(intro_md_path, "r") as f:
+        with open(intro_md_path) as f:
             gr.Markdown(f.read())
 
         gr.Markdown(
@@ -208,13 +207,19 @@ if __name__ == "__main__":
 
                 page_title = gr.Textbox(label="Wikipedia Page Title")
                 section_title = gr.Textbox(label="Wikipedia Section Title ")
-                hierarchical_section_title = gr.Textbox(label="Hierarchical Section Title ")
+                hierarchical_section_title = gr.Textbox(
+                    label="Hierarchical Section Title "
+                )
                 caption_title_and_reference_description = gr.Textbox(
                     label="Caption Title Reference "
                 )
                 caption_alt_text_description = gr.Textbox(label="Caption Alt-Text ")
-                caption_reference_description = gr.Textbox(label="Caption Reference Description ")
-                context_section_description = gr.Textbox(label="Context Section Description ")
+                caption_reference_description = gr.Textbox(
+                    label="Caption Reference Description "
+                )
+                context_section_description = gr.Textbox(
+                    label="Context Section Description "
+                )
                 context_page_description = gr.Textbox(label="Context Page Description ")
 
                 wikipedia_language.change(
