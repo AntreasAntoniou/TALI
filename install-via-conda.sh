@@ -17,7 +17,7 @@ if ! [ -x "$(command -v conda)" ]; then
 
 fi
 
-conda create -n minimal-ml-template python=3.10 -y
+conda create -n minimal-ml-template python=3.11 -y
 conda activate minimal-ml-template
 conda install -c conda-forge mamba -y
 # mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia -y
@@ -28,7 +28,7 @@ mamba install -c conda-forge -c huggingface timm accelerate datasets transformer
 mamba install -c conda-forge orjson av -y
 
 echo y | pip install git+https://github.com/BayesWatch/bwatchcompute@main
-echo y | pip install hydra_zen neptune pytorchvideo rich
+echo y | pip install pytorchvideo rich
 
 git config --global credential.helper store
 

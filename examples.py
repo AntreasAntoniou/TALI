@@ -21,7 +21,9 @@ def tali_with_transforms_no_streaming(
         dataset_storage_path = pathlib.Path(dataset_storage_path)
 
     dataset = load_dataset_via_hub(
-        dataset_storage_path, dataset_name="Antreas/TALI"
+        dataset_download_path=dataset_storage_path,
+        dataset_cache_path=dataset_storage_path,
+        dataset_name="Antreas/TALI"
     )["train"]
 
     (

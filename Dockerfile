@@ -18,19 +18,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0
 
-RUN conda create -n main python=3.10 -y
+RUN conda create -n main python=3.11 -y
 
 SHELL ["/opt/conda/bin/conda", "run", "-n", "main", "/bin/bash", "-c"]
 
 RUN conda install -c conda-forge mamba -y
 RUN mamba install -c conda-forge starship jupyterlab black git-lfs -y
-RUN mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+RUN mamba install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia -y
 RUN mamba install -c conda-forge timm accelerate datasets transformers -y
 RUN mamba install -c conda-forge orjson -y
 RUN mamba install -c conda-forge git gh -y
 RUN mamba install -c conda-forge starship -y
 
-RUN echo y | pip install tabulate nvitop hydra_zen neptune pytorchvideo torchtyping --upgrade
+RUN echo y | pip install tabulate nvitop pytorchvideo torchtyping --upgrade
 RUN echo y | pip install git+https://github.com/BayesWatch/bwatchcompute@main
 
 RUN conda init bash

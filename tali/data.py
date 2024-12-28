@@ -2,7 +2,7 @@ import logging
 import multiprocessing as mp
 import pathlib
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from math import floor
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -10,16 +10,19 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import datasets
 import numpy as np
 import PIL
+import torch
 import torchaudio.transforms as TA
 import yaml
-from pytorchvideo.transforms import ApplyTransformToKey, ShortSideScale
-from rich import print
-from torchvision.transforms import Compose
+from datasets import ClassLabel, Features, Image, Sequence, Value
+from torchvision.transforms import Compose, Resize, CenterCrop
 from torchvision.transforms._transforms_video import CenterCropVideo
 from tqdm import tqdm
 
 from tali.frames import FrameSelectionMethod, extract_frames_pyav
 from tali.utils import enrichen_logger
+from rich.traceback import install
+
+install()
 
 logger = logging.getLogger(__name__)
 logger = enrichen_logger(logger)
@@ -168,16 +171,20 @@ def get_video_tensors(video_frames, image_size):
         Transformed video frames in tensor format.
     """
     video_frames = video_frames.permute(3, 0, 1, 2).to(torch.float32)
-    video_transform = Compose(
-        [
-            ShortSideScale(size=image_size),
-            CenterCropVideo(crop_size=(image_size, image_size)),
-        ]
-    )
-    output_dict = ApplyTransformToKey("video", video_transform)(
-        {"video": video_frames}
-    )
-    return output_dict["video"].permute(1, 0, 2, 3) / 255.0
+    
+    # Replace pytorchvideo transforms with torchvision transforms
+    video_transform = Compose([
+        Resize(size=image_size, antialias=True),
+        CenterCrop(size=(image_size, image_size)),
+    ])
+    
+    # Apply transforms to each frame
+    B, C, H, W = video_frames.shape
+    video_frames = video_frames.view(-1, C, H, W)  # Combine batch and time dimensions
+    video_frames = video_transform(video_frames)
+    video_frames = video_frames.view(B, C, image_size, image_size)  # Restore batch dimension
+    
+    return video_frames / 255.0
 
 
 def convert_to_pil(image):
@@ -257,9 +264,11 @@ def videoclip_to_video_audio_tensors(
         output["video"] = (
             [convert_to_pil(frame) for frame in video]
             if video_frame_format == VideoFramesFormat.PIL
-            else video
-            if video_frame_format == VideoFramesFormat.TENSOR
-            else None
+            else (
+                video
+                if video_frame_format == VideoFramesFormat.TENSOR
+                else None
+            )
         )
         if output["video"] is None:
             raise ValueError(
@@ -285,9 +294,11 @@ def videoclip_to_video_audio_tensors(
         output["image"] = (
             convert_to_pil(image)
             if video_frame_format == VideoFramesFormat.PIL
-            else image
-            if video_frame_format == VideoFramesFormat.TENSOR
-            else None
+            else (
+                image
+                if video_frame_format == VideoFramesFormat.TENSOR
+                else None
+            )
         )
 
         if output["image"] is None:
@@ -352,7 +363,6 @@ def download_dataset_via_hub(
         resume_download=True,
         max_workers=num_download_workers,
         ignore_patterns=[],
-
     )
 
     return pathlib.Path(download_folder) / "data"
@@ -360,22 +370,22 @@ def download_dataset_via_hub(
 
 def load_dataset_via_hub(
     dataset_download_path: pathlib.Path,
+    dataset_cache_path: pathlib.Path,
     num_download_workers: int = mp.cpu_count(),
     dataset_name: Optional[str] = None,
-    streaming: bool = False,
 ):
-    from datasets import Features, Image, Sequence, Value
 
-    if not streaming:
-        dataset_path = download_dataset_via_hub(
-            dataset_download_path=dataset_download_path,
-            num_download_workers=num_download_workers,
-            dataset_name=dataset_name,
-        )
-        # Building a list of file paths for validation set
-    else:
-        dataset_path = dataset_download_path
-
+    dataset_path = download_dataset_via_hub(
+        dataset_download_path=dataset_download_path,
+        num_download_workers=num_download_workers,
+        dataset_name=dataset_name,
+    )
+    # Building a list of file paths for validation set
+    test_files = [
+        file.as_posix()
+        for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "test" in file.as_posix()
+    ]
     train_files = [
         file.as_posix()
         for file in pathlib.Path(dataset_path).glob("*.parquet")
@@ -386,13 +396,8 @@ def load_dataset_via_hub(
         for file in pathlib.Path(dataset_path).glob("*.parquet")
         if "val" in file.as_posix()
     ]
-    test_files = [
-        file.as_posix()
-        for file in pathlib.Path(dataset_path).glob("*.parquet")
-        if "test" in file.as_posix()
-    ]
     print(
-        f"Found {len(train_files)} for training set, {len(val_files)} for validation set and {len(test_files)} files for testing set"
+        f"Found {len(test_files)} files for testing set, {len(train_files)} for training set and {len(val_files)} for validation set"
     )
     data_files = {
         "test": test_files,
@@ -439,14 +444,9 @@ def load_dataset_via_hub(
         "parquet" if dataset_name is None else dataset_name,
         data_files=data_files,
         features=features,
-        num_proc=mp.cpu_count(),
-        cache_dir=dataset_download_path / "cache",
-        streaming=streaming,
-
+        num_proc=mp.cpu_count() * 2,
+        cache_dir=dataset_cache_path,
     )
-
-
-
     return dataset
 
 
@@ -612,9 +612,9 @@ class TALIBaseTransform:
                                 sub_sub_key,
                                 sub_sub_value,
                             ) in sub_value.items():
-                                item_dict[sub_key][
-                                    sub_sub_key
-                                ] = self.text_tokenizer(sub_sub_value)
+                                item_dict[sub_key][sub_sub_key] = (
+                                    self.text_tokenizer(sub_sub_value)
+                                )
                     output_dict[key] = item_dict
 
         return output_dict
@@ -625,15 +625,17 @@ class TALIBaseTransform:
         output_dict = {}
         if SubModalityTypes.youtube_content_audio in self.config.modality_list:
             output_dict[SubModalityTypes.youtube_content_audio.value.name] = (
-                audio
-                if audio is not None
-                else self.video_transform(
-                    x=input_dict[TALIKeys.youtube_video_content.value],
-                    start=0,
-                    end=30,
-                    seed=int(input_dict[TALIKeys.item_idx.value]),
-                    return_audio=True,
-                )["audio"],
+                (
+                    audio
+                    if audio is not None
+                    else self.video_transform(
+                        x=input_dict[TALIKeys.youtube_video_content.value],
+                        start=0,
+                        end=30,
+                        seed=int(input_dict[TALIKeys.item_idx.value]),
+                        return_audio=True,
+                    )["audio"]
+                ),
             )
 
         if self.audio_tokenizer is not None:
@@ -684,15 +686,17 @@ class TALIBaseTransform:
         output_dict = {}
         if SubModalityTypes.youtube_content_video in self.config.modality_list:
             output_dict = {
-                SubModalityTypes.youtube_content_video.value.name: video
-                if video is not None
-                else self.video_transform(
-                    x=input_dict[TALIKeys.youtube_video_content.value],
-                    start=0,
-                    end=30,
-                    seed=int(input_dict[TALIKeys.item_idx.value]),
-                    return_video=True,
-                )["video"],
+                SubModalityTypes.youtube_content_video.value.name: (
+                    video
+                    if video is not None
+                    else self.video_transform(
+                        x=input_dict[TALIKeys.youtube_video_content.value],
+                        start=0,
+                        end=30,
+                        seed=int(input_dict[TALIKeys.item_idx.value]),
+                        return_video=True,
+                    )["video"]
+                ),
             }
         if self.video_tokenizer is not None:
             for key, value in output_dict.items():
@@ -795,10 +799,13 @@ class TALIBaseTransform:
 if __name__ == "__main__":
     import torch
 
-    dataset_cache = pathlib.Path("/disk/scratch_fast0/tali/")
-    dataset = load_dataset_via_hub(dataset_cache, dataset_name="Antreas/TALI")[
-        "test"
-    ]
+    dataset_path = pathlib.Path("/home/antreas/datasets")
+    dataset_cache = pathlib.Path("/mnt/nvme-fast0/datasets")
+    dataset_dict = load_dataset_via_hub(
+        dataset_download_path=dataset_path,
+        dataset_cache_path=dataset_cache / "tali",
+        dataset_name="Antreas/TALI",
+    )
 
     (
         image_transforms,
@@ -808,7 +815,7 @@ if __name__ == "__main__":
     ) = default_transforms()
 
     demo_transform = TALIBaseTransform(
-        cache_dir=dataset_cache / "cache",
+        cache_dir=dataset_cache,
         text_tokenizer=text_transforms,
         image_tokenizer=image_transforms,
         audio_tokenizer=audio_transforms,
@@ -831,7 +838,9 @@ if __name__ == "__main__":
         ),
     )
 
-    for sample in tqdm(dataset):
+    dataset_dict.set_transform(demo_transform)
+
+    for sample in tqdm(dataset_dict["test"]):
         sample = demo_transform(sample)
         print(list(sample.keys()))
         for key, value in sample.items():
@@ -844,3 +853,4 @@ if __name__ == "__main__":
             print(key, type(value))
 
         break
+from torchvision.transforms import Compose, Resize, CenterCrop
