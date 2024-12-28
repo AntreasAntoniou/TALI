@@ -15,14 +15,14 @@ from tali.data import (
 
 
 def tali_with_transforms_no_streaming(
-    dataset_storage_path: pathlib.Path | str,
+    dataset_storage_path: pathlib.Path | str, dataset_cache_path: pathlib.Path | str
 ):
     if isinstance(dataset_storage_path, str):
         dataset_storage_path = pathlib.Path(dataset_storage_path)
 
     dataset = load_dataset_via_hub(
         dataset_download_path=dataset_storage_path,
-        dataset_cache_path=dataset_storage_path,
+        dataset_cache_path=dataset_cache_path / "tali",
         dataset_name="Antreas/TALI"
     )["train"]
 
@@ -34,7 +34,7 @@ def tali_with_transforms_no_streaming(
     ) = default_transforms()
 
     preprocessing_transform = TALIBaseTransform(
-        cache_dir=dataset_storage_path / "cache",
+        cache_dir=dataset_cache_path,
         text_tokenizer=text_transforms,
         image_tokenizer=image_transforms,
         audio_tokenizer=audio_transforms,
@@ -73,17 +73,19 @@ def tali_with_transforms_no_streaming(
 
 
 def tali_without_transforms_no_streaming(
-    dataset_storage_path: pathlib.Path | str,
+    dataset_storage_path: pathlib.Path | str, dataset_cache_path: pathlib.Path | str
 ):
     if isinstance(dataset_storage_path, str):
         dataset_storage_path = pathlib.Path(dataset_storage_path)
 
     dataset = load_dataset_via_hub(
-        dataset_storage_path, dataset_name="Antreas/TALI"
+        dataset_download_path=dataset_storage_path,
+        dataset_cache_path=dataset_cache_path / "tali",
+        dataset_name="Antreas/TALI"
     )["train"]
 
     preprocessing_transform = TALIBaseTransform(
-        cache_dir=dataset_storage_path / "cache",
+        cache_dir=dataset_cache_path,
         text_tokenizer=None,
         image_tokenizer=None,
         audio_tokenizer=None,
@@ -122,13 +124,16 @@ def tali_without_transforms_no_streaming(
 
 
 def tali_with_transforms_streaming(
-    dataset_storage_path: pathlib.Path | str,
+    dataset_storage_path: pathlib.Path | str, dataset_cache_path: pathlib.Path | str
 ):
     if isinstance(dataset_storage_path, str):
         dataset_storage_path = pathlib.Path(dataset_storage_path)
 
     dataset = load_dataset_via_hub(
-        dataset_storage_path, dataset_name="Antreas/TALI", streaming=True
+        dataset_download_path=dataset_storage_path,
+        dataset_cache_path=dataset_cache_path / "tali",
+        dataset_name="Antreas/TALI",
+        streaming=True
     )["train"]
 
     (
@@ -139,7 +144,7 @@ def tali_with_transforms_streaming(
     ) = default_transforms()
 
     preprocessing_transform = TALIBaseTransform(
-        cache_dir=dataset_storage_path / "cache",
+        cache_dir=dataset_cache_path,
         text_tokenizer=text_transforms,
         image_tokenizer=image_transforms,
         audio_tokenizer=audio_transforms,
@@ -178,17 +183,20 @@ def tali_with_transforms_streaming(
 
 
 def tali_without_transforms_streaming(
-    dataset_storage_path: pathlib.Path | str,
+    dataset_storage_path: pathlib.Path | str, dataset_cache_path: pathlib.Path | str
 ):
     if isinstance(dataset_storage_path, str):
         dataset_storage_path = pathlib.Path(dataset_storage_path)
 
     dataset = load_dataset_via_hub(
-        dataset_storage_path, dataset_name="Antreas/TALI", streaming=True
+        dataset_download_path=dataset_storage_path,
+        dataset_cache_path=dataset_cache_path / "tali",
+        dataset_name="Antreas/TALI",
+        streaming=True
     )["train"]
 
     preprocessing_transform = TALIBaseTransform(
-        cache_dir=dataset_storage_path / "cache",
+        cache_dir=dataset_cache_path,
         text_tokenizer=None,
         image_tokenizer=None,
         audio_tokenizer=None,
@@ -233,26 +241,43 @@ class ExampleOption:
     WITHOUT_TRANSFORMS_STREAMING = "without_transforms_streaming"
 
 
-def main(option: ExampleOption, dataset_storage_path: pathlib.Path | str):
+def main(option: ExampleOption, dataset_storage_path: pathlib.Path | str, dataset_cache_path: pathlib.Path | str):
+    if isinstance(dataset_storage_path, str):
+        dataset_storage_path = pathlib.Path(dataset_storage_path)
+
+    if isinstance(dataset_cache_path, str):
+        dataset_cache_path = pathlib.Path(dataset_cache_path)
+    
     if option == ExampleOption.WITH_TRANSFORMS_NO_STREAMING:
         tali_with_transforms_no_streaming(
-            dataset_storage_path=dataset_storage_path
+            dataset_storage_path=dataset_storage_path,
+            dataset_cache_path=dataset_cache_path
         )
     elif option == ExampleOption.WITHOUT_TRANSFORMS_NO_STREAMING:
         tali_without_transforms_no_streaming(
-            dataset_storage_path=dataset_storage_path
+            dataset_storage_path=dataset_storage_path,
+            dataset_cache_path=dataset_cache_path
         )
     elif option == ExampleOption.WITH_TRANSFORMS_STREAMING:
         tali_with_transforms_streaming(
-            dataset_storage_path=dataset_storage_path
+            dataset_storage_path=dataset_storage_path,
+            dataset_cache_path=dataset_cache_path
         )
     elif option == ExampleOption.WITHOUT_TRANSFORMS_STREAMING:
         tali_without_transforms_streaming(
-            dataset_storage_path=dataset_storage_path
+            dataset_storage_path=dataset_storage_path,
+            dataset_cache_path=dataset_cache_path
         )
 
 
 if __name__ == "__main__":
+    # dataset_path = pathlib.Path("/home/antreas/datasets")
+    # dataset_cache = pathlib.Path("/mnt/nvme-fast0/datasets")
+    # dataset_dict = load_dataset_via_hub(
+    #     dataset_download_path=dataset_path,
+    #     dataset_cache_path=dataset_cache / "tali",
+    #     dataset_name="Antreas/TALI",
+    # )
     import fire
 
     fire.Fire(main)
