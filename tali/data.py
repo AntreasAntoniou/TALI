@@ -70,20 +70,30 @@ class SubModalityTypes(Enum):
         ModalityTypes.image, "youtube_thumbnail_image"
     )
 
-    wikipedia_caption_text = SubModality(ModalityTypes.text, "wikipedia_caption_text")
-    wikipedia_title_text = SubModality(ModalityTypes.text, "wikipedia_title_text")
+    wikipedia_caption_text = SubModality(
+        ModalityTypes.text, "wikipedia_caption_text"
+    )
+    wikipedia_title_text = SubModality(
+        ModalityTypes.text, "wikipedia_title_text"
+    )
     wikipedia_main_body_text = SubModality(
         ModalityTypes.text, "wikipedia_main_body_text"
     )
-    youtube_subtitle_text = SubModality(ModalityTypes.text, "youtube_subtitle_text")
+    youtube_subtitle_text = SubModality(
+        ModalityTypes.text, "youtube_subtitle_text"
+    )
     youtube_description_text = SubModality(
         ModalityTypes.text, "youtube_description_text"
     )
     youtube_title_text = SubModality(ModalityTypes.text, "youtube_title_text")
 
-    youtube_content_audio = SubModality(ModalityTypes.audio, "youtube_content_audio")
+    youtube_content_audio = SubModality(
+        ModalityTypes.audio, "youtube_content_audio"
+    )
 
-    youtube_content_video = SubModality(ModalityTypes.video, "youtube_content_video")
+    youtube_content_video = SubModality(
+        ModalityTypes.video, "youtube_content_video"
+    )
 
 
 class TALIKeys(Enum):
@@ -171,7 +181,9 @@ def get_video_tensors(video_frames, image_size):
     )
     # Apply transforms to each frame
     B, C, H, W = video_frames.shape
-    video_frames = video_frames.view(-1, C, H, W)  # Combine batch and time dimensions
+    video_frames = video_frames.view(
+        -1, C, H, W
+    )  # Combine batch and time dimensions
     video_frames = video_transform(video_frames)
     video_frames = video_frames.view(
         B, C, image_size, image_size
@@ -257,7 +269,11 @@ def videoclip_to_video_audio_tensors(
         output["video"] = (
             [convert_to_pil(frame) for frame in video]
             if video_frame_format == VideoFramesFormat.PIL
-            else (video if video_frame_format == VideoFramesFormat.TENSOR else None)
+            else (
+                video
+                if video_frame_format == VideoFramesFormat.TENSOR
+                else None
+            )
         )
         if output["video"] is None:
             raise ValueError(
@@ -283,7 +299,11 @@ def videoclip_to_video_audio_tensors(
         output["image"] = (
             convert_to_pil(image)
             if video_frame_format == VideoFramesFormat.PIL
-            else (image if video_frame_format == VideoFramesFormat.TENSOR else None)
+            else (
+                image
+                if video_frame_format == VideoFramesFormat.TENSOR
+                else None
+            )
         )
 
         if output["image"] is None:
@@ -451,9 +471,9 @@ def default_transforms():
                 temp_x = (temp_x * 255).astype(np.uint8)
                 x = PIL.Image.fromarray(temp_x)
 
-        return image_text_processor(images=x, return_tensors="pt").pixel_values.squeeze(
-            1
-        )
+        return image_text_processor(
+            images=x, return_tensors="pt"
+        ).pixel_values.squeeze(1)
 
     def text_transforms(x):
         return image_text_processor(
@@ -503,7 +523,9 @@ class TALIBaseTransform:
         self.audio_tokenizer = audio_tokenizer
         self.video_tokenizer = video_tokenizer
 
-        self.select_subtitles_between_timestamps = select_subtitles_between_timestamps
+        self.select_subtitles_between_timestamps = (
+            select_subtitles_between_timestamps
+        )
         self.video_transform = self.build_video_loader()
 
     def build_video_loader(self):
@@ -571,7 +593,9 @@ class TALIBaseTransform:
                 TALIKeys.youtube_title_text.value
             ],
             SubModalityTypes.youtube_subtitle_text.value.name: self._process_youtube_subtitles(
-                youtube_subtitle_text=input_dict[TALIKeys.youtube_subtitle_text.value],
+                youtube_subtitle_text=input_dict[
+                    TALIKeys.youtube_subtitle_text.value
+                ],
                 youtube_video_starting_time=input_dict[
                     TALIKeys.youtube_video_starting_time.value
                 ],
@@ -593,8 +617,8 @@ class TALIBaseTransform:
                                 sub_sub_key,
                                 sub_sub_value,
                             ) in sub_value.items():
-                                item_dict[sub_key][sub_sub_key] = self.text_tokenizer(
-                                    sub_sub_value
+                                item_dict[sub_key][sub_sub_key] = (
+                                    self.text_tokenizer(sub_sub_value)
                                 )
                     output_dict[key] = item_dict
 
@@ -625,8 +649,13 @@ class TALIBaseTransform:
 
     def _process_image(self, input_dict: dict[str, Any], image: None):
         output_dict = {}
-        if SubModalityTypes.youtube_random_video_frame in self.config.modality_list:
-            output_dict[SubModalityTypes.youtube_random_video_frame.value.name] = (
+        if (
+            SubModalityTypes.youtube_random_video_frame
+            in self.config.modality_list
+        ):
+            output_dict[
+                SubModalityTypes.youtube_random_video_frame.value.name
+            ] = (
                 image
                 if image is not None
                 else self.video_transform(
@@ -638,10 +667,13 @@ class TALIBaseTransform:
                 )["image"]
             )
 
-        if SubModalityTypes.wikipedia_caption_image in self.config.modality_list:
-            output_dict[SubModalityTypes.wikipedia_caption_image.value.name] = (
-                input_dict[TALIKeys.image.value]
-            )
+        if (
+            SubModalityTypes.wikipedia_caption_image
+            in self.config.modality_list
+        ):
+            output_dict[
+                SubModalityTypes.wikipedia_caption_image.value.name
+            ] = input_dict[TALIKeys.image.value]
 
         if self.image_tokenizer is not None:
             for key, value in output_dict.items():
@@ -649,7 +681,9 @@ class TALIBaseTransform:
 
         return output_dict
 
-    def _process_video(self, input_dict: dict[str, Any], video: [Optional] = None):
+    def _process_video(
+        self, input_dict: dict[str, Any], video: [Optional] = None
+    ):
         output_dict = {}
         if SubModalityTypes.youtube_content_video in self.config.modality_list:
             output_dict = {
@@ -674,9 +708,13 @@ class TALIBaseTransform:
     def _apply_transform(self, input_dict: dict[str, Any]):
         output_dict = {}
 
-        output_dict[TALIKeys.wit_idx.value] = [input_dict[TALIKeys.wit_idx.value]]
+        output_dict[TALIKeys.wit_idx.value] = [
+            input_dict[TALIKeys.wit_idx.value]
+        ]
 
-        output_dict[TALIKeys.item_idx.value] = [input_dict[TALIKeys.item_idx.value]]
+        output_dict[TALIKeys.item_idx.value] = [
+            input_dict[TALIKeys.item_idx.value]
+        ]
 
         youtube_video = None
         youtube_audio = None
@@ -695,10 +733,14 @@ class TALIBaseTransform:
             )
             youtube_video = youtube_features["video"]
             youtube_audio = (
-                youtube_features["audio"] if "audio" in youtube_features else None
+                youtube_features["audio"]
+                if "audio" in youtube_features
+                else None
             )
             youtube_image = (
-                youtube_features["image"] if "image" in youtube_features else None
+                youtube_features["image"]
+                if "image" in youtube_features
+                else None
             )
 
         output_dict.update(self._process_text(input_dict=input_dict))
