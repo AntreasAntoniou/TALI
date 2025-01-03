@@ -19,7 +19,7 @@ from rich import print
 from rich.traceback import install
 from torchvision.transforms import CenterCrop, Compose, Resize
 from tqdm import tqdm
-
+import random
 from tali.frames import FrameSelectionMethod, extract_frames_pyav
 from tali.utils import enrichen_logger
 
@@ -136,6 +136,7 @@ class TALIBaseTransformConfig:
     num_audio_frames: int = 44100
     clip_duration_in_seconds: float = 3
     priority_caption_language: str | None = "en"
+    return_all_caption_languages: bool = False
     video_frame_duration: int = 30
     video_frames_format: str = VideoFramesFormat.TENSOR.value
 
@@ -386,11 +387,7 @@ def load_dataset_via_hub(
         dataset_name=dataset_name,
     )
     # Building a list of file paths for validation set
-    test_files = [
-        file.as_posix()
-        for file in pathlib.Path(dataset_path).glob("*.parquet")
-        if "test" in file.as_posix()
-    ]
+
     train_files = [
         file.as_posix()
         for file in pathlib.Path(dataset_path).glob("*.parquet")
@@ -400,6 +397,11 @@ def load_dataset_via_hub(
         file.as_posix()
         for file in pathlib.Path(dataset_path).glob("*.parquet")
         if "val" in file.as_posix()
+    ]
+    test_files = [
+        file.as_posix()
+        for file in pathlib.Path(dataset_path).glob("*.parquet")
+        if "test" in file.as_posix()
     ]
     print(
         f"Found {len(test_files)} files for testing set, {len(train_files)} for training set and {len(val_files)} for validation set"
@@ -580,10 +582,35 @@ class TALIBaseTransform:
             + " </ysub>"
         )
 
+    def _convert_dict_to_string(self, input_dict: dict):
+        return "\n".join(
+            [f"{key}: {value}" for key, value in input_dict.items()]
+        )
+
     def _process_text(self, input_dict: dict[str, Any]):
         wikipedia_text_content = self._process_wikipedia_text(
             input_dict[TALIKeys.wit_features.value]
         )
+        if not self.config.return_all_caption_languages:
+            if self.config.priority_caption_language is not None:
+                if (
+                    self.config.priority_caption_language
+                    in wikipedia_text_content
+                ):
+                    caption_language = self.config.priority_caption_language
+                else:
+                    # random choice
+                    caption_language = random.choice(
+                        wikipedia_text_content.keys()
+                    )
+            else:
+                caption_language = random.choice(wikipedia_text_content.keys())
+
+            wikipedia_text_content = wikipedia_text_content[caption_language]
+            wikipedia_text_content = self._convert_dict_to_string(
+                wikipedia_text_content
+            )
+
         output_dict = {
             SubModalityTypes.wikipedia_caption_text.value.name: wikipedia_text_content,
             SubModalityTypes.youtube_description_text.value.name: input_dict[
